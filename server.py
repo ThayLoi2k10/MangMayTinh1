@@ -1,0 +1,237 @@
+import socket
+import threading
+import time
+import uuid
+from protocol import (
+    Packet,
+    MSG_HELLO_REQ,
+    MSG_HELLO_RESP,
+    MSG_AUTH_REQ,
+    MSG_AUTH_RESP,
+    MSG_LOGOUT_REQ,
+    MSG_LOGOUT_RESP,
+    MSG_HEARTBEAT,
+    MSG_USER_LIST,
+    STATUS_OK,
+    STATUS_ERR,
+    encode_packet,
+    decode_packet,
+    recv_tcp_packet,
+    dump_json,
+    load_json,
+)
+
+SERVER_HOST = "0.0.0.0"
+TCP_PORT = 9000
+UDP_PORT = 9001
+AUTH_TIMEOUT = 10.0
+PEER_TIMEOUT = 15.0
+WATCHDOG_INTERVAL = 3.0
+
+
+class ServerRegistry:
+    # Khởi tạo bảng lưu trữ thông tin peer có khóa đồng bộ đa luồng
+    def __init__(self):
+        self._lock = threading.Lock()
+        self._peers = {}
+
+    # Đăng ký thông tin peer mới và cấp session_id nếu username chưa tồn tại
+    def register_peer(self, username: str, tcp_sock, client_ip: str, udp_port: int) -> str:
+        with self._lock:
+            if username in self._peers:
+                return ""
+            session_id = str(uuid.uuid4())
+            self._peers[username] = {
+                "tcp_sock": tcp_sock,
+                "client_ip": client_ip,
+                "udp_port": udp_port,
+                "session_id": session_id,
+                "last_seen": time.time(),
+            }
+            return session_id
+
+    # Xóa peer khỏi danh bạ khi session_id khớp hoặc ngắt phiên kết nối
+    def unregister_peer(self, username: str, session_id: str = None) -> bool:
+        with self._lock:
+            peer = self._peers.get(username)
+            if not peer:
+                return False
+            if session_id and peer["session_id"] != session_id:
+                return False
+            del self._peers[username]
+            return True
+
+    # Cập nhật mốc thời gian sống last_seen dựa theo cặp IP và UDP port gửi tới
+    def touch_peer_by_addr(self, client_ip: str, udp_port: int) -> bool:
+        with self._lock:
+            for info in self._peers.values():
+                if info["client_ip"] == client_ip and info["udp_port"] == udp_port:
+                    info["last_seen"] = time.time()
+                    return True
+            return False
+
+    # Lọc và gỡ bỏ các peer không gửi tín hiệu quá thời gian quy định
+    def scan_dead_peers(self, timeout_sec: float):
+        dead_peers = []
+        now = time.time()
+        with self._lock:
+            for username, info in list(self._peers.items()):
+                if now - info["last_seen"] > timeout_sec:
+                    dead_peers.append((username, info["tcp_sock"]))
+                    del self._peers[username]
+        return dead_peers
+
+    # Lấy danh sách tóm tắt tất cả người dùng đang trực tuyến
+    def get_online_users(self):
+        with self._lock:
+            return [
+                {
+                    "username": name,
+                    "ip": info["client_ip"],
+                    "udp_port": info["udp_port"],
+                }
+                for name, info in self._peers.items()
+            ]
+
+    # Lấy danh sách địa chỉ (IP, port) UDP của toàn bộ client đang online
+    def get_all_udp_targets(self):
+        with self._lock:
+            return [(info["client_ip"], info["udp_port"]) for info in self._peers.values()]
+
+
+class CollaborationServer:
+    # Khởi tạo server, registry và socket UDP phục vụ heartbeat/broadcast
+    def __init__(self):
+        self.registry = ServerRegistry()
+        self.udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.udp_sock.bind((SERVER_HOST, UDP_PORT))
+        self.is_running = True
+
+    # Gửi danh sách người dùng online tới tất cả client qua kênh UDP
+    def broadcast_user_list(self):
+        payload = dump_json({"users": self.registry.get_online_users()})
+        wire_data = encode_packet(Packet(msg_type=MSG_USER_LIST, status=STATUS_OK, payload=payload))
+        for target in self.registry.get_all_udp_targets():
+            try:
+                self.udp_sock.sendto(wire_data, target)
+            except OSError:
+                pass
+
+    # Lắng nghe các gói UDP heartbeat từ client để duy trì trạng thái online
+    def udp_listener_loop(self):
+        while self.is_running:
+            try:
+                data, addr = self.udp_sock.recvfrom(2048)
+                packet = decode_packet(data)
+                if packet.msg_type == MSG_HEARTBEAT:
+                    self.registry.touch_peer_by_addr(addr[0], addr[1])
+            except Exception:
+                continue
+
+    # Định kỳ quét danh bạ, đóng socket và broadcast cập nhật nếu có peer quá hạn
+    def watchdog_loop(self):
+        while self.is_running:
+            time.sleep(WATCHDOG_INTERVAL)
+            dead_list = self.registry.scan_dead_peers(PEER_TIMEOUT)
+            if dead_list:
+                for username, tcp_sock in dead_list:
+                    print(f"[-] [WATCHDOG] Ngắt kết nối peer quá hạn: {username}")
+                    try:
+                        tcp_sock.close()
+                    except OSError:
+                        pass
+                self.broadcast_user_list()
+
+    # Xử lý vòng đời phiên TCP của một client từ handshake, auth đến logout
+    def handle_client_session(self, conn, addr):
+        conn.settimeout(AUTH_TIMEOUT)
+        username = None
+        session_id = None
+
+        try:
+            # 1. Bắt tay ban đầu
+            pkt_hello = recv_tcp_packet(conn)
+            if pkt_hello.msg_type != MSG_HELLO_REQ:
+                return
+            conn.sendall(encode_packet(Packet(msg_type=MSG_HELLO_RESP, status=STATUS_OK)))
+
+            # 2. Xác thực tài khoản
+            pkt_auth = recv_tcp_packet(conn)
+            if pkt_auth.msg_type != MSG_AUTH_REQ:
+                return
+
+            body = load_json(pkt_auth.payload)
+            req_username = body.get("username", "").strip()
+            client_udp_port = int(body.get("udp_port", 0))
+
+            if not req_username or client_udp_port <= 0:
+                conn.sendall(encode_packet(Packet(msg_type=MSG_AUTH_RESP, status=STATUS_ERR)))
+                return
+
+            session_id = self.registry.register_peer(
+                username=req_username,
+                tcp_sock=conn,
+                client_ip=addr[0],
+                udp_port=client_udp_port,
+            )
+
+            if not session_id:
+                err_payload = dump_json({"error_code": "ERR_DUP", "message": "Username đã tồn tại"})
+                conn.sendall(encode_packet(Packet(msg_type=MSG_AUTH_RESP, status=STATUS_ERR, payload=err_payload)))
+                return
+
+            username = req_username
+            ok_payload = dump_json({"session_id": session_id, "message": "Authentication successful"})
+            conn.sendall(encode_packet(Packet(msg_type=MSG_AUTH_RESP, status=STATUS_OK, payload=ok_payload)))
+            print(f"[+] User '{username}' online ({addr[0]}:{client_udp_port})")
+            self.broadcast_user_list()
+
+            # 3. Duy trì phiên và chờ lệnh điều khiển tiếp theo
+            conn.settimeout(None)
+            while True:
+                pkt = recv_tcp_packet(conn)
+                if pkt.msg_type == MSG_LOGOUT_REQ:
+                    logout_data = load_json(pkt.payload)
+                    if logout_data.get("session_id") == session_id:
+                        self.registry.unregister_peer(username, session_id)
+                        conn.sendall(encode_packet(Packet(msg_type=MSG_LOGOUT_RESP, status=STATUS_OK)))
+                        try:
+                            conn.shutdown(socket.SHUT_RDWR)
+                        except OSError:
+                            pass
+                        username = None
+                        self.broadcast_user_list()
+                        break
+
+        except (socket.timeout, ConnectionResetError, ValueError):
+            pass
+        finally:
+            if username:
+                self.registry.unregister_peer(username, session_id)
+                self.broadcast_user_list()
+            conn.close()
+
+    # Khởi chạy các tiến trình nền và mở socket TCP tiếp nhận kết nối mới
+    def start(self):
+        tcp_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        tcp_server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        tcp_server.bind((SERVER_HOST, TCP_PORT))
+        tcp_server.listen(16)
+        print(f"[*] Server sẵn sàng: TCP {SERVER_HOST}:{TCP_PORT} | UDP {SERVER_HOST}:{UDP_PORT}")
+
+        threading.Thread(target=self.udp_listener_loop, daemon=True).start()
+        threading.Thread(target=self.watchdog_loop, daemon=True).start()
+
+        try:
+            while True:
+                conn, addr = tcp_server.accept()
+                threading.Thread(target=self.handle_client_session, args=(conn, addr), daemon=True).start()
+        except KeyboardInterrupt:
+            self.is_running = False
+        finally:
+            tcp_server.close()
+            self.udp_sock.close()
+
+
+if __name__ == "__main__":
+    CollaborationServer().start()
