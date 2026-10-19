@@ -253,7 +253,7 @@ class FileReceiver:
         fid = fid.lower()
 
         if fid in self.incoming:
-            raise FileTransferError("File id đã tồn tại")
+            return self.incoming[fid]
 
         name = safe_filename(message.get("filename"))
 
@@ -313,7 +313,14 @@ class FileReceiver:
         item = self.incoming.get(fid.lower())
 
         if item is None:
-            raise FileTransferError("Chưa nhận metadata cho file này")
+            # Retransmit / chunk muộn sau khi đã hoàn tất hoặc đã hủy
+            return {
+                "kind": "ACK",
+                "file_id": fid.lower(),
+                "chunk_index": message.get("chunk_index", -1),
+                "complete": False,
+                "ignored": True,
+            }
 
         total = message.get("total_chunks")
 
@@ -383,6 +390,7 @@ class FileReceiver:
 
         if target.exists():
             rec["status"] = "failed: destination exists"
+            self.incoming.pop(item.file_id, None)
             raise FileTransferError("File đích đã tồn tại; không ghi đè")
 
         temp = self.download_dir / (f".{item.file_id}.part")
@@ -400,6 +408,7 @@ class FileReceiver:
         except OSError as exc:
             temp.unlink(missing_ok=True)
             rec["status"] = "failed: disk error"
+            self.incoming.pop(item.file_id, None)
             raise FileTransferError("Không thể lưu file nhận được") from exc
 
         rec["status"] = "completed"
