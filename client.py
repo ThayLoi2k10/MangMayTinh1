@@ -56,6 +56,11 @@ class CollaborationClient:
 
         # UDP socket (file + heartbeat + user list)
         self.udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        if hasattr(socket, "SIO_UDP_CONNRESET"):
+            try:
+                self.udp.ioctl(socket.SIO_UDP_CONNRESET, False)
+            except OSError:
+                pass
         self.udp.bind(("0.0.0.0", 0))
         self.udp_port = self.udp.getsockname()[1]
         self.udp.settimeout(1.0)
@@ -114,7 +119,10 @@ class CollaborationClient:
 
     def _send_udp_to_server(self, packet: Packet) -> None:
         with self.udp_send_lock:
-            self.udp.sendto(encode_packet(packet), self.server_udp)
+            try:
+                self.udp.sendto(encode_packet(packet), self.server_udp)
+            except (ConnectionResetError, OSError):
+                pass
 
     def _send_file_packet(self, packet: Packet, recipient: str) -> None:
         """Gửi packet file UDP P2P tới peer (theo user list) """
@@ -226,7 +234,7 @@ class CollaborationClient:
                 packet = decode_packet(raw)
             except socket.timeout:
                 continue
-            except (OSError, ValueError):
+            except (ConnectionResetError, OSError, ValueError):
                 if self.stop_event.is_set():
                     break
                 continue
@@ -258,8 +266,10 @@ class CollaborationClient:
                 self._send_udp_to_server(
                     Packet(MSG_HEARTBEAT, status=STATUS_OK, seq_no=self._next_seq())
                 )
-            except OSError:
-                break
+            except (ConnectionResetError, OSError):
+                if self.stop_event.is_set():
+                    break
+                continue
 
     def _file_cleanup_loop(self) -> None:
         while not self.stop_event.wait(30):

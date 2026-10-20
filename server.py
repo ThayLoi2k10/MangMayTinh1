@@ -125,6 +125,11 @@ class CollaborationServer:
     def __init__(self):
         self.registry = ServerRegistry()
         self.udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        if hasattr(socket, "SIO_UDP_CONNRESET"):
+            try:
+                self.udp_sock.ioctl(socket.SIO_UDP_CONNRESET, False)
+            except OSError:
+                pass
         self.udp_sock.bind((SERVER_HOST, UDP_PORT))
         self.is_running = True
 
@@ -137,7 +142,7 @@ class CollaborationServer:
         for target in self.registry.get_all_udp_targets():
             try:
                 self.udp_sock.sendto(wire_data, target)
-            except OSError:
+            except (ConnectionResetError, OSError):
                 pass
 
     # Lắng nghe các gói UDP heartbeat từ client để duy trì trạng thái online
@@ -148,6 +153,8 @@ class CollaborationServer:
                 packet = decode_packet(data)
                 if packet.msg_type == MSG_HEARTBEAT:
                     self.registry.touch_peer_by_addr(addr[0], addr[1])
+            except (ConnectionResetError, OSError):
+                continue
             except Exception:
                 continue
 
@@ -159,6 +166,10 @@ class CollaborationServer:
             if dead_list:
                 for username, tcp_sock in dead_list:
                     print(f"[-] [WATCHDOG] Ngắt kết nối peer quá hạn: {username}")
+                    try:
+                        tcp_sock.shutdown(socket.SHUT_RDWR)
+                    except OSError:
+                        pass
                     try:
                         tcp_sock.close()
                     except OSError:
