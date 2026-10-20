@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Phòng cộng tác · Network Lab</title>
+  <style>
+    :root { font-family: "Segoe UI", system-ui, sans-serif; color: #182d39; background: #f0f4f5; line-height: 1.5; }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    button, input, select, textarea { font: inherit; }
+    button, select, input[type=file] { cursor: pointer; }
+    button { border: 0; border-radius: 9px; padding: .7rem 1.1rem; background: #08695e; color: white; font-weight: 600; }
+    button:disabled { cursor: not-allowed; background: #d6e1e2; color: #52666d; }
+    :focus-visible { outline: 3px solid #c26b12; outline-offset: 3px; }
+    input, select, textarea { max-width: 100%; border: 1px solid #aebfc4; border-radius: 8px; background: white; padding: .65rem; color: inherit; }
+    textarea { resize: vertical; width: 100%; min-height: 88px; }
+    label { display: block; font-size: .85rem; font-weight: 650; margin-bottom: .35rem; }
+    h1, h2, p { margin: 0; }
+    h1 { font-size: clamp(1.5rem, 3vw, 2rem); letter-spacing: -.04em; }
+    h2 { font-size: 1rem; }
+    .eyebrow { font-size: .72rem; letter-spacing: .13em; text-transform: uppercase; font-weight: 700; }
+    .muted, small { color: #536b74; }
+    .shell { max-width: 1440px; margin: auto; padding: 26px; }
+    header { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 22px; }
+    .brand { display: flex; gap: 14px; align-items: center; }
+    .mark { display: grid; place-items: center; background: #123f43; color: white; width: 48px; height: 48px; border-radius: 14px; font-weight: 800; }
+    .identity { text-align: right; max-width: 40%; overflow-wrap: anywhere; }
+    #username { font-weight: 700; }
+    .connections { display: flex; flex-wrap: wrap; gap: 8px 22px; padding: 12px 18px; background: #e3ecee; border-radius: 12px; font-size: .83rem; margin-bottom: 20px; }
+    .status::before { content: "●"; color: #986113; margin-right: 7px; }
+    .status[data-tone=good]::before { color: #08705b; }
+    .status[data-tone=error]::before { color: #a63336; }
+    .layout { display: grid; grid-template-columns: 230px minmax(300px, 1fr) 310px; gap: 18px; align-items: start; }
+    .panel { background: white; border: 1px solid #dce5e7; border-radius: 14px; overflow: hidden; }
+    .panel-head { padding: 18px; border-bottom: 1px solid #e5ecee; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .panel-body { padding: 18px; }
+    .count { border-radius: 20px; padding: 2px 9px; background: #edf3f4; font-size: .78rem; }
+    .note { font-size: .78rem; color: #536b74; margin-top: 10px; overflow-wrap: anywhere; }
+    .empty { color: #60777f; font-size: .9rem; padding: 24px 12px; text-align: center; }
+    #users { list-style: none; padding: 8px; margin: 0; max-height: 440px; overflow: auto; }
+    .user { width: 100%; background: transparent; color: #213d47; text-align: left; padding: 10px; overflow-wrap: anywhere; }
+    .user:hover { background: #eef5f4; }
+    .user small { display: block; font-weight: 400; font-size: .72rem; }
+    .user:disabled { background: #eef5f4; color: #213d47; }
+    #messages { height: 400px; overflow-y: auto; padding: 18px; overscroll-behavior: contain; }
+    .message { margin-bottom: 14px; border-left: 3px solid #b8cdd0; padding: 9px 12px; background: #f5f8f9; border-radius: 0 9px 9px 0; overflow-wrap: anywhere; }
+    .message.outgoing { border-color: #0f8071; background: #eff8f5; }
+    .message-meta { font-size: .75rem; color: #526c74; margin-bottom: 5px; }
+    .message-text { white-space: pre-wrap; }
+    form { margin: 0; }
+    #chat-form { padding: 18px; border-top: 1px solid #e5ecee; }
+    .form-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 10px; }
+    #chat-to, #file-to { width: 100%; margin-bottom: 12px; }
+    #file-input { width: 100%; font-size: .83rem; }
+    #file-submit { width: 100%; margin-top: 14px; }
+    .feedback { font-size: .8rem; min-height: 1.5em; margin-top: 10px; overflow-wrap: anywhere; }
+    .feedback[data-tone=error] { color: #a1262e; }
+    .feedback[data-tone=good] { color: #07634f; }
+    #transfers { max-height: 400px; overflow: auto; }
+    .transfer { border-top: 1px solid #e5ecee; padding: 14px 18px; font-size: .83rem; overflow-wrap: anywhere; }
+    .transfer-name { font-weight: 650; }
+    progress { width: 100%; height: 8px; accent-color: #0f8071; }
+    .transfer[data-tone=error] progress { accent-color: #a63336; }
+    footer { padding: 20px 0 0; font-size: .77rem; color: #536b74; }
+    @media (max-width: 1100px) { .layout { grid-template-columns: 200px minmax(280px, 1fr); } .files { grid-column: 1 / -1; } }
+    @media (max-width: 640px) {
+      .shell { padding: 14px; } header { align-items: flex-start; } .mark { display: none; }
+      .layout { grid-template-columns: minmax(0, 1fr); } .files { grid-column: auto; }
+      #users { max-height: 160px; } #messages { height: 320px; } .identity { font-size: .85rem; }
+      .form-row { flex-wrap: wrap; } .connections { padding: 12px; }
+    }
+  </style>
+</head>
+<body>
+<div class="shell">
+  <header>
+    <div class="brand"><div class="mark" aria-hidden="true">N/</div><div><p class="eyebrow muted">Network Lab / Collaboration</p><h1>Phòng cộng tác</h1></div></div>
+    <div class="identity"><p class="eyebrow muted">Danh tính phiên</p><p id="username">Đang tải…</p></div>
+  </header>
+  <div class="connections" role="status" aria-live="polite">
+    <span id="api-status" class="status">HTTP cục bộ: đang tải…</span>
+    <span id="server-status" class="status">Server: chưa xác minh — API không cung cấp trạng thái</span>
+    <span id="snapshot-time">Chưa có dữ liệu</span>
+  </div>
+  <main class="layout">
+    <aside class="panel" aria-labelledby="users-title">
+      <div class="panel-head"><h2 id="users-title">Người dùng</h2><span id="user-count" class="count">0</span></div>
+      <ul id="users"><li class="empty">Đang tải danh sách…</li></ul>
+      <div class="panel-body"><p class="note">Danh sách gần nhất do client nhận từ server. Chọn một người để nhắn riêng. Danh sách có thể cũ nếu mất kết nối server.</p></div>
+    </aside>
+    <section class="panel" aria-labelledby="chat-title">
+      <div class="panel-head"><h2 id="chat-title">Tin nhắn</h2><span class="count">TCP / Chat</span></div>
+      <div id="messages" role="region" aria-label="Lịch sử tin nhắn" tabindex="0"><p class="empty">Tin nhắn sẽ xuất hiện tại đây.</p></div>
+      <form id="chat-form">
+        <label for="chat-to">Gửi tin nhắn đến</label>
+        <select id="chat-to"><option value="">Chọn kênh…</option><option value="*">Mọi người · Broadcast</option></select>
+        <label for="draft">Nội dung</label>
+        <textarea id="draft" placeholder="Viết một tin nhắn…" maxlength="5000" aria-describedby="chat-help"></textarea>
+        <div class="form-row"><small id="chat-help">Enter để gửi · Shift+Enter để xuống dòng</small><button id="chat-submit" type="submit" disabled>Gửi tin nhắn</button></div>
+        <p id="chat-feedback" class="feedback" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+    <section class="panel files" aria-labelledby="files-title">
+      <div class="panel-head"><h2 id="files-title">Chia sẻ file</h2><span class="count">UDP / File</span></div>
+      <div class="panel-body">
+        <form id="file-form">
+          <label for="file-to">Người nhận file</label>
+          <select id="file-to"><option value="">Chọn người nhận…</option></select>
+          <label for="file-input">Chọn file từ máy này</label>
+          <input id="file-input" type="file" aria-describedby="file-info file-help">
+          <p id="file-info" class="note">Chưa chọn file.</p>
+          <p id="file-help" class="note">Giới hạn qua HTTP: khoảng 82,5 MiB, gồm cả Base64 trong request 110 MiB. Không hỗ trợ gửi file broadcast qua API này.</p>
+          <button id="file-submit" type="submit" disabled>Gửi file</button>
+          <p id="file-feedback" class="feedback" role="status" aria-live="polite"></p>
+        </form>
+        <p class="note">HTTP chấp nhận yêu cầu chưa có nghĩa người nhận đã nhận được. Theo dõi trạng thái bên dưới; xem terminal nếu worker báo lỗi.</p>
+      </div>
+      <div id="transfers" role="region" aria-label="Tiến trình truyền file" tabindex="0"><p class="empty">Chưa có lượt truyền file.</p></div>
+    </section>
+  </main>
+  <footer>Đăng nhập bằng <code>client.py --username … --ui-port …</code>. Khi mất phiên server, khởi động lại client để đăng nhập lại. Hiển thị tối đa 100 tin nhắn và 40 lượt truyền gần nhất.</footer>
+</div>
+<script>
+"use strict";
+(() => {
+  // Verified against client.py / file_transfer.py at ab63e31. No transport logic here.
+  const MAX_FILE_BYTES = 100 * 1024 * 1024;
+  const MAX_REQUEST_BYTES = 110 * 1024 * 1024;
+  const $ = id => document.getElementById(id);
+  const object = value => value !== null && typeof value === "object" && !Array.isArray(value);
+  const text = (value, fallback = "") => typeof value === "string" ? value : fallback;
+  const rows = value => Array.isArray(value) ? value.filter(object) : [];
+  const encoder = new TextEncoder();
+  let apiReady = false, chatBusy = false, fileBusy = false, username = "";
+  let peers = new Set(), pollTimer, pollBusy = false, stopped = false, failures = 0;
+  let messageSignature = "", transferSignature = "", userSignature = "";
+  const controllers = new Set();
+  function element(tag, content, className) {
+    const el = document.createElement(tag);
+    if (content !== undefined) el.textContent = content;
+    if (className) el.className = className;
+    return el;
+  }
+  function feedback(id, message, tone = "") {
+    $(id).textContent = message;
+    $(id).dataset.tone = tone;
+  }
+  function buttons() {
+    $("chat-submit").disabled = !apiReady || chatBusy || !$("draft").value.trim() || !validTarget($("chat-to").value, true);
+    $("file-submit").disabled = !apiReady || fileBusy || !$("file-input").files.length || !validTarget($("file-to").value, false);
+    $("file-input").disabled = fileBusy;
+    $("file-to").disabled = fileBusy;
+  }
+  function validTarget(target, broadcast) { return (broadcast && target === "*") || peers.has(target); }
+  async function request(path, body, timeout = 8000) {
+    const controller = new AbortController();
+    controllers.add(controller);
+    const timer = setTimeout(() => controller.abort(), timeout);
+    try {
+      const response = await fetch(path, {
+        method: body === undefined ? "GET" : "POST",
+        cache: "no-store",
+        headers: body === undefined ? {} : {"Content-Type": "application/json"},
+        body: body === undefined ? undefined : JSON.stringify(body),
+        signal: controller.signal
+      });
+      const data = await response.json();
+      if (!response.ok || !object(data) || data.ok === false) {
+        throw new Error(text(data && data.error, `HTTP ${response.status}: phản hồi không hợp lệ`));
+      }
+      if (body !== undefined && data.ok !== true) throw new Error("API chưa xác nhận chấp nhận yêu cầu.");
+      return data;
+    } catch (error) {
+      if (error.name === "AbortError") throw new Error("Yêu cầu hết thời gian chờ. Kết quả chưa rõ; kiểm tra lịch sử trước khi gửi lại.");
+      throw error;
+    } finally {
+      clearTimeout(timer);
+      controllers.delete(controller);
+    }
+  }
+  function updateOptions(select, users, broadcast) {
+    const selected = select.value;
+    const options = [new Option(broadcast ? "Chọn kênh…" : "Chọn người nhận…", "")];
+    if (broadcast) options.push(new Option("Mọi người · Broadcast", "*"));
+    for (const user of users) if (user.username !== username) options.push(new Option(user.username, user.username));
+    select.replaceChildren(...options);
+    select.value = validTarget(selected, broadcast) ? selected : "";
+    if (selected && !select.value) {
+      feedback(broadcast ? "chat-feedback" : "file-feedback", "Người nhận không còn trong danh sách. Hãy chọn lại; nội dung đang soạn được giữ nguyên.", "error");
+    }
+  }
+  function renderUsers(value) {
+    const seen = new Set();
+    const users = rows(value).filter(user => {
+      const name = text(user.username);
+      if (!name || name === "*" || seen.has(name)) return false;
+      seen.add(name);
+      return true;
+    }).slice(0, 200);
+    const signature = JSON.stringify([username, users]);
+    if (signature === userSignature) return;
+    userSignature = signature;
+    peers = new Set(users.filter(user => user.username !== username).map(user => user.username));
+    $("user-count").textContent = String(users.length);
+    const nodes = users.map(user => {
+      const li = element("li");
+      const button = element("button", user.username + (user.username === username ? " · Bạn" : ""), "user");
+      button.type = "button";
+      button.disabled = user.username === username;
+      const port = Number.isInteger(user.udp_port) ? String(user.udp_port) : "?";
+      button.append(element("small", `${text(user.ip, "?")}:${port} · UDP`));
+      button.addEventListener("click", () => {
+        $("chat-to").value = user.username;
+        if (!fileBusy) $("file-to").value = user.username;
+        buttons();
+        $("draft").focus();
+      });
+      li.append(button);
+      return li;
+    });
+    $("users").replaceChildren(...(nodes.length ? nodes : [element("li", "Chưa có người dùng trong dữ liệu nhận được.", "empty")]));
+    updateOptions($("chat-to"), users, true);
+    updateOptions($("file-to"), users, false);
+  }
+  function renderMessages(value) {
+    const messages = rows(value).slice(-100);
+    const signature = JSON.stringify([username, messages]);
+    if (signature === messageSignature) return;
+    messageSignature = signature;
+    const container = $("messages");
+    const atBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 60;
+    const oldTop = container.scrollTop;
+    const nodes = messages.map(message => {
+      const outgoing = message.from === username;
+      const item = element("article", undefined, outgoing ? "message outgoing" : "message");
+      const target = text(message.to, "?");
+      item.append(element("p", `${text(message.from, "?")} → ${target === "*" ? "Mọi người" : target} · ${text(message.time)}${outgoing ? " · Bản ghi gửi, chưa xác nhận nhận" : ""}`, "message-meta"));
+      item.append(element("p", text(message.text, "[Nội dung không hợp lệ]"), "message-text"));
+      return item;
+    });
+    container.replaceChildren(...(nodes.length ? nodes : [element("p", "Chưa có tin nhắn. Chọn Mọi người hoặc một người nhận để bắt đầu.", "empty")]));
+    container.scrollTop = atBottom ? container.scrollHeight : oldTop;
+  }
+  function renderTransfers(value) {
+    const transfers = rows(value).slice(-40);
+    const signature = JSON.stringify(transfers);
+    if (signature === transferSignature) return;
+    transferSignature = signature;
+    const nodes = transfers.map(transfer => {
+      const status = text(transfer.status, "unknown");
+      const sending = transfer.direction === "send";
+      const labels = {sending: "Đang gửi", receiving: "Đang nhận", done: "Bên gửi báo xong", completed: "Bên nhận đã hoàn tất", timeout: "Hết thời gian chờ"};
+      const failed = status.startsWith("failed") || status === "timeout";
+      const item = element("article", undefined, "transfer");
+      item.dataset.tone = failed ? "error" : "";
+      item.append(element("p", text(transfer.filename, "File không rõ tên"), "transfer-name"));
+      item.append(element("p", `${sending ? "Gửi đến" : transfer.direction === "receive" ? "Nhận từ" : "Hướng không rõ"} ${text(transfer.peer, "?")}`));
+      const percent = typeof transfer.progress === "number" && Number.isFinite(transfer.progress) ? Math.max(0, Math.min(100, transfer.progress)) : null;
+      const bar = element("progress");
+      bar.max = 100;
+      if (percent !== null) bar.value = percent;
+      bar.setAttribute("aria-label", `Tiến trình ${text(transfer.filename, "file")}`);
+      item.append(bar);
+      item.append(element("p", `${percent === null ? "Chưa rõ" : Math.round(percent) + "%"} · ${labels[status] || status}`));
+      item.append(element("p", `ID: ${text(transfer.file_id, "?")}`, "note"));
+      return item;
+    });
+    $("transfers").replaceChildren(...(nodes.length ? nodes : [element("p", "Chưa có lượt truyền file.", "empty")]));
+  }
+  function renderState(state) {
+    // Missing collections are empty; malformed top-level identity is not a healthy API snapshot.
+    if (!object(state) || typeof state.username !== "string" || !state.username) throw new Error("Dữ liệu phiên không hợp lệ.");
+    username = state.username;
+    $("username").textContent = username;
+    renderUsers(state.users);
+    renderMessages(state.messages);
+    renderTransfers(state.transfers);
+  }
+  async function poll() {
+    if (stopped || pollBusy || document.hidden) return;
+    pollBusy = true;
+    try {
+      renderState(await request("/api/state"));
+      apiReady = true;
+      failures = 0;
+      feedback("api-status", "HTTP cục bộ: hoạt động", "good");
+      $("snapshot-time").textContent = `Đọc API lúc ${new Date().toLocaleTimeString("vi-VN")}`;
+    } catch (error) {
+      apiReady = false;
+      failures++;
+      feedback("api-status", `HTTP cục bộ: mất kết nối / lỗi — ${error.message}`, "error");
+      $("snapshot-time").textContent = "Dữ liệu hiển thị có thể đã cũ";
+    } finally {
+      pollBusy = false;
+      buttons();
+      if (!stopped && !document.hidden) pollTimer = setTimeout(poll, Math.min(15000, 1000 * 2 ** Math.min(failures, 4)));
+    }
+  }
+  $("chat-to").value = "*";
+  $("draft").addEventListener("input", buttons);
+  $("chat-to").addEventListener("change", buttons);
+  $("file-to").addEventListener("change", buttons);
+  $("draft").addEventListener("keydown", event => {
+    if (event.key === "Enter" && !event.shiftKey && !event.isComposing) {
+      event.preventDefault();
+      $("chat-form").requestSubmit();
+    }
+  });
+  $("chat-form").addEventListener("submit", async event => {
+    event.preventDefault();
+    if (chatBusy) return;
+    const draft = $("draft").value, target = $("chat-to").value;
+    if (!apiReady || !draft.trim() || !validTarget(target, true)) {
+      feedback("chat-feedback", "Cần API hoạt động, người nhận hợp lệ và tin nhắn không trống.", "error"); return;
+    }
+    // 5,000 UTF-16 units stays below the protocol's 65,535-byte JSON payload, including escaped Unicode.
+    if (draft.length > 5000) { feedback("chat-feedback", "Tin nhắn tối đa 5.000 ký tự.", "error"); return; }
+    chatBusy = true;
+    buttons();
+    feedback("chat-feedback", "Đang gửi yêu cầu…");
+    try {
+      await request("/api/send", {to: target, text: draft});
+      if ($("draft").value === draft) $("draft").value = "";
+      feedback("chat-feedback", "HTTP đã chấp nhận yêu cầu; chưa xác nhận người nhận nhận được.", "good");
+    } catch (error) {
+      feedback("chat-feedback", `${error.message} Bản nháp được giữ lại.`, "error");
+    } finally { chatBusy = false; buttons(); }
+  });
+  function fileError(file, target) {
+    if (!file) return "Hãy chọn file.";
+    if (!validTarget(target, false)) return "Hãy chọn người nhận đang có trong danh sách.";
+    const name = file.name.trim();
+    if (!name || name === "." || name === ".." || Array.from(name).length > 255 || /[\\/<>:"|?*\x00-\x1f]/.test(name)) return "Tên file không hợp lệ theo quy tắc backend.";
+    const overhead = encoder.encode(JSON.stringify({to: target, name: file.name, data: ""})).length;
+    if (file.size > MAX_FILE_BYTES || 4 * Math.ceil(file.size / 3) + overhead > MAX_REQUEST_BYTES) return "File quá lớn cho API HTTP (khoảng 82,5 MiB sau khi tính Base64).";
+    return "";
+  }
+  $("file-input").addEventListener("change", () => {
+    const file = $("file-input").files[0];
+    $("file-info").textContent = file ? `${file.name} · ${file.size.toLocaleString("vi-VN")} byte (${(file.size / 1048576).toFixed(2)} MiB)` : "Chưa chọn file.";
+    feedback("file-feedback", "");
+    buttons();
+  });
+  function readBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      const timer = setTimeout(() => reader.abort(), 30000);
+      reader.onload = () => { clearTimeout(timer); resolve(String(reader.result).split(",")[1]); };
+      reader.onerror = () => { clearTimeout(timer); reject(new Error("Không đọc được file. Hãy chọn lại.")); };
+      reader.onabort = () => { clearTimeout(timer); reject(new Error("Đọc file bị hủy hoặc quá thời gian chờ.")); };
+      reader.readAsDataURL(file);
+    });
+  }
+  $("file-form").addEventListener("submit", async event => {
+    event.preventDefault();
+    if (fileBusy) return;
+    const file = $("file-input").files[0], target = $("file-to").value;
+    const error = fileError(file, target);
+    if (!apiReady || error) { feedback("file-feedback", error || "API cục bộ chưa hoạt động.", "error"); return; }
+    fileBusy = true;
+    buttons();
+    feedback("file-feedback", "Đang đọc file…");
+    try {
+      const data = await readBase64(file);
+      if (!apiReady || !validTarget(target, false)) throw new Error("Không còn API hoặc người nhận; file chưa được gửi.");
+      feedback("file-feedback", "Đang tải file lên client cục bộ…");
+      await request("/api/file", {to: target, name: file.name, data}, 60000);
+      $("file-input").value = "";
+      $("file-info").textContent = "Chưa chọn file.";
+      feedback("file-feedback", "HTTP đã chấp nhận file; chờ trạng thái truyền bên dưới. Nếu không xuất hiện, xem terminal của client.", "good");
+    } catch (error) {
+      feedback("file-feedback", `${error.message} File đã chọn được giữ lại.`, "error");
+    } finally { fileBusy = false; buttons(); }
+  });
+  document.addEventListener("visibilitychange", () => {
+    clearTimeout(pollTimer);
+    if (!document.hidden) poll();
+  });
+  window.addEventListener("pagehide", () => {
+    stopped = true;
+    clearTimeout(pollTimer);
+    for (const controller of controllers) controller.abort();
+  });
+  window.addEventListener("pageshow", event => {
+    if (event.persisted) { stopped = false; poll(); }
+  });
+  poll();
+})();
+</script>
+</body>
+</html>
