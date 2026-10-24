@@ -316,10 +316,10 @@ class FileReceiver:
             # Retransmit / chunk muộn sau khi đã hoàn tất hoặc đã hủy
             return {
                 "kind": "ACK",
-                "file_id": fid.lower(),
+                "file_id": fid.lower() if isinstance(fid, str) else "",
                 "chunk_index": message.get("chunk_index", -1),
                 "complete": False,
-                "ignored": True,
+                "ignored": True
             }
 
         total = message.get("total_chunks")

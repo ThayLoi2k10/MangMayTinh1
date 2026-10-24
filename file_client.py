@@ -260,12 +260,15 @@ class FileTransferHandler:
     def _on_chunk(self, msg: dict, sender: str) -> None:
         try:
             result = self.receiver.accept_chunk(msg)
-            if result.get("ignored"):
-                return
             fid = msg.get("file_id")
             idx = int(msg.get("chunk_index", -1))
-            self._reply_ack(fid, idx, sender)
 
+            if fid:
+                self._reply_ack(fid, idx, sender)
+
+            if result.get("ignored"):
+                return
+        
             with self._lock:
                 for rec in self.transfers:
                     if rec.get("file_id") == fid and rec.get("direction") == "receive":
@@ -281,11 +284,48 @@ class FileTransferHandler:
                             )
                         break
         except FileTransferError as exc:
+            fid = msg.get("file_id")
+            with self._lock:
+                for rec in self.transfers:
+                    if (
+                        rec.get("file_id") == fid
+                        and rec.get("direction") == "receive"
+                        and rec.get("status") == "receiving"
+                    ):
+                        # Lấy status chi tiết nếu receiver đã ghi
+                        rp = self.receiver.get_progress(str(fid)) if fid else None
+                        rec["status"] = (
+                            rp.get("status") if rp and rp.get("status") else f"failed: {exc}"
+                        )
+                        break
             print(f"[FILE] chunk error: {exc}")
 
     def get_progress(self) -> list[dict]:
         with self._lock:
-            return [dict(r) for r in self.transfers[-40:]]
+            out = [dict(r) for r in self.transfers[-40:]]
+
+        for rec in out:
+            if rec.get("direction") != "receive":
+                continue
+            fid = rec.get("file_id")
+            if not fid:
+                continue
+            rp = self.receiver.get_progress(str(fid))
+            if not rp:
+                continue
+            st = rp.get("status")
+            # Chỉ ghi đè khi receiver đã kết thúc hoặc lỗi
+            if st and st not in ("receiving",):
+                rec["status"] = st
+                if "progress" in rp:
+                    rec["progress"] = rp["progress"]
+        return out
 
     def cleanup(self) -> None:
-        self.receiver.cleanup_expired(max_age=120.0)
+        expired = self.receiver.cleanup_expired(max_age=120.0)
+        if not expired:
+            return
+        with self._lock:
+            for rec in self.transfers:
+                if ( rec.get("direction") == "receive" and rec.get("file_id") in expired and rec.get("status") == "receiving"):
+                    rec["status"] = "timeout"
