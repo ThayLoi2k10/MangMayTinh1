@@ -1,0 +1,79 @@
+============================================================
+  TEST CHAT ROUTING (Broadcast / Unicast)
+  Đảm bảo server đang chạy trên TCP 9000
+============================================================
+
+============================================================
+  1. Kết nối & Xác thực 3 client
+============================================================
+  [OK]   alice authenticated (session=60b780c0...)
+  [OK]   bob authenticated (session=bf914965...)
+  [OK]   cara authenticated (session=8ea3dd12...)
+
+============================================================
+  2. TEST 1 – Alice Broadcast
+============================================================
+  [SEND] alice → BROADCAST: "Xin chào mọi người từ Alice!"
+  [RECV] bob ← [broadcast] from alice: "Xin chào mọi người từ Alice!"
+  [RECV] cara ← [broadcast] from alice: "Xin chào mọi người từ Alice!"
+
+  Kết quả:
+    Bob nhận được  : 1 tin
+    Cara nhận được : 1 tin
+    Alice nhận lại : 0 tin (mong đợi 0)
+  → TEST 1: PASS
+
+============================================================
+  3. TEST 2 – Alice Unicast đến Bob
+============================================================
+  [SEND] alice → UNICAST to bob: "Tin nhắn riêng cho Bob"
+  [RECV] bob ← [unicast] from alice: "Tin nhắn riêng cho Bob"
+
+  Kết quả:
+    Bob nhận được  : 1 tin
+    Cara nhận được : 0 tin (mong đợi 0)
+    Alice nhận lại : 0 tin (mong đợi 0 hoặc lỗi)
+  → TEST 2: PASS
+
+============================================================
+  4. TEST 3 – Alice Unicast đến user không tồn tại
+============================================================
+  [SEND] alice → UNICAST to david_not_exist: "Tin này không đến ai"
+  [RECV] alice ← ERROR from server: Người dùng 'david_not_exist' không online
+
+  Kết quả:
+    Alice nhận được : 1 tin (có thể là thông báo lỗi)
+    Bob nhận được   : 0 tin (mong đợi 0)
+    Cara nhận được  : 0 tin (mong đợi 0)
+    Nội dung lỗi trả về Alice: {'mode': 'unicast', 'error': 'recipient_offline', 'recipient': 'david_not_exist', 'message': "Người dùng 'david_not_exist' không online"}
+  → TEST 3: PASS (server không crash + không gửi nhầm)
+
+============================================================
+  5. TEST 4 – Bob ngắt kết nối, Alice Broadcast
+============================================================
+  → Bob đang logout...
+  [OK]   bob logged out
+  [SEND] alice → BROADCAST: "Bob đã rời, chỉ còn Alice và Cara"
+  [RECV] cara ← [broadcast] from alice: "Bob đã rời, chỉ còn Alice và Cara"
+
+  Kết quả:
+    Cara nhận được : 1 tin
+    Alice nhận lại : 0 tin (mong đợi 0)
+  → TEST 4: PASS
+
+============================================================
+  6. Dọn dẹp
+============================================================
+  [OK]   alice logged out
+  [OK]   cara logged out
+
+============================================================
+  TỔNG KẾT
+============================================================
+  PASS | TEST 1 – Broadcast
+  PASS | TEST 2 – Unicast
+  PASS | TEST 3 – Unicast offline
+  PASS | TEST 4 – Sau khi disconnect
+------------------------------------------------------------
+  TẤT CẢ TEST ĐỀU PASS – Chat Routing hoạt động tốt!
+============================================================

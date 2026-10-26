@@ -1,0 +1,10 @@
+{
+  "tested_baseline": "c892dc02aa081c10a49cba4709b058ebe9d0d0bd",
+  "preexisting_tracked_file_count": 25,
+  "changed_preexisting_files": [],
+  "all_preexisting_files_byte_identical": true,
+  "new_artifact_root": "audits\\final_2026_10_26",
+  "production_files_modified": false,
+  "pushed": false,
+  "merged": false
+}

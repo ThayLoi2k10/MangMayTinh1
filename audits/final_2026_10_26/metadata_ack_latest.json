@@ -1,0 +1,8 @@
+{
+  "baseline": "84a69a8e7a6f81cc176f324181cfb6f8ca3fb900",
+  "total": 2,
+  "pass": 2,
+  "fail": 0,
+  "error": 0,
+  "scope": "unit test with controlled receiver rejection; no malformed-packet/network claim"
+}

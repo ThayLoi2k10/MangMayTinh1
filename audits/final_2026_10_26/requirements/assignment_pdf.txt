@@ -1,0 +1,135 @@
+===== PDF PAGE 1 =====
+NETWORK APPLICATION PROJECT
+DISTRIBUTED AND STREAMING
+BASE
+CLIENT-SERVER COLLABORATION
+APPLICATION
+Course: Network Application Development
+Duration: 6 Weeks (Take-home Project)
+ProjectType: Individual / Pair Project
+I. INTRODUCTION
+1. CURRENT PRACTICES
+With the rapid global shift toward remote work, distributed teams, and decentralized systems, reliance on
+robust, real-time network applications has never been higher. Modern organizations require seamless
+data exchange over local and wide-area networks, while navigating challenges like latency, packet loss,
+and data security. Understanding how to build resilient network software from the ground up is a critical
+skill for today’s software and network engineers.
+2. THE NEED FOR THIS APPLICATION
+While commercial solutions (like Slack, Microsoft Teams, or cloud storage) exist, they often route data
+through centralized third-party servers, which can raise privacy, compliance, and bandwidth concerns for
+closed-network environments. There is a distinct need for a lightweight, secure, and self-hosted network
+application that allows users on the same network (or VPN) to communicate and share data directly
+without relying on external corporate infrastructure.
+3. GOAL OF THE APPLICATION
+The goal of this project is to build aDistributedandStreaming-basedClient-ServerCollaboration
+Application. Students will design and implement a custom application layer protocol over UDP
+STREAMING that enables real-time messaging, active user discovery, and reliable file transfer between
+multiple clients over a network. Due to the native requirement of messaging application,reliable
+communication must be provided.
+4.FeaturesoftheApplication
+ UserAuthentication&Discovery: Users can log in, broadcast their presence, and see a live list
+of other active peers on the network.
+
+===== PDF PAGE 2 =====
+ Streaming-basedMessaging: Support for both broadcast (global chat) and unicast (private
+direct messaging). ReferSteamGameNetworkingSocket andGoogleQUIC for message-
+oriented transport layer.
+ ReliableFileTransfer: The ability to send and receive files of various formats and sizes without
+data corruption.
+ ConnectionResilience: The app gracefully handles sudden client disconnects, timeouts, and
+network interruptions.
+ SecureDataTransmission: Basic encryption applied to the payloads to prevent packet-sniffing
+vulnerabilities.
+5.TargetUsers
+ Internal corporate teams operating on secure, air-gapped, or isolated local area networks (LAN).
+ Students or study groups needing a fast, peer-to-peer way to collaborate and share files without
+internet access.
+ Privacy-conscious individuals who prefer self-hosted communication tools.
+6.TechniquesandTechnologiesIntegrated
+ SocketProgramming: Implementation of TCP (for reliable file/message transfer) and UDP (for
+heartbeat/discovery broadcasts).
+ Concurrency: Multi-threading or Asynchronous I/O to handle multiple simultaneous client
+connections without blocking the main thread.
+ Application-LayerProtocolDesign: Designing custom packet structures (Headers, Payloads,
+End-of-Message flags).
+ Sequencingandordering : Maintaining monotonic sequence number with window-based sliding
+window for flow control and in-order delivery.
+ AcknowledgementandRetransmission: Efficient retransmitting of only missing segments.
+ Congestioncontrol: Support streaming specific with BBR / CUBIC streaming support.
+ Cryptography: Integration of TLS/SSL sockets or symmetric encryption (e.g., AES) for data
+payloads.
+ Serialization: Encoding and decoding structured data (JSON, XML, or custom binary packing)
+over the wire.
+7.DesignRequirements
+ Architecture: Must clearly separate network logic, data processing, and the user interface.
+ Time-sensitivestreaming : The system must provide an async mechanism to fetch data from a
+stream without any. The streaming only handles chunk of bytes in UDP and leaves your protocol
+logics in application layer in which you eliminate Head-of-line (HoL) blocking.
+ UserInterface: Can be a clean Command Line Interface (CLI) or a Graphical User Interface
+(GUI). It must be intuitive and display network status clearly.
+ Scalability: The server/tracker must be capable of handling at least 10-20 concurrent clients
+efficiently.
+
+===== PDF PAGE 3 =====
+8.TechnicalRequirements
+ ProgrammingLanguage: Python, Java, C++, or Go (Instructor to confirm restricted languages, if
+any).
+ NoHigh-LevelNetworkingLibraries: Students must use raw sockets (socket library in Python,
+java.net.Socket in Java, etc.). HTTP frameworks (like Flask/Django) or WebSockets are strictly
+prohibited to ensure core networking concepts are practiced.
+ Environment: Must run successfully on standard operating systems (Windows, macOS, or
+Linux) using localhost or local IP addressing.
+9.DevelopmentProcess&GradingRubric(10PointsTotal)
+This project is broken down into a 10-step development lifecycle. Each successfully implemented step is
+worth1point .
+Step Milestone Score
+1 Setup&ProtocolDesign: Define the custom packet structure, message types(e.g., AUTH, MSG, FILE), and state diagrams in documentation before coding.1 pt
+2 BasicClient-ServerHandshake: Implement basic TCP socket connectionwhere a client can connect to the server and receive an acknowledgment. 1 pt
+3 Authentication&StateManagement: Implement a login mechanism. Theserver must track connected users, their IP addresses, and active ports. 1 pt
+4
+ConcurrencyImplementation: Integrate multi-threading orAsync I/O so the
+server can handle multiple clients connecting and disconnecting
+simultaneously.
+1 pt
+5
+Time-sensitivestreaming: Implement the routing logic for clients to send
+messages to the server, and the server to broadcast or forward them to the
+correct recipient.
+1 pt
+6 ReliableFileTransfer: Implement file serialization, chunking (for large files),and reassembly over UDP without data corruption. 1 pt
+7
+NetworkResilience&ErrorHandling: Implement try/except blocks to handle
+socket timeouts, broken pipes, and graceful client exits without crashing the
+server.
+1 pt
+
+===== PDF PAGE 4 =====
+Step Milestone Score
+8 SecurityLayer: Encrypt the data payloads (using a standard cryptographiclibrary) before sending, and decrypt upon receipt. 1 pt
+9
+HTTPbasedUIwithclient-sideJavaScriptonly: Build a user-friendly
+interface that clearly displays incoming messages, file transfer progress bars,
+and active user lists.
+1 pt
+10
+Testing&CodeQuality: Code must be cleanly formatted, commented, and
+pass local network simulation tests (connecting from multiple terminal
+windows).
+1 pt
+TOTAL 10pts
+10.SubmissionGuidelines
+SuggestedDeadline:
+ Sunday, November 17, 2026, at 11:59 PM.
+RequiredSubmissionContent:
+Students must submit a .zip file or a link to a private GitHub repository containing the following:
+1. SourceCode:
+o All client and server scripts.
+o A README.md file with strict, step-by-step instructions on how to install dependencies,
+run the server, and connect the clients.
+2. TechnicalExplanationReport(PDF):
+o SystemArchitecture: A high-level diagram showing how clients and the server interact.
+o ProtocolSpecification: A breakdown of the custom packet/message structures
+designed for the application.
+o SequenceDiagram: A flow chart showing the lifecycle of a message and a file transfer.
+o Challenges&Solutions: A brief 1-page reflection on network challenges faced (e.g.,
+resolving deadlocks, handling packet fragmentation) and how they were solved.

@@ -1,0 +1,248 @@
+[FILE] OK: ordinary.bin (1024 bytes) -> E:\CodexTemp\file-functional-audit-08ocnpj9\downloads_audit_bob\ordinary.bin
+[FILE] chunk error: File đích đã tồn tại; không ghi đè
+[FILE] chunk error: File đích đã tồn tại; không ghi đè
+[FILE] OK: empty.bin (0 bytes) -> E:\CodexTemp\file-functional-audit-08ocnpj9\downloads_audit_bob\empty.bin
+[FILE] OK: literal_marker.bin (7 bytes) -> E:\CodexTemp\file-functional-audit-08ocnpj9\downloads_audit_bob\literal_marker.bin
+{
+  "baseline": "84a69a8e7a6f81cc176f324181cfb6f8ca3fb900",
+  "scope": "valid application traffic only; isolated loopback; no malformed/security injection",
+  "integrated_file": [
+    {
+      "case": "normal_binary",
+      "sender": {
+        "direction": "send",
+        "file_id": "2c8c6e338c00469e92ebf6cfeadc859e",
+        "filename": "ordinary.bin",
+        "peer": "audit_bob",
+        "status": "done",
+        "progress": 100,
+        "total_chunks": 2
+      },
+      "receiver": {
+        "direction": "receive",
+        "file_id": "2c8c6e338c00469e92ebf6cfeadc859e",
+        "filename": "ordinary.bin",
+        "peer": "audit_alice",
+        "status": "completed",
+        "progress": 100,
+        "total_chunks": 2
+      },
+      "sha256_matches": true
+    },
+    {
+      "case": "same_filename_different_contents",
+      "sender": {
+        "direction": "send",
+        "file_id": "c453116ff1934eb2a89ecf0505741a7e",
+        "filename": "ordinary.bin",
+        "peer": "audit_bob",
+        "status": "done",
+        "progress": 100,
+        "total_chunks": 2
+      },
+      "receiver": {
+        "direction": "receive",
+        "file_id": "c453116ff1934eb2a89ecf0505741a7e",
+        "filename": "ordinary.bin",
+        "peer": "audit_alice",
+        "status": "failed: destination exists",
+        "progress": 100,
+        "total_chunks": 2
+      },
+      "source_sha256": "bd23800673e4affd0ba4bf6f80fd91fd0e755bf85f7c09166664905d1cc87c38",
+      "destination_sha256": "785b0751fc2c53dc14a4ce3d800e69ef9ce1009eb327ccf458afe09c242c26c9",
+      "destination_preserved": true,
+      "delivered_new_content": false
+    },
+    {
+      "case": "same_filename_repeat_confirmation",
+      "sender": {
+        "direction": "send",
+        "file_id": "e839f9af1bfa4a93afd08f46e96ba6d1",
+        "filename": "ordinary.bin",
+        "peer": "audit_bob",
+        "status": "done",
+        "progress": 100,
+        "total_chunks": 2
+      },
+      "receiver": {
+        "direction": "receive",
+        "file_id": "e839f9af1bfa4a93afd08f46e96ba6d1",
+        "filename": "ordinary.bin",
+        "peer": "audit_alice",
+        "status": "failed: destination exists",
+        "progress": 100,
+        "total_chunks": 2
+      },
+      "delivered_new_content": false
+    },
+    {
+      "case": "empty_file_integrated",
+      "sender": {
+        "direction": "send",
+        "file_id": "8001699b435e4c50a644a9e30308695d",
+        "filename": "empty.bin",
+        "peer": "audit_bob",
+        "status": "done",
+        "progress": 100,
+        "total_chunks": 1
+      },
+      "receiver": {
+        "direction": "receive",
+        "file_id": "8001699b435e4c50a644a9e30308695d",
+        "filename": "empty.bin",
+        "peer": "audit_alice",
+        "status": "completed",
+        "progress": 100,
+        "total_chunks": 1
+      },
+      "destination_size": 0
+    },
+    {
+      "case": "literal_end_marker_integrated",
+      "sender": {
+        "direction": "send",
+        "file_id": "1d6e97ae7e7a4e3fb95d52d99744b06d",
+        "filename": "literal_marker.bin",
+        "peer": "audit_bob",
+        "status": "done",
+        "progress": 100,
+        "total_chunks": 1
+      },
+      "receiver": {
+        "direction": "receive",
+        "file_id": "1d6e97ae7e7a4e3fb95d52d99744b06d",
+        "filename": "literal_marker.bin",
+        "peer": "audit_alice",
+        "status": "completed",
+        "progress": 100,
+        "total_chunks": 1
+      },
+      "byte_exact": true
+    }
+  ],
+  "standalone_streaming": [
+    {
+      "case": "normal_binary",
+      "input_size": 1024,
+      "output_size": 1024,
+      "sender_result": true,
+      "sender_finished": true,
+      "receiver_complete": true,
+      "byte_exact": true,
+      "source_sha256": "785b0751fc2c53dc14a4ce3d800e69ef9ce1009eb327ccf458afe09c242c26c9",
+      "received_sha256": "785b0751fc2c53dc14a4ce3d800e69ef9ce1009eb327ccf458afe09c242c26c9",
+      "sender_stats": {
+        "sent": 2,
+        "retransmitted": 0,
+        "acked": 2,
+        "timeouts": 0
+      },
+      "receiver_stats": {
+        "received": 3,
+        "duplicate": 0,
+        "out_of_order": 0,
+        "acked": 3
+      },
+      "errors": []
+    },
+    {
+      "case": "literal_end_marker",
+      "input_size": 7,
+      "output_size": 0,
+      "sender_result": true,
+      "sender_finished": true,
+      "receiver_complete": true,
+      "byte_exact": false,
+      "source_sha256": "8564291864265a184ce2022d3104ee1f95d4be660cd794909fe93c64cddee9a2",
+      "received_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sender_stats": {
+        "sent": 1,
+        "retransmitted": 0,
+        "acked": 1,
+        "timeouts": 0
+      },
+      "receiver_stats": {
+        "received": 1,
+        "duplicate": 0,
+        "out_of_order": 0,
+        "acked": 1
+      },
+      "errors": []
+    },
+    {
+      "case": "end_marker_as_last_data_chunk",
+      "input_size": 707,
+      "output_size": 700,
+      "sender_result": true,
+      "sender_finished": true,
+      "receiver_complete": true,
+      "byte_exact": false,
+      "source_sha256": "46033172cc280a4537252a3c4efbbf89058d1da31a14f8792254df800e8d8218",
+      "received_sha256": "12f6b82c283303ae5e6a08094c81feeecb75a2ddce8e30582151da9efb97d3c9",
+      "sender_stats": {
+        "sent": 2,
+        "retransmitted": 0,
+        "acked": 2,
+        "timeouts": 0
+      },
+      "receiver_stats": {
+        "received": 2,
+        "duplicate": 0,
+        "out_of_order": 0,
+        "acked": 2
+      },
+      "errors": []
+    },
+    {
+      "case": "literal_end_marker_repeat_confirmation",
+      "input_size": 7,
+      "output_size": 0,
+      "sender_result": true,
+      "sender_finished": true,
+      "receiver_complete": true,
+      "byte_exact": false,
+      "source_sha256": "8564291864265a184ce2022d3104ee1f95d4be660cd794909fe93c64cddee9a2",
+      "received_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sender_stats": {
+        "sent": 1,
+        "retransmitted": 0,
+        "acked": 1,
+        "timeouts": 0
+      },
+      "receiver_stats": {
+        "received": 1,
+        "duplicate": 0,
+        "out_of_order": 0,
+        "acked": 1
+      },
+      "errors": []
+    },
+    {
+      "case": "empty_stream",
+      "input_size": 0,
+      "output_size": 0,
+      "sender_result": true,
+      "sender_finished": false,
+      "receiver_complete": false,
+      "byte_exact": true,
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "received_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sender_stats": {
+        "sent": 0,
+        "retransmitted": 0,
+        "acked": 0,
+        "timeouts": 0
+      },
+      "receiver_stats": {
+        "received": 0,
+        "duplicate": 0,
+        "out_of_order": 0,
+        "acked": 0
+      },
+      "errors": []
+    }
+  ],
+  "elapsed_seconds": 4.337
+}
+FUNCTIONAL_FAILURES: ['same_filename_different_contents', 'same_filename_repeat_confirmation', 'literal_end_marker', 'end_marker_as_last_data_chunk', 'literal_end_marker_repeat_confirmation', 'empty_stream']

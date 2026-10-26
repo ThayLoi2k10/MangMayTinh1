@@ -1,0 +1,251 @@
+{
+  "total": 3,
+  "pass": 2,
+  "fail": 1,
+  "error": 0,
+  "duration_seconds": 38.911,
+  "failures": [
+    [
+      "__main__.HTTPAudit.test_concurrent_uploads_same_name_preserve_each_request_bytes",
+      "Traceback (most recent call last):\n  File \"E:\\Downloads\\BTL_MMT\\MangMayTinh1\\audits\\final_2026_10_26\\audit_http.py\", line 112, in test_concurrent_uploads_same_name_preserve_each_request_bytes\n    self.assertEqual(sha(got_first), sha(first), \"HTTP staging overwrote the first upload before its worker read it\")\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: '400a5c8b1720140bf00d0ed44363670d5249712f64057e8f95cf68bd52238570' != '8f8234f5e9d5af22d696e7ab502d2876600bd5cb6d376c07edde9acbd0752c58'\n- 400a5c8b1720140bf00d0ed44363670d5249712f64057e8f95cf68bd52238570\n+ 8f8234f5e9d5af22d696e7ab502d2876600bd5cb6d376c07edde9acbd0752c58\n : HTTP staging overwrote the first upload before its worker read it\n"
+    ]
+  ],
+  "errors": [],
+  "evidence": [
+    {
+      "case": "test_concurrent_uploads_same_name_preserve_each_request_bytes",
+      "http": [
+        {
+          "ok": true
+        },
+        {
+          "ok": true
+        }
+      ],
+      "expected_first_sha256": "8f8234f5e9d5af22d696e7ab502d2876600bd5cb6d376c07edde9acbd0752c58",
+      "actual_first_sha256": "400a5c8b1720140bf00d0ed44363670d5249712f64057e8f95cf68bd52238570",
+      "expected_second_sha256": "400a5c8b1720140bf00d0ed44363670d5249712f64057e8f95cf68bd52238570",
+      "actual_second_sha256": "400a5c8b1720140bf00d0ed44363670d5249712f64057e8f95cf68bd52238570",
+      "sender": [
+        {
+          "direction": "send",
+          "file_id": "d7515930c8a74b6db7abac30bdd79697",
+          "filename": "shared.txt",
+          "peer": "cara",
+          "status": "done",
+          "progress": 100,
+          "total_chunks": 4
+        },
+        {
+          "direction": "send",
+          "file_id": "dc390084ac0d4ddfb30415575fbcd0be",
+          "filename": "shared.txt",
+          "peer": "bob",
+          "status": "done",
+          "progress": 100,
+          "total_chunks": 4
+        }
+      ],
+      "receiver_bob": [
+        {
+          "direction": "receive",
+          "file_id": "dc390084ac0d4ddfb30415575fbcd0be",
+          "filename": "shared.txt",
+          "peer": "alice",
+          "status": "completed",
+          "progress": 100,
+          "total_chunks": 4
+        }
+      ],
+      "receiver_cara": [
+        {
+          "direction": "receive",
+          "file_id": "d7515930c8a74b6db7abac30bdd79697",
+          "filename": "shared.txt",
+          "peer": "alice",
+          "status": "completed",
+          "progress": 100,
+          "total_chunks": 4
+        }
+      ],
+      "schedule": "hold first public send_file until second upload completes"
+    },
+    {
+      "case": "test_eight_mib_valid_file_integrity_and_http_terminal_state",
+      "bytes": 8388608,
+      "http": {
+        "ok": true
+      },
+      "seconds": 27.682,
+      "expected_sha256": "7d212b9c884f5c77896de960ae17cc341cda43b14d6a971f34ca29ebd4badf7f",
+      "actual_sha256": "7d212b9c884f5c77896de960ae17cc341cda43b14d6a971f34ca29ebd4badf7f",
+      "observed_receiver_progress": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99,
+        100
+      ],
+      "sender": [
+        {
+          "direction": "send",
+          "file_id": "945bd758d81d41bc936c8734c5ac7a3b",
+          "filename": "eight-mib.bin",
+          "peer": "bob",
+          "status": "done",
+          "progress": 100,
+          "total_chunks": 11984
+        }
+      ],
+      "receiver": [
+        {
+          "direction": "receive",
+          "file_id": "945bd758d81d41bc936c8734c5ac7a3b",
+          "filename": "eight-mib.bin",
+          "peer": "alice",
+          "status": "completed",
+          "progress": 100,
+          "total_chunks": 11984
+        }
+      ]
+    },
+    {
+      "case": "test_final_ack_recovery_and_receiver_timeout_reach_http_and_browser",
+      "dropped_final_ack": 1,
+      "ack_sender_http": {
+        "direction": "send",
+        "file_id": "c23b47f4b9f74035a8a5d4831b83c1d5",
+        "filename": "ack.txt",
+        "peer": "bob",
+        "status": "done",
+        "progress": 100,
+        "total_chunks": 1
+      },
+      "ack_receiver_http": {
+        "direction": "receive",
+        "file_id": "c23b47f4b9f74035a8a5d4831b83c1d5",
+        "filename": "ack.txt",
+        "peer": "alice",
+        "status": "completed",
+        "progress": 100,
+        "total_chunks": 1
+      },
+      "timeout_sender_http": {
+        "direction": "send",
+        "file_id": "5a59f61bdff648a6a334d295bb9d31da",
+        "filename": "timeout.bin",
+        "peer": "bob",
+        "status": "failed: Timeout chunks [0, 1]",
+        "progress": 0,
+        "total_chunks": 2
+      },
+      "timeout_receiver_http": {
+        "direction": "receive",
+        "file_id": "5a59f61bdff648a6a334d295bb9d31da",
+        "filename": "timeout.bin",
+        "peer": "alice",
+        "status": "timeout",
+        "progress": 0,
+        "total_chunks": 2
+      },
+      "timeout_browser_text": "ack.txt\n\nNhận từ alice\n\n100% · Bên nhận đã hoàn tất\n\nID: c23b47f4b9f74035a8a5d4831b83c1d5\n\ntimeout.bin\n\nNhận từ alice\n\n0% · Hết thời gian chờ\n\nID: 5a59f61bdff648a6a334d295bb9d31da",
+      "expiry": "cleanup_expired(max_age=0), accelerated clock boundary; not 120-second natural expiry"
+    }
+  ]
+}

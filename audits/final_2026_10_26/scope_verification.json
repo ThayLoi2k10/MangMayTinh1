@@ -1,0 +1,14 @@
+{
+  "tested_baseline": "84a69a8e7a6f81cc176f324181cfb6f8ca3fb900",
+  "previous_tested_baseline": "c892dc02aa081c10a49cba4709b058ebe9d0d0bd",
+  "preexisting_tracked_file_count": 25,
+  "changed_preexisting_files_by_audit": [],
+  "all_preexisting_files_byte_identical_to_latest_checkout": true,
+  "upstream_only_change_since_previous_baseline": [
+    "file_client.py"
+  ],
+  "audit_changes_root": "audits\\final_2026_10_26",
+  "production_files_modified_by_audit": false,
+  "pushed": false,
+  "merged": false
+}

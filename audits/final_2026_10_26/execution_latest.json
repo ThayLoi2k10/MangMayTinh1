@@ -1,0 +1,55 @@
+[
+  {
+    "name": "http_latest",
+    "command": [
+      "E:\\Downloads\\BTL_MMT\\MangMayTinh1\\.venv\\Scripts\\python.exe",
+      "-X",
+      "utf8",
+      "E:\\Downloads\\BTL_MMT\\MangMayTinh1\\audits\\final_2026_10_26\\audit_http.py",
+      "http_latest"
+    ],
+    "exit_code": 1,
+    "wall_seconds": 41.068
+  },
+  {
+    "name": "strict_latest_1",
+    "command": [
+      "E:\\Downloads\\BTL_MMT\\MangMayTinh1\\.venv\\Scripts\\python.exe",
+      "-X",
+      "utf8",
+      "E:\\Downloads\\BTL_MMT\\MangMayTinh1\\audits\\final_2026_10_26\\run_regression.py",
+      "--strict",
+      "--label",
+      "strict_latest_1"
+    ],
+    "exit_code": 0,
+    "wall_seconds": 139.782
+  },
+  {
+    "name": "strict_latest_2",
+    "command": [
+      "E:\\Downloads\\BTL_MMT\\MangMayTinh1\\.venv\\Scripts\\python.exe",
+      "-X",
+      "utf8",
+      "E:\\Downloads\\BTL_MMT\\MangMayTinh1\\audits\\final_2026_10_26\\run_regression.py",
+      "--strict",
+      "--label",
+      "strict_latest_2"
+    ],
+    "exit_code": 0,
+    "wall_seconds": 136.732
+  },
+  {
+    "name": "original_latest",
+    "command": [
+      "E:\\Downloads\\BTL_MMT\\MangMayTinh1\\.venv\\Scripts\\python.exe",
+      "-X",
+      "utf8",
+      "E:\\Downloads\\BTL_MMT\\MangMayTinh1\\audits\\final_2026_10_26\\run_regression.py",
+      "--label",
+      "original_latest"
+    ],
+    "exit_code": 1,
+    "wall_seconds": 136.586
+  }
+]

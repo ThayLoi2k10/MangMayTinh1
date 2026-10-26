@@ -1,0 +1,43 @@
+{
+  "baseline": "c892dc02aa081c10a49cba4709b058ebe9d0d0bd",
+  "origin_main": "c892dc02aa081c10a49cba4709b058ebe9d0d0bd",
+  "branch": "audit/final-project-2026-10-26",
+  "python": "3.14.4 (tags/v3.14.4:23116f9, Apr  7 2026, 14:10:54) [MSC v.1944 64 bit (AMD64)]",
+  "executable": "E:\\Downloads\\BTL_MMT\\MangMayTinh1\\.venv\\Scripts\\python.exe",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "packages": {
+    "cryptography": "50.0.2",
+    "playwright": "1.55.0",
+    "pypdf": "6.21.2",
+    "PyMuPDF": "1.26.4"
+  },
+  "upstream_since_role4": "c892dc0 Fix role 3\n91e33e1 udp streamer\n0dac8c3 Fix WinError 10054\n4340134 Merge pull request #1 from ThayLoi2k10/feat/role4-client-ui-testing",
+  "upstream_files": "M\tclient.py\nM\tfile_client.py\nM\tfile_transfer.py\nM\tserver.py\nA\ttest_chat_routing.py\nA\ttest_udp_streaming.py\nA\tudp_streamer.py",
+  "tracked_sha256": {
+    ".gitignore": "76dd9c0c5e221c3267cf642c6dbf914d1141f6cbc3a704e05f7940b95309b987",
+    "README.md": "aee6ca7cdf03ca271b1a217e0616f927a0df68bfe6c012856ffb4a78e04cb00d",
+    "client.py": "984c11ce88b124738356d188c62ad0fac8850207667041671a8505812f97579d",
+    "client_handshake.py": "c7d7531aa66e23a9128331a637db24f7bf68fa9b7e685a01d4cc9a9cd1e6d9cc",
+    "config.py": "59cf6a7b0cfcf89ab1c5bd6b439db72950d6cbf8366f04b4030a2d17fd701f03",
+    "docs/protocol.md": "d86470ef29dade12244a84a208af0b472686124d5be9df326026a605ef885a41",
+    "docs/role4_ui_testing.md": "00ddfc6390c3eb88c957d0f7bee5fc91d373c0306dfd8a5d86892dbf40b02b41",
+    "file_client.py": "2934545eb36e75d3c57169d5dec40af0b47d5ab1dd157c710721dcd24f43816c",
+    "file_transfer.py": "f5a51eeb4fd17845e6441aaf0a0c118008bc9378b343a3139e0227235a02dece",
+    "protocol.py": "58c9b402165edc733fd2bc2a28728aa11ccc91de70df9eb42ccac46bc239af88",
+    "requirements.txt": "0113de8da773764556c2768f1e4329dde10564f5019911cb30c6c67c7cbfd2c8",
+    "server.py": "e76df522560eb2f44a29f07faa723107cbc5be05c69d15250af1ab8dfc27b9d3",
+    "static/index.html": "0519b16c3b7ed0ceec4bdbdae0a7335bfc40968ce5edcffc54492b13355679f1",
+    "test_auth.py": "2e4018b8566388b0dbcf176b607c4904b8af2772bbbf5ef801bfd05668b9b2ec",
+    "test_chat_routing.py": "3e842bf65e795c92abb9fb74a167c9ce538cf3edd6fe4ee764b77c4ebc59efa5",
+    "test_handshake.py": "2a5a7a8949cdec35684b4275f8931646f8c0d0ca5615a2fc27be9a08d198e211",
+    "test_heartbeat.py": "2b19369ae2de708eb832bc08f2d89f9dc109bba0f871802f423029f9437fc6db",
+    "test_logout.py": "088eefb51c684b29d2a48d59c415f9ce07c23a0f9ca44631f520277042ef2f6c",
+    "test_proto.py": "ffa8c64bb0680f8826045ce66d2e53234702d5eae31391d598ee02f59712e236",
+    "test_udp_streaming.py": "5b91ee0c309d71d2ba55cf3299c37881b9be10dee63144e1b594a91c33a81d41",
+    "tests/role4_harness.py": "06e38db32a0c9b26395344b788b955f1c19988280d76107bd639fb63d8dab7f0",
+    "tests/test_role4_integration.py": "5b0d2bc1634062a49966544eedb5c8e0938c6a13eab2bd940716ceab38d1df88",
+    "tests/test_role4_network.py": "6cf4b867374ce6007cd0cbe332752adf3184249cc1a236dc9ca7c79649a86dd8",
+    "tests/test_role4_ui.py": "2a0b4f41e20e8cc5c5ce9587bc8900f94c1590187d0ab681aae296105bff243e",
+    "udp_streamer.py": "153a98e1f7c84afd6e698417f7b1060c34c8b018d52a240928691618c8115a58"
+  }
+}
