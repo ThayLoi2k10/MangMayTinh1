@@ -1,0 +1,509 @@
+===== SLIDE 1 =====
+ASSIGNMENT 1
+Distributed & Streaming-based
+Client–Server Collaboration Application
+How to understand the brief, design the protocol, implement reliably, and submit a complete project.
+6 weeks  •  Individual / Pair  •  10 milestones = 10 points
+Network Application Development
+
+===== SLIDE 2 =====
+What are you actually building?
+Translate the assignment into one system-level picture.
+A self-hosted collaboration app for users on the same LAN/VPN.
+LOGIN +
+DISCOVERY
+CHAT
+STREAMING
+FILE
+TRANSFER
+RESILIENCE +
+SECURITY
+The networking work is the product: sockets, packet formats, sequencing, retransmission, concurrency, and encryption.
+Source: brief pp.1–2 — goal, features, target use
+2
+
+===== SLIDE 3 =====
+Why this project exists
+The assignment is intentionally closer to a real networked system than a toy chat app.
+Commercial collaboration tools often depend on centralized third-party infrastructure.
+This project asks you to build a lightweight, self-hosted alternative for LAN / VPN environments.
+Latency and packet loss are real.
+Connections fail unexpectedly.
+Data should not rely on an external cloud.
+Communicate on the local network.
+Discover active users.
+Transfer messages and files reliably.
+The learning objective is not “build another Teams.” It is “understand the network mechanisms underneath.”
+Source: brief p.1 — current practice, need, goal
+3
+
+===== SLIDE 4 =====
+System architecture at a glance
+A clean implementation should separate UI, application protocol, network I/O, and server state.
+CLIENT A
+SERVER / TRACKER
+CLIENT B
+UI
+Protocol Logic
+Socket / I/O
+User Registry
+Routing / State
+Socket / I/O
+UI
+Protocol Logic
+Socket / I/O
+LAN / VPN
+Design requirement: clearly separate network logic, data processing, and user interface.
+Source: brief p.2 — design requirements
+4
+
+===== SLIDE 5 =====
+The five feature families
+Treat these as subsystems, not isolated buttons in the UI.
+01
+Authentication & Discovery
+Login, presence broadcast, active peer list
+02
+Messaging
+Broadcast/global chat + unicast/private messaging
+03
+Reliable File Transfer
+Chunk, transmit, acknowledge, reassemble without corruption
+04
+Connection Resilience
+Timeouts, disconnects, interruptions, graceful recovery
+05
+Security
+Encrypt payloads against packet-sniffing exposure
+Source: brief pp.1–2 — application features
+5
+
+===== SLIDE 6 =====
+PART I
+Design the protocol before coding
+The project is graded from the protocol outward: packet format, message types, states, sequencing, and transport behavior.
+
+===== SLIDE 7 =====
+First: read the transport requirements carefully
+The brief mixes TCP, UDP streaming, and application-layer reliability. Do not hide this ambiguity.
+WHAT THE BRIEF SAYS
+Goal: custom application-layer protocol over UDP streaming.
+Technique section: TCP for reliable file/message transfer; UDP for heartbeat/discovery.
+Milestone 2: basic TCP handshake.
+Milestone 6: reliable file transfer over UDP.
+SAFE IMPLEMENTATION INTERPRETATION
+Use TCP where the rubric explicitly asks for TCP handshake/control.
+Use UDP for discovery/heartbeat.
+Implement streaming/file reliability at the application layer over UDP where required.
+Confirm the final transport split with the instructor before freezing the protocol.
+Instructor note: the slide above separates source requirements from a recommended implementation strategy.
+Source: brief pp.1–3 — goal, techniques, milestones 2 & 6
+7
+
+===== SLIDE 8 =====
+Design a packet format that can grow
+Milestone 1 explicitly requires custom packet structures and message types before coding.
+VERSION
+TYPE
+FLAGS
+SEQ
+ACK
+LENGTH
+PAYLOAD
+Example structure — your exact fields may differ
+Header should answer
+What message is this?
+Which fragment is it?
+How much data follows?
+Payload should carry
+Serialized chat / control data
+Encrypted bytes
+File chunks
+Source: brief p.2 + milestone 1 — headers, payloads, message types, EOM flags
+8
+
+===== SLIDE 9 =====
+Define message types as a protocol vocabulary
+Do not let the server guess what incoming bytes mean.
+AUTH
+Login / identity
+HELLO
+Handshake / readiness
+HEARTBEAT
+Presence / liveness
+MSG
+Chat payload
+FILE_META
+Start file transfer
+FILE_CHUNK
+One file segment
+ACK / NACK
+Reliability feedback
+BYE
+Graceful disconnect
+Milestone 1 gives AUTH, MSG, FILE as examples — extend the vocabulary only when your protocol needs it.
+Source: brief milestone 1; additional labels are implementation examples
+9
+
+===== SLIDE 10 =====
+Handshake + authentication: draw the sequence first
+Milestones 2 and 3 become much easier when the state transition is explicit.
+Client
+Server
+Client Registry
+TCP connect
+ACK / HELLO
+AUTH(username, …)
+store user + IP + port
+OK
+AUTH_OK + active users
+Server state must track connected users, IP addresses, and active ports.
+Source: brief milestones 2–3
+10
+
+===== SLIDE 11 =====
+Discovery and heartbeat: who is still online?
+UDP broadcast is explicitly identified for heartbeat / discovery.
+SERVER / TRACKER
+Client 1
+Client 2
+Client 3
+Client 4
+HEARTBEAT
+Periodic liveness signal
+Timeout stale users
+Refresh active user list
+DISCOVERY
+Broadcast presence
+Learn peer identity/address
+Update UI
+Source: brief feature 1 + techniques section
+11
+
+===== SLIDE 12 =====
+Concurrency: one slow client must not freeze everyone
+The server must efficiently handle at least 10–20 concurrent clients.
+Bad mental model
+accept → read → process → send → next client
+One blocked operation stalls the server.
+Required direction
+Client 1
+Client 2
+Client 3
+… Client 20
+Thread pool
+or Async I/O
+Milestone 4 accepts multi-threading or asynchronous I/O.
+Source: brief design scalability + milestone 4
+12
+
+===== SLIDE 13 =====
+PART II
+Make UDP reliable enough for your application
+The hard part is not sending bytes. The hard part is ordering, recovery, flow, and correctness under loss.
+
+===== SLIDE 14 =====
+Messaging: broadcast vs unicast
+Milestone 5 asks the server to route each message to the correct recipient(s).
+SERVER
+Client A
+Client B
+Client C
+Client D
+BROADCAST
+one → many
+UNICAST
+one → one
+Routing key could be recipient ID, username, or connection/session identifier.
+Source: brief feature 2 + milestone 5
+14
+
+===== SLIDE 15 =====
+Reliable file transfer over UDP
+Milestone 6 requires serialization, chunking, and reassembly without corruption.
+FILE
+0
+1
+2
+3
+4
+5
+Network: loss / reorder / duplicate
+Receiver responsibilities
+Track sequence numbers
+Detect missing chunks
+Acknowledge received data
+Reassemble in correct order
+Verify final integrity
+Sender responsibilities
+Maintain send window
+Keep unacknowledged chunks
+Retransmit missing data only
+Stop when transfer completes
+Source: brief techniques + milestone 6
+15
+
+===== SLIDE 16 =====
+Sliding window: do not wait after every packet
+The brief asks for monotonic sequence numbers, window-based flow control, and in-order delivery.
+Sender window
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9
+current send window
+ACK received
+Move the window forward.
+Gap / timeout
+Retransmit only what is missing.
+In-order delivery
+Buffer out-of-order segments.
+Source: brief p.2 — sequencing, ordering, sliding window, retransmission
+16
+
+===== SLIDE 17 =====
+Why the brief mentions Head-of-Line blocking
+Time-sensitive streaming should not let one missing chunk freeze unrelated useful data.
+Strict ordered stream
+0
+1
+X
+3
+4
+3 and 4 may be available, but delivery waits for missing 2.
+Message-oriented application logic
+chat A
+file #2
+chat B
+A stalled file segment should not necessarily stall a separate chat message.
+The brief asks you to leave protocol logic in the application layer and avoid unnecessary HoL blocking.
+Source: brief p.2 — time-sensitive streaming / HoL blocking
+17
+
+===== SLIDE 18 =====
+Congestion control: know what the requirement means
+The brief explicitly mentions streaming support with BBR / CUBIC.
+Flow control
+Protects the receiver.
+Example: sender window based on receiver capacity.
+Congestion control
+Protects the network.
+Adapt sending behavior when the path becomes overloaded.
+Project decision
+Clarify scope.
+The brief names BBR / CUBIC but does not specify how deeply they must be implemented in the custom UDP protocol.
+Do not invent a grading expectation: confirm with the instructor.
+Source: brief p.2 — congestion control requirement
+18
+
+===== SLIDE 19 =====
+PART III
+Resilience, security, UI, testing
+A network application is complete only when it behaves correctly under failure and is easy to demonstrate.
+
+===== SLIDE 20 =====
+Resilience: design the unhappy path
+Milestone 7 is specifically about timeouts, broken pipes, disconnects, and graceful exits.
+Timeout
+No response arrives
+Retry / mark stale
+Disconnect
+Peer disappears
+Clean session state
+Broken pipe
+Send fails
+Catch error; do not crash server
+Duplicate packet
+Retransmission arrives twice
+Detect using sequence / ID
+A robust server keeps serving other clients even when one client behaves badly.
+Source: brief feature 4 + milestone 7
+20
+
+===== SLIDE 21 =====
+Security layer: encrypt payloads, not the assignment itself
+Milestone 8 asks for standard cryptographic libraries and encrypted data payloads.
+Plain message
+Encrypt payload
+Ciphertext on wire
+The brief permits TLS/SSL sockets or symmetric encryption such as AES for payloads.
+Important design question: where do keys come from, and when are they established?
+Source: brief feature 5, techniques, milestone 8
+21
+
+===== SLIDE 22 =====
+UI: show the network state, not just pretty chat bubbles
+The brief allows CLI or GUI in the design section, but milestone 9 specifically asks for HTTP-based UI with client-side JavaScript only.
+Collaboration App
+Active users
+● Alice
+● Bob
+● Carol
+Bob: message received
+You: sending file…
+File transfer 66%
+What must be visible?
+Incoming messages
+Active user list
+File progress
+Network / connection status
+Confirm with instructor how milestone 9 should be interpreted relative to the earlier CLI/GUI allowance.
+Source: brief design requirements + milestone 9
+22
+
+===== SLIDE 23 =====
+PART IV
+Build to the rubric
+The cleanest project plan is to make every milestone demonstrable independently.
+
+===== SLIDE 24 =====
+10 milestones = 10 points
+Each row is a testable checkpoint. Do not leave protocol design until the end.
+1
+Protocol design
+2
+TCP handshake
+3
+Authentication / state
+4
+Concurrency
+5
+Streaming / routing
+6
+Reliable file transfer
+7
+Resilience
+8
+Security
+9
+HTTP + JS UI
+10
+Testing / code quality
+Recommended demo rule: if you cannot show a milestone working in isolation, it is not done yet.
+Source: brief pp.3–4 — grading rubric
+24
+
+===== SLIDE 25 =====
+Suggested 6-week implementation plan
+This sequencing is a recommendation built around the rubric, not an extra assignment requirement.
+W1
+Protocol + skeleton
+Packet format, states, repo, TCP handshake
+W2
+State + concurrency
+Auth, registry, 10–20 clients
+W3
+Messaging
+Broadcast, unicast, heartbeat/discovery
+W4
+Reliable UDP file transfer
+Chunking, ACK, window, retransmission
+W5
+Security + UI
+Encryption, progress, active users
+W6
+Failure tests + report
+Network faults, cleanup, diagrams, final demo
+Source basis: 6-week duration + 10-step rubric; week mapping is suggested
+25
+
+===== SLIDE 26 =====
+Testing: make the network misbehave on purpose
+Milestone 10 requires local network simulation with multiple terminal windows.
+Concurrency
+Start 10–20 clients; connect/disconnect repeatedly
+Loss
+Drop / ignore selected UDP chunks and verify recovery
+Reordering
+Delay one chunk; verify correct reassembly
+Timeout
+Kill a client; verify registry cleanup
+Integrity
+Transfer a file and compare hash / bytes
+Security
+Capture traffic and verify payload is not readable plaintext
+Keep a reproducible test script or checklist. It will save you during the final demo.
+Source: brief milestone 10; test cases are recommended examples
+26
+
+===== SLIDE 27 =====
+Submission checklist
+Your repository and report should let someone reproduce the application without guessing.
+SOURCE CODE
+All client and server scripts
+README.md
+Dependency installation steps
+How to run server
+How clients connect
+TECHNICAL REPORT (PDF)
+System architecture diagram
+Protocol specification
+Sequence diagram for message + file transfer
+1-page Challenges & Solutions reflection
+Brief states: “Sunday, November 17, 2026, 11:59 PM.” Verify the deadline with the instructor/LMS.
+Source: brief p.4 — submission guidelines
+27
+
+===== SLIDE 28 =====
+Common ways this project goes wrong
+Most failures come from protocol design debt, not from the UI.
+×
+Start coding before packet/state design
+Result: incompatible client/server assumptions
+×
+Treat UDP as “TCP but faster”
+Result: loss, duplicates, and reordering break correctness
+×
+One thread handles everything
+Result: one slow socket freezes all users
+×
+No explicit transfer/session ID
+Result: fragments from different messages get mixed
+×
+Encryption added on the last day
+Result: key handling and serialization break
+×
+README only works on author’s laptop
+Result: project cannot be reproduced
+Teaching guidance based on the brief requirements
+28
+
+===== SLIDE 29 =====
+A strong final demo tells one coherent story
+Show the protocol working under normal conditions, then under failure.
+01
+Start server
+Show listening address / active registry
+02
+Connect 3+ clients
+Authenticate and show active users
+03
+Broadcast + private message
+Prove routing
+04
+Send a file
+Show progress and integrity
+05
+Kill / disconnect a client
+Show resilience and cleanup
+06
+Show encrypted capture / logs
+Prove security behavior
+Recommended demo sequence; not an additional rubric item
+29
+
+===== SLIDE 30 =====
+The project in one architecture
+Design protocol → manage state → stream messages → make UDP reliable → survive failure → encrypt → demonstrate clearly.
+Protocol
+Concurrency
+Reliability
+Security
+Testing
+Build each milestone so it can be tested and explained independently.

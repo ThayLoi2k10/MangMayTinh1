@@ -1,0 +1,77 @@
+Exception in thread Thread-5 (handle_client_session):
+Traceback (most recent call last):
+  File "C:\Python314\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Python314\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Downloads\BTL_MMT\MangMayTinh1\server.py", line 369, in handle_client_session
+    self.handle_msg_data(pkt, username)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "E:\Downloads\BTL_MMT\MangMayTinh1\server.py", line 265, in handle_msg_data
+    ok = self._send_safely(
+        peer_info,
+    ...<5 lines>...
+        ),
+    )
+  File "E:\Downloads\BTL_MMT\MangMayTinh1\server.py", line 183, in _send_safely
+    peer_info["tcp_sock"].sendall(encode_packet(packet))
+                                  ~~~~~~~~~~~~~^^^^^^^^
+  File "E:\Downloads\BTL_MMT\MangMayTinh1\protocol.py", line 39, in encode_packet
+    header = struct.pack(
+        HEADER_FORMAT,
+    ...<4 lines>...
+        payload_len,
+    )
+struct.error: 'H' format requires 0 <= number <= 65535
+Exception in thread Thread-5 (handle_client_session):
+Traceback (most recent call last):
+  File "C:\Python314\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Python314\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Downloads\BTL_MMT\MangMayTinh1\server.py", line 344, in handle_client_session
+    self.broadcast_user_list()
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "E:\Downloads\BTL_MMT\MangMayTinh1\server.py", line 144, in broadcast_user_list
+    self.udp_sock.sendto(wire_data, target)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+OverflowError: sendto(): port must be 0-65535.
+Exception in thread Thread-5 (handle_client_session):
+Traceback (most recent call last):
+  File "C:\Python314\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Python314\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Downloads\BTL_MMT\MangMayTinh1\server.py", line 369, in handle_client_session
+    self.handle_msg_data(pkt, username)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "E:\Downloads\BTL_MMT\MangMayTinh1\server.py", line 265, in handle_msg_data
+    ok = self._send_safely(
+        peer_info,
+    ...<5 lines>...
+        ),
+    )
+  File "E:\Downloads\BTL_MMT\MangMayTinh1\server.py", line 183, in _send_safely
+    peer_info["tcp_sock"].sendall(encode_packet(packet))
+                                  ~~~~~~~~~~~~~^^^^^^^^
+  File "E:\Downloads\BTL_MMT\MangMayTinh1\protocol.py", line 39, in encode_packet
+    header = struct.pack(
+        HEADER_FORMAT,
+    ...<4 lines>...
+        payload_len,
+    )
+struct.error: 'H' format requires 0 <= number <= 65535
+Exception in thread Thread-5 (handle_client_session):
+Traceback (most recent call last):
+  File "C:\Python314\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Python314\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

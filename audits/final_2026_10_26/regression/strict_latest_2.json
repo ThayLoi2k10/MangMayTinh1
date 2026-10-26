@@ -1,0 +1,43 @@
+{
+  "baseline": "84a69a8e7a6f81cc176f324181cfb6f8ca3fb900",
+  "label": "strict_latest_2",
+  "strict": true,
+  "markers_disabled": [
+    "test_role4_integration.Role4IntegrationTests.test_existing_heartbeat_script",
+    "test_role4_network.Role4NetworkTests.test_upstream_final_ack_loss_should_recover",
+    "test_role4_network.Role4NetworkTests.test_upstream_receiver_timeout_should_reach_state"
+  ],
+  "tests": [
+    "test_role4_integration.Role4IntegrationTests.test_actual_heartbeat_timeout_removes_user_and_other_client_survives",
+    "test_role4_integration.Role4IntegrationTests.test_existing_client_entrypoint_serves_ui_and_routes_chat",
+    "test_role4_integration.Role4IntegrationTests.test_existing_heartbeat_script",
+    "test_role4_integration.Role4IntegrationTests.test_existing_team_scripts_unchanged",
+    "test_role4_integration.Role4IntegrationTests.test_http_chat_files_and_sha256",
+    "test_role4_integration.Role4IntegrationTests.test_server_shutdown_state_limitation_and_manual_recovery",
+    "test_role4_integration.Role4IntegrationTests.test_twenty_clients_crash_isolation_and_repeated_login",
+    "test_role4_network.Role4NetworkTests.test_interrupted_transfer_sender_fails_and_chat_survives",
+    "test_role4_network.Role4NetworkTests.test_loss_delay_duplicate_reorder_recover",
+    "test_role4_network.Role4NetworkTests.test_unavailable_recipient_rejected_by_existing_client",
+    "test_role4_network.Role4NetworkTests.test_upstream_final_ack_loss_should_recover",
+    "test_role4_network.Role4NetworkTests.test_upstream_receiver_timeout_should_reach_state",
+    "test_role4_ui.Role4BrowserTests.test_drafts_enter_shift_enter_and_honest_submission",
+    "test_role4_ui.Role4BrowserTests.test_file_validation_submission_and_backend_status_transitions",
+    "test_role4_ui.Role4BrowserTests.test_injection_and_bounded_history",
+    "test_role4_ui.Role4BrowserTests.test_malformed_missing_collections_and_progress",
+    "test_role4_ui.Role4BrowserTests.test_mobile_layout_keyboard_and_snapshot_bounds",
+    "test_role4_ui.Role4BrowserTests.test_real_schema_polling_selection_and_disappearing_recipient",
+    "test_role4_ui.Role4BrowserTests.test_request_timeouts_recovery_and_no_overlapping_poll",
+    "test_role4_ui.Role4RealBrowserIntegration.test_two_browser_clients_chat_file_progress_hash_and_disconnect"
+  ],
+  "total": 20,
+  "pass": 20,
+  "fail": 0,
+  "error": 0,
+  "skip": 0,
+  "expected_failure": 0,
+  "unexpected_success": 0,
+  "duration_seconds": 136.337,
+  "failures": [],
+  "errors": [],
+  "unexpected_successes": []
+}

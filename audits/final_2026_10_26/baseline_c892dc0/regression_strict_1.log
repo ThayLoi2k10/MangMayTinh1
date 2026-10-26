@@ -1,0 +1,115 @@
+.venv/Scripts/python.exe : test_actual_heartbeat_timeout_removes_user_and_other_client_survives
+(test_role4_integration.Role4IntegrationTests.test_actual_heartbeat_timeout_removes_user_and_other_client_survives)
+... ok
+At line:2 char:1
++ .venv/Scripts/python.exe audits/final_2026_10_26/run_regression.py -- ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (test_actual_hea...urvives) ... ok:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+test_existing_client_entrypoint_serves_ui_and_routes_chat
+(test_role4_integration.Role4IntegrationTests.test_existing_client_entrypoint_serves_ui_and_routes_chat) ... ok
+test_existing_heartbeat_script (test_role4_integration.Role4IntegrationTests.test_existing_heartbeat_script) ... ok
+test_existing_team_scripts_unchanged
+(test_role4_integration.Role4IntegrationTests.test_existing_team_scripts_unchanged) ... ok
+test_http_chat_files_and_sha256 (test_role4_integration.Role4IntegrationTests.test_http_chat_files_and_sha256) ... ok
+test_server_shutdown_state_limitation_and_manual_recovery
+(test_role4_integration.Role4IntegrationTests.test_server_shutdown_state_limitation_and_manual_recovery) ... ok
+test_twenty_clients_crash_isolation_and_repeated_login
+(test_role4_integration.Role4IntegrationTests.test_twenty_clients_crash_isolation_and_repeated_login) ... ok
+test_interrupted_transfer_sender_fails_and_chat_survives
+(test_role4_network.Role4NetworkTests.test_interrupted_transfer_sender_fails_and_chat_survives) ... ok
+test_loss_delay_duplicate_reorder_recover
+(test_role4_network.Role4NetworkTests.test_loss_delay_duplicate_reorder_recover) ... ok
+test_unavailable_recipient_rejected_by_existing_client
+(test_role4_network.Role4NetworkTests.test_unavailable_recipient_rejected_by_existing_client) ... ok
+test_upstream_final_ack_loss_should_recover
+(test_role4_network.Role4NetworkTests.test_upstream_final_ack_loss_should_recover)
+Known Role 3 defect: completed receiver ignores retransmit without ACK. ... ok
+test_upstream_receiver_timeout_should_reach_state
+(test_role4_network.Role4NetworkTests.test_upstream_receiver_timeout_should_reach_state)
+Known Role 3 contract gap; accelerate cleanup, not network timeout. ... ok
+test_drafts_enter_shift_enter_and_honest_submission
+(test_role4_ui.Role4BrowserTests.test_drafts_enter_shift_enter_and_honest_submission) ... ok
+test_file_validation_submission_and_backend_status_transitions
+(test_role4_ui.Role4BrowserTests.test_file_validation_submission_and_backend_status_transitions) ... ok
+test_injection_and_bounded_history (test_role4_ui.Role4BrowserTests.test_injection_and_bounded_history) ... ok
+test_malformed_missing_collections_and_progress
+(test_role4_ui.Role4BrowserTests.test_malformed_missing_collections_and_progress) ... ok
+test_mobile_layout_keyboard_and_snapshot_bounds
+(test_role4_ui.Role4BrowserTests.test_mobile_layout_keyboard_and_snapshot_bounds) ... ok
+test_real_schema_polling_selection_and_disappearing_recipient
+(test_role4_ui.Role4BrowserTests.test_real_schema_polling_selection_and_disappearing_recipient) ... ok
+test_request_timeouts_recovery_and_no_overlapping_poll
+(test_role4_ui.Role4BrowserTests.test_request_timeouts_recovery_and_no_overlapping_poll) ... ok
+test_two_browser_clients_chat_file_progress_hash_and_disconnect
+(test_role4_ui.Role4RealBrowserIntegration.test_two_browser_clients_chat_file_progress_hash_and_disconnect) ... ok
+
+----------------------------------------------------------------------
+Ran 20 tests in 138.378s
+
+OK
+[TCP] Kết nối đã đóng: Kết nối bị đóng giữa chừng khi đang đọc dữ liệu
+Existing heartbeat script: exit 0
+Existing script test_proto.py: exit 0
+Existing script test_handshake.py: exit 0
+Existing script test_auth.py: exit 0
+Existing script test_logout.py: exit 0
+[FILE] OK: empty.txt (0 bytes) -> E:\CodexTemp\role4-shjaz0st\downloads_bob\empty.txt
+[FILE] OK: small.txt (17 bytes) -> E:\CodexTemp\role4-shjaz0st\downloads_bob\small.txt
+[FILE] OK: binary.bin (4096 bytes) -> E:\CodexTemp\role4-shjaz0st\downloads_bob\binary.bin
+[FILE] OK: ghi chu tiếng Việt.txt (19 bytes) -> E:\CodexTemp\role4-shjaz0st\downloads_bob\ghi chu tiếng Việt.txt
+[FILE] OK: large.bin (2097152 bytes) -> E:\CodexTemp\role4-shjaz0st\downloads_bob\large.bin
+ROLE4 evidence: 5 SHA-256 matches; large=2097152 bytes; observed intermediate progress.
+[TCP] Kết nối đã đóng: [WinError 10054] An existing connection was forcibly closed by the remote host
+[TCP] Kết nối đã đóng: [WinError 10054] An existing connection was forcibly closed by the remote host
+ROLE4 evidence: 20 simultaneous clients; crash isolated; 3 reconnect cycles.
+[FILE] OK: network.bin (32768 bytes) -> E:\CodexTemp\role4-3bzkhh8_\downloads_bob\network.bin
+[FILE] OK: one-chunk.bin (100 bytes) -> E:\CodexTemp\role4-abdmdpuv\downloads_bob\one-chunk.bin
+Known final-ACK defect: done
+Known timeout-state gap: timeout
+[FILE] OK: browser tiếng Việt.bin (1048576 bytes) -> E:\CodexTemp\role4-4ig46srw\downloads_bob\browser tiếng Việt.bin
+[TCP] Kết nối đã đóng: [WinError 10054] An existing connection was forcibly closed by the remote host
+[TCP] Kết nối đã đóng: [WinError 10054] An existing connection was forcibly closed by the remote host
+{
+  "label": "strict_1",
+  "strict": true,
+  "markers_disabled": [
+    "test_role4_integration.Role4IntegrationTests.test_existing_heartbeat_script",
+    "test_role4_network.Role4NetworkTests.test_upstream_final_ack_loss_should_recover",
+    "test_role4_network.Role4NetworkTests.test_upstream_receiver_timeout_should_reach_state"
+  ],
+  "tests": [
+    "test_role4_integration.Role4IntegrationTests.test_actual_heartbeat_timeout_removes_user_and_other_client_survives",
+    "test_role4_integration.Role4IntegrationTests.test_existing_client_entrypoint_serves_ui_and_routes_chat",
+    "test_role4_integration.Role4IntegrationTests.test_existing_heartbeat_script",
+    "test_role4_integration.Role4IntegrationTests.test_existing_team_scripts_unchanged",
+    "test_role4_integration.Role4IntegrationTests.test_http_chat_files_and_sha256",
+    "test_role4_integration.Role4IntegrationTests.test_server_shutdown_state_limitation_and_manual_recovery",
+    "test_role4_integration.Role4IntegrationTests.test_twenty_clients_crash_isolation_and_repeated_login",
+    "test_role4_network.Role4NetworkTests.test_interrupted_transfer_sender_fails_and_chat_survives",
+    "test_role4_network.Role4NetworkTests.test_loss_delay_duplicate_reorder_recover",
+    "test_role4_network.Role4NetworkTests.test_unavailable_recipient_rejected_by_existing_client",
+    "test_role4_network.Role4NetworkTests.test_upstream_final_ack_loss_should_recover",
+    "test_role4_network.Role4NetworkTests.test_upstream_receiver_timeout_should_reach_state",
+    "test_role4_ui.Role4BrowserTests.test_drafts_enter_shift_enter_and_honest_submission",
+    "test_role4_ui.Role4BrowserTests.test_file_validation_submission_and_backend_status_transitions",
+    "test_role4_ui.Role4BrowserTests.test_injection_and_bounded_history",
+    "test_role4_ui.Role4BrowserTests.test_malformed_missing_collections_and_progress",
+    "test_role4_ui.Role4BrowserTests.test_mobile_layout_keyboard_and_snapshot_bounds",
+    "test_role4_ui.Role4BrowserTests.test_real_schema_polling_selection_and_disappearing_recipient",
+    "test_role4_ui.Role4BrowserTests.test_request_timeouts_recovery_and_no_overlapping_poll",
+    "test_role4_ui.Role4RealBrowserIntegration.test_two_browser_clients_chat_file_progress_hash_and_disconnect"
+  ],
+  "total": 20,
+  "pass": 20,
+  "fail": 0,
+  "error": 0,
+  "skip": 0,
+  "expected_failure": 0,
+  "unexpected_success": 0,
+  "duration_seconds": 138.378,
+  "failures": [],
+  "errors": [],
+  "unexpected_successes": []
+}

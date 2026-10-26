@@ -1,0 +1,2 @@
+# Preserve the audit's actual execution evidence despite the root *.log rule.
+!*.log

@@ -1,0 +1,13 @@
+[
+  "network_assignment_demo/protocol.py",
+  "network_assignment_demo/config.py",
+  "network_assignment_demo/server.py",
+  "network_assignment_demo/users.json",
+  "network_assignment_demo/client.py",
+  "network_assignment_demo/README.md",
+  "network_assignment_demo/requirements.txt",
+  "network_assignment_demo/static/index.html",
+  "network_assignment_demo/tests/test_protocol.py",
+  "network_assignment_demo/docs/architecture.md",
+  "network_assignment_demo/docs/protocol.md"
+]

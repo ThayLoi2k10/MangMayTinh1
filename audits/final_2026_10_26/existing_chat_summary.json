@@ -1,0 +1,11 @@
+{
+  "exit_code": 0,
+  "summary_statuses": [
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS"
+  ],
+  "seconds": 9.226,
+  "pass": true
+}
