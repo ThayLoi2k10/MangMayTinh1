@@ -194,8 +194,8 @@ class FileTransferHandler:
 
         kind = msg.get("kind")
         if kind == FILE_META:
-            self._on_meta(msg, sender)
-            self._reply_ack(msg.get("file_id"), -1, sender)
+            if self._on_meta(msg, sender):
+                self._reply_ack(msg.get("file_id"), -1, sender)
             return True
         if kind == FILE_CHUNK:
             self._on_chunk(msg, sender)
@@ -235,7 +235,7 @@ class FileTransferHandler:
         if ev:
             ev.set()
 
-    def _on_meta(self, msg: dict, sender: str) -> None:
+    def _on_meta(self, msg: dict, sender: str) -> bool:
         try:
             item = self.receiver.accept_metadata(msg, sender=sender)
             with self._lock:
@@ -254,9 +254,11 @@ class FileTransferHandler:
                         "progress": 0,
                         "total_chunks": item.total_chunks,
                     })
+            return True
         except FileTransferError as exc:
             print(f"[FILE] meta error: {exc}")
-
+            return False
+        
     def _on_chunk(self, msg: dict, sender: str) -> None:
         try:
             result = self.receiver.accept_chunk(msg)
