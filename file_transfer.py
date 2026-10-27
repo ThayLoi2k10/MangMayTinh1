@@ -208,6 +208,7 @@ class IncomingFile:
     sender: str = "?"
     chunks: dict[int, bytes] = field(default_factory=dict)
     created_at: float = field(default_factory=time.time)
+    last_activity: float = field(default_factory=time.time)
 
     @property
     def progress(self) -> int:
@@ -232,7 +233,7 @@ class FileReceiver:
         now = time.time()
         expired = [
             fid for fid, item in self.incoming.items()
-            if now - item.created_at > max_age
+            if now - item.last_activity > max_age
         ]
         for fid in expired:
             self.incoming.pop(fid, None)
@@ -357,19 +358,19 @@ class FileReceiver:
         if previous is not None and previous != chunk:
             raise FileTransferError("Chunk trùng có nội dung khác nhau")
 
+        item.last_activity = time.time()
         item.chunks.setdefault(idx, chunk)
 
         rec = self.progress[item.file_id]
         rec["received_chunks"] = len(item.chunks)
         rec["progress"] = item.progress
 
-        if item.missing_chunks:
+        if len(item.chunks) < item.total_chunks:
             return {
                 "kind": "ACK",
                 "file_id": item.file_id,
                 "chunk_index": idx,
                 "complete": False,
-                "missing_chunks": item.missing_chunks,
                 "progress": item.progress,
             }
 

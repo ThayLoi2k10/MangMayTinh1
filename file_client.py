@@ -170,8 +170,8 @@ class FileTransferHandler:
                     record["progress"] = int(i * 100 / total)
 
             with self._lock:
-                record["status"] = "done"
-                record["progress"] = 100
+                if record["status"] == "sending":
+                    record["progress"] = 100
 
         except Exception as exc:
             with self._lock:
@@ -202,6 +202,9 @@ class FileTransferHandler:
             return True
         if kind == "ACK":
             self._on_ack(msg)
+            return True
+        if kind == "FILE_RESULT":
+            self._on_file_result(msg)
             return True
         return False
 
@@ -260,46 +263,52 @@ class FileTransferHandler:
             return False
         
     def _on_chunk(self, msg: dict, sender: str) -> None:
+        fid = msg.get("file_id")
+
         try:
             result = self.receiver.accept_chunk(msg)
-            fid = msg.get("file_id")
             idx = int(msg.get("chunk_index", -1))
-
-            if fid:
-                self._reply_ack(fid, idx, sender)
 
             if result.get("ignored"):
                 return
-        
-            with self._lock:
-                for rec in self.transfers:
-                    if rec.get("file_id") == fid and rec.get("direction") == "receive":
-                        rec["progress"] = result.get(
-                            "progress", rec.get("progress", 0)
-                        )
-                        if result.get("kind") == FILE_COMPLETE:
-                            rec["status"] = "completed"
-                            rec["progress"] = 100
-                            print(
-                                f"[FILE] OK: {result['filename']} "
-                                f"({result['size']} bytes) -> {result['path']}"
-                            )
-                        break
-        except FileTransferError as exc:
-            fid = msg.get("file_id")
+
+            # ACK xác nhận chunk đã được tiếp nhận hợp lệ.
+            self._reply_ack(fid, idx, sender)
+
+            if result.get("kind") == FILE_COMPLETE:
+                self._send_file_result(
+                    fid, sender, "completed"
+                )
+
             with self._lock:
                 for rec in self.transfers:
                     if (
                         rec.get("file_id") == fid
                         and rec.get("direction") == "receive"
-                        and rec.get("status") == "receiving"
                     ):
-                        # Lấy status chi tiết nếu receiver đã ghi
-                        rp = self.receiver.get_progress(str(fid)) if fid else None
-                        rec["status"] = (
-                            rp.get("status") if rp and rp.get("status") else f"failed: {exc}"
+                        rec["progress"] = result.get(
+                            "progress", rec.get("progress", 0)
                         )
+
+                        if result.get("kind") == FILE_COMPLETE:
+                            rec["status"] = "completed"
+                            rec["progress"] = 100
                         break
+
+        except FileTransferError as exc:
+            self._send_file_result(
+                fid, sender, "failed", str(exc)
+            )
+
+            with self._lock:
+                for rec in self.transfers:
+                    if (
+                        rec.get("file_id") == fid
+                        and rec.get("direction") == "receive"
+                    ):
+                        rec["status"] = f"failed: {exc}"
+                        break
+
             print(f"[FILE] chunk error: {exc}")
 
     def get_progress(self) -> list[dict]:
@@ -331,3 +340,47 @@ class FileTransferHandler:
             for rec in self.transfers:
                 if ( rec.get("direction") == "receive" and rec.get("file_id") in expired and rec.get("status") == "receiving"):
                     rec["status"] = "timeout"
+
+    def _on_file_result(self, msg: dict) -> None:
+        file_id = msg.get("file_id")
+        status = msg.get("status")
+
+        if not isinstance(file_id, str):
+            return
+
+        with self._lock:
+            for rec in self.transfers:
+                if (
+                    rec.get("file_id") == file_id
+                    and rec.get("direction") == "send"
+                ):
+                    if status == "completed":
+                        rec["status"] = "done"
+                        rec["progress"] = 100
+                    else:
+                        rec["status"] = f"failed: {msg.get('error', 'receiver rejected file')}"
+                        rec["progress"] = 100
+                    break
+
+    def _send_file_result(
+        self,
+        file_id: str,
+        to_user: str,
+        status: str,
+        error: str = "",
+    ) -> None:
+        msg = {
+            "kind": "FILE_RESULT",
+            "file_id": file_id,
+            "status": status,
+            "error": error,
+            "to": to_user,
+        }
+
+        packet = Packet(
+            msg_type=MSG_DATA,
+            status=STATUS_OK,
+            seq_no=self.next_seq_fn(),
+            payload=encode_secure_json(msg),
+        )
+        self.send_packet_fn(packet, to_user)

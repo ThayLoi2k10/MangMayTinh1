@@ -125,14 +125,22 @@ class CollaborationClient:
                 pass
 
     def _send_file_packet(self, packet: Packet, recipient: str) -> None:
-        """Gửi packet file UDP P2P tới peer (theo user list) """
+        """Gửi packet file UDP P2P tới peer."""
+        if self.stop_event.is_set():
+            raise RuntimeError("Client đang đóng, không thể gửi file.")
+
         addr = self.peer_addrs.get(recipient)
         if not addr:
             raise RuntimeError(
                 f"Chưa có địa chỉ UDP của '{recipient}'. "
                 "Đợi user list (cả hai client phải online)."
             )
+
         with self.udp_send_lock:
+            # Kiểm tra lại sau khi lấy lock để tránh race với close().
+            if self.stop_event.is_set():
+                raise RuntimeError("Client đang đóng, không thể gửi file.")
+
             self.udp.sendto(encode_packet(packet), addr)
 
     def _username_from_addr(self, addr) -> str | None:
@@ -288,14 +296,23 @@ class CollaborationClient:
 
     def close(self) -> None:
         self.stop_event.set()
+
         try:
             if hasattr(self, "tcp") and self.tcp:
                 payload = dump_json({"session_id": self.session_id})
                 self._send_tcp(Packet(MSG_LOGOUT_REQ, payload=payload))
         except Exception:
             pass
-        for name in ("tcp", "udp"):
-            sock = getattr(self, name, None)
+
+        sock = getattr(self, "tcp", None)
+        if sock:
+            try:
+                sock.close()
+            except OSError:
+                pass
+
+        with self.udp_send_lock:
+            sock = getattr(self, "udp", None)
             if sock:
                 try:
                     sock.close()
