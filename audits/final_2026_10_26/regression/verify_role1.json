@@ -1,0 +1,41 @@
+{
+  "baseline": "01e47039ba648c9d88cdba610c155b631c0b4cba",
+  "label": "verify_role1",
+  "strict": true,
+  "markers_disabled": [
+    "test_role4_integration.Role4IntegrationTests.test_existing_heartbeat_script",
+    "test_role4_network.Role4NetworkTests.test_upstream_final_ack_loss_should_recover",
+    "test_role4_network.Role4NetworkTests.test_upstream_receiver_timeout_should_reach_state"
+  ],
+  "tests": [
+    "test_role4_integration.Role4IntegrationTests.test_actual_heartbeat_timeout_removes_user_and_other_client_survives",
+    "test_role4_integration.Role4IntegrationTests.test_existing_client_entrypoint_serves_ui_and_routes_chat",
+    "test_role4_integration.Role4IntegrationTests.test_existing_heartbeat_script",
+    "test_role4_integration.Role4IntegrationTests.test_existing_team_scripts_unchanged",
+    "test_role4_integration.Role4IntegrationTests.test_http_chat_files_and_sha256",
+    "test_role4_integration.Role4IntegrationTests.test_server_shutdown_state_limitation_and_manual_recovery",
+    "test_role4_integration.Role4IntegrationTests.test_twenty_clients_crash_isolation_and_repeated_login",
+    "test_role4_network.Role4NetworkTests.test_interrupted_transfer_sender_fails_and_chat_survives",
+    "test_role4_network.Role4NetworkTests.test_loss_delay_duplicate_reorder_recover",
+    "test_role4_network.Role4NetworkTests.test_unavailable_recipient_rejected_by_existing_client",
+    "test_role4_network.Role4NetworkTests.test_upstream_final_ack_loss_should_recover",
+    "test_role4_network.Role4NetworkTests.test_upstream_receiver_timeout_should_reach_state",
+    "unittest.loader._FailedTest.test_role4_ui"
+  ],
+  "total": 13,
+  "pass": 12,
+  "fail": 0,
+  "error": 1,
+  "skip": 0,
+  "expected_failure": 0,
+  "unexpected_success": 0,
+  "duration_seconds": 79.944,
+  "failures": [],
+  "errors": [
+    [
+      "unittest.loader._FailedTest.test_role4_ui",
+      "ImportError: Failed to import test module: test_role4_ui\nTraceback (most recent call last):\n  File \"C:\\Users\\phann\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\unittest\\loader.py\", line 403, in _find_test_path\n    module = self._get_module_from_name(name)\n  File \"C:\\Users\\phann\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\unittest\\loader.py\", line 346, in _get_module_from_name\n    __import__(name)\n    ~~~~~~~~~~^^^^^^\n  File \"D:\\Phan Ngoc Xuan Loi\\MMT\\BTL\\BTL1\\network_assignment_demo\\tests\\test_role4_ui.py\", line 14, in <module>\n    from playwright.sync_api import expect\nModuleNotFoundError: No module named 'playwright'\n\n"
+    ]
+  ],
+  "unexpected_successes": []
+}

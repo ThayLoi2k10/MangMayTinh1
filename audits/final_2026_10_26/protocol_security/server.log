@@ -75,3 +75,99 @@ Traceback (most recent call last):
   File "C:\Python314\Lib\threading.py", line 1024, in run
     self._target(*self._args, **self._kwargs)
     ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Exception in thread Thread-5 (handle_client_session):
+Traceback (most recent call last):
+  File "C:\Users\phann\AppData\Local\Programs\Python\Python313\Lib\threading.py", line 1044, in _bootstrap_inner
+    self.run()
+    ~~~~~~~~^^
+  File "C:\Users\phann\AppData\Local\Programs\Python\Python313\Lib\threading.py", line 995, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Phan Ngoc Xuan Loi\MMT\BTL\BTL1\network_assignment_demo\server.py", line 369, in handle_client_session
+    self.handle_msg_data(pkt, username)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\Phan Ngoc Xuan Loi\MMT\BTL\BTL1\network_assignment_demo\server.py", line 265, in handle_msg_data
+    ok = self._send_safely(
+        peer_info,
+    ...<5 lines>...
+        ),
+    )
+  File "D:\Phan Ngoc Xuan Loi\MMT\BTL\BTL1\network_assignment_demo\server.py", line 183, in _send_safely
+    peer_info["tcp_sock"].sendall(encode_packet(packet))
+                                  ~~~~~~~~~~~~~^^^^^^^^
+  File "D:\Phan Ngoc Xuan Loi\MMT\BTL\BTL1\network_assignment_demo\protocol.py", line 39, in encode_packet
+    header = struct.pack(
+        HEADER_FORMAT,
+    ...<4 lines>...
+        payload_len,
+    )
+struct.error: 'H' format requires 0 <= number <= 65535
+Exception in thread Thread-5 (handle_client_session):
+Traceback (most recent call last):
+  File "C:\Users\phann\AppData\Local\Programs\Python\Python313\Lib\threading.py", line 1044, in _bootstrap_inner
+    self.run()
+    ~~~~~~~~^^
+  File "C:\Users\phann\AppData\Local\Programs\Python\Python313\Lib\threading.py", line 995, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Phan Ngoc Xuan Loi\MMT\BTL\BTL1\network_assignment_demo\server.py", line 344, in handle_client_session
+    self.broadcast_user_list()
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\Phan Ngoc Xuan Loi\MMT\BTL\BTL1\network_assignment_demo\server.py", line 144, in broadcast_user_list
+    self.udp_sock.sendto(wire_data, target)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+OverflowError: sendto(): port must be 0-65535.
+Exception in thread Thread-5 (handle_client_session):
+Traceback (most recent call last):
+  File "C:\Users\phann\AppData\Local\Programs\Python\Python313\Lib\threading.py", line 1044, in _bootstrap_inner
+    self.run()
+    ~~~~~~~~^^
+  File "C:\Users\phann\AppData\Local\Programs\Python\Python313\Lib\threading.py", line 995, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Phan Ngoc Xuan Loi\MMT\BTL\BTL1\network_assignment_demo\server.py", line 391, in handle_client_session
+    self.handle_msg_data(pkt, username)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\Phan Ngoc Xuan Loi\MMT\BTL\BTL1\network_assignment_demo\server.py", line 265, in handle_msg_data
+    ok = self._send_safely(
+        peer_info,
+    ...<5 lines>...
+        ),
+    )
+  File "D:\Phan Ngoc Xuan Loi\MMT\BTL\BTL1\network_assignment_demo\server.py", line 183, in _send_safely
+    peer_info["tcp_sock"].sendall(encode_packet(packet))
+                                  ~~~~~~~~~~~~~^^^^^^^^
+  File "D:\Phan Ngoc Xuan Loi\MMT\BTL\BTL1\network_assignment_demo\protocol.py", line 39, in encode_packet
+    header = struct.pack(
+        HEADER_FORMAT,
+    ...<4 lines>...
+        payload_len,
+    )
+struct.error: 'H' format requires 0 <= number <= 65535
+Exception in thread Thread-5 (handle_client_session):
+Traceback (most recent call last):
+  File "C:\Users\phann\AppData\Local\Programs\Python\Python313\Lib\threading.py", line 1044, in _bootstrap_inner
+    self.run()
+    ~~~~~~~~^^
+  File "C:\Users\phann\AppData\Local\Programs\Python\Python313\Lib\threading.py", line 995, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Phan Ngoc Xuan Loi\MMT\BTL\BTL1\network_assignment_demo\server.py", line 404, in handle_client_session
+    self.handle_msg_data(pkt, username)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\Phan Ngoc Xuan Loi\MMT\BTL\BTL1\network_assignment_demo\server.py", line 278, in handle_msg_data
+    ok = self._send_safely(
+        peer_info,
+    ...<5 lines>...
+        ),
+    )
+  File "D:\Phan Ngoc Xuan Loi\MMT\BTL\BTL1\network_assignment_demo\server.py", line 196, in _send_safely
+    peer_info["tcp_sock"].sendall(encode_packet(packet))
+                                  ~~~~~~~~~~~~~^^^^^^^^
+  File "D:\Phan Ngoc Xuan Loi\MMT\BTL\BTL1\network_assignment_demo\protocol.py", line 39, in encode_packet
+    header = struct.pack(
+        HEADER_FORMAT,
+    ...<4 lines>...
+        payload_len,
+    )
+struct.error: 'H' format requires 0 <= number <= 65535

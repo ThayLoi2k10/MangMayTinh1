@@ -1,10 +1,10 @@
 {
-  "baseline": "c892dc02aa081c10a49cba4709b058ebe9d0d0bd",
+  "baseline": "01e47039ba648c9d88cdba610c155b631c0b4cba",
   "ports": [
     19000,
     19001
   ],
-  "interpreter": "E:\\Downloads\\BTL_MMT\\MangMayTinh1\\.venv\\Scripts\\python.exe",
+  "interpreter": "D:\\Phan Ngoc Xuan Loi\\MMT\\BTL\\BTL1\\network_assignment_demo\\.venv\\Scripts\\python.exe",
   "cases": [
     {
       "name": "P01_tcp_framing_auth_logout",
@@ -16,7 +16,7 @@
         "wrong_token_did_not_logout": true,
         "graceful_logout": true
       },
-      "duration_s": 1.492
+      "duration_s": 1.738
     },
     {
       "name": "P02_chat_payload_encryption",
@@ -26,16 +26,16 @@
         "plaintext": "{\"mode\":\"unicast\",\"sender\":\"alice\",\"message\":\"AUDIT_PRIVATE_PAYLOAD_20261026\",\"recipient\":\"bob\"}",
         "transport": "raw TCP"
       },
-      "traceback": "Traceback (most recent call last):\n  File \"E:\\Downloads\\BTL_MMT\\MangMayTinh1\\audits\\final_2026_10_26\\protocol_security\\audit_protocol.py\", line 279, in main\n    test(evidence)\n    ~~~~^^^^^^^^^^\n  File \"E:\\Downloads\\BTL_MMT\\MangMayTinh1\\audits\\final_2026_10_26\\protocol_security\\audit_protocol.py\", line 161, in chat_payload_encryption\n    assert marker.encode() not in packet.payload, 'Private chat payload is readable without decrypting'\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: Private chat payload is readable without decrypting\n",
-      "duration_s": 1.377
+      "traceback": "Traceback (most recent call last):\n  File \"D:\\Phan Ngoc Xuan Loi\\MMT\\BTL\\BTL1\\network_assignment_demo\\audits\\final_2026_10_26\\protocol_security\\audit_protocol.py\", line 279, in main\n    test(evidence)\n    ~~~~^^^^^^^^^^\n  File \"D:\\Phan Ngoc Xuan Loi\\MMT\\BTL\\BTL1\\network_assignment_demo\\audits\\final_2026_10_26\\protocol_security\\audit_protocol.py\", line 161, in chat_payload_encryption\n    assert marker.encode() not in packet.payload, 'Private chat payload is readable without decrypting'\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: Private chat payload is readable without decrypting\n",
+      "duration_s": 1.373
     },
     {
       "name": "P03_unauthenticated_discovery_poison",
-      "status": "FAIL",
+      "status": "PASS",
       "evidence": {
         "attacker_source": [
           "127.0.0.1",
-          59544
+          49669
         ],
         "expected_server_source": [
           "127.0.0.1",
@@ -43,117 +43,116 @@
         ],
         "users": [
           {
-            "username": "mallory",
+            "username": "alice",
             "ip": "127.0.0.1",
-            "udp_port": 59544
+            "udp_port": 49668
           }
         ],
         "peer_addrs": {
-          "mallory": [
+          "alice": [
             "127.0.0.1",
-            59544
+            49668
           ]
         }
       },
-      "traceback": "Traceback (most recent call last):\n  File \"E:\\Downloads\\BTL_MMT\\MangMayTinh1\\audits\\final_2026_10_26\\protocol_security\\audit_protocol.py\", line 279, in main\n    test(evidence)\n    ~~~~^^^^^^^^^^\n  File \"E:\\Downloads\\BTL_MMT\\MangMayTinh1\\audits\\final_2026_10_26\\protocol_security\\audit_protocol.py\", line 173, in unauthenticated_discovery_poison\n    assert 'mallory' not in alice.peer_addrs, 'Unauthenticated UDP source overwrote discovery and file routing'\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: Unauthenticated UDP source overwrote discovery and file routing\n",
-      "duration_s": 1.387
+      "duration_s": 2.353
     },
     {
       "name": "P04_malformed_discovery_survival",
-      "status": "FAIL",
+      "status": "PASS",
       "evidence": {
-        "exceptions": [
-          {
-            "thread": "Thread-14 (_udp_receive_loop)",
-            "error": "'list' object has no attribute 'get'",
-            "type": "AttributeError"
-          }
-        ],
-        "udp_thread_alive": false,
+        "exceptions": [],
+        "udp_thread_alive": true,
         "stop_event": false,
         "alice_users": [
           {
             "username": "alice",
             "ip": "127.0.0.1",
-            "udp_port": 59545
+            "udp_port": 49670
           },
           {
             "username": "bob",
             "ip": "127.0.0.1",
-            "udp_port": 59546
+            "udp_port": 49671
+          },
+          {
+            "username": "carol",
+            "ip": "127.0.0.1",
+            "udp_port": 49673
           }
         ],
         "bob_users": [
           {
             "username": "alice",
             "ip": "127.0.0.1",
-            "udp_port": 59545
+            "udp_port": 49670
           },
           {
             "username": "bob",
             "ip": "127.0.0.1",
-            "udp_port": 59546
+            "udp_port": 49671
           },
           {
             "username": "carol",
             "ip": "127.0.0.1",
-            "udp_port": 59548
+            "udp_port": 49673
           }
         ],
         "tcp_chat_still_received": true
       },
-      "traceback": "Traceback (most recent call last):\n  File \"E:\\Downloads\\BTL_MMT\\MangMayTinh1\\audits\\final_2026_10_26\\protocol_security\\audit_protocol.py\", line 279, in main\n    test(evidence)\n    ~~~~^^^^^^^^^^\n  File \"E:\\Downloads\\BTL_MMT\\MangMayTinh1\\audits\\final_2026_10_26\\protocol_security\\audit_protocol.py\", line 197, in malformed_discovery_survival\n    assert receiver.is_alive(), 'One unauthenticated valid-JSON UDP datagram permanently killed discovery/file receive thread'\n           ~~~~~~~~~~~~~~~~~^^\nAssertionError: One unauthenticated valid-JSON UDP datagram permanently killed discovery/file receive thread\n",
-      "duration_s": 1.406
+      "duration_s": 2.399
     },
     {
       "name": "P05_delayed_server_snapshot",
-      "status": "FAIL",
+      "status": "PASS",
       "evidence": {
         "captured_source": [
           "127.0.0.1",
           19001
         ],
-        "old_packet_seq": 0,
+        "old_packet_seq": 1,
         "users_after_delayed_snapshot": [
           {
             "username": "observer",
             "ip": "127.0.0.1",
-            "udp_port": 59549
+            "udp_port": 49674
+          },
+          {
+            "username": "alice",
+            "ip": "127.0.0.1",
+            "udp_port": 49675
           }
         ],
         "client_stopped": false,
         "observed_seconds": 5.3
       },
-      "traceback": "Traceback (most recent call last):\n  File \"E:\\Downloads\\BTL_MMT\\MangMayTinh1\\audits\\final_2026_10_26\\protocol_security\\audit_protocol.py\", line 279, in main\n    test(evidence)\n    ~~~~^^^^^^^^^^\n  File \"E:\\Downloads\\BTL_MMT\\MangMayTinh1\\audits\\final_2026_10_26\\protocol_security\\audit_protocol.py\", line 217, in delayed_server_snapshot\n    assert usernames(alice)=={'observer','alice'}, 'Delayed genuine server snapshot overwrites newer users and is not repaired by heartbeat'\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: Delayed genuine server snapshot overwrites newer users and is not repaired by heartbeat\n",
-      "duration_s": 6.72
+      "duration_s": 7.68
     },
     {
       "name": "P06_valid_chat_payload_boundary",
-      "status": "FAIL",
+      "status": "PASS",
       "evidence": {
         "input_payload_bytes": 65535,
         "message_bytes": 65481,
         "delivered": false,
-        "sender_closed": true,
-        "explicit_error_response": false
+        "sender_closed": false,
+        "explicit_error_response": true
       },
-      "traceback": "Traceback (most recent call last):\n  File \"E:\\Downloads\\BTL_MMT\\MangMayTinh1\\audits\\final_2026_10_26\\protocol_security\\audit_protocol.py\", line 279, in main\n    test(evidence)\n    ~~~~^^^^^^^^^^\n  File \"E:\\Downloads\\BTL_MMT\\MangMayTinh1\\audits\\final_2026_10_26\\protocol_security\\audit_protocol.py\", line 241, in valid_chat_payload_boundary\n    assert delivered or rejected, 'Wire-valid maximum-sized chat is neither delivered nor explicitly rejected; sender disconnects'\n           ^^^^^^^^^^^^^^^^^^^^^\nAssertionError: Wire-valid maximum-sized chat is neither delivered nor explicitly rejected; sender disconnects\n",
-      "duration_s": 3.346
+      "duration_s": 3.381
     },
     {
       "name": "P07_auth_port_validation",
-      "status": "FAIL",
+      "status": "PASS",
       "evidence": {
-        "auth_status": 1,
+        "auth_status": 2,
         "auth_payload": {
-          "session_id": "c56a9dce-6aa2-4c21-8c6a-33a0a4ebad13",
-          "message": "Authentication successful"
+          "error_code": "ERR_INVALID_PORT",
+          "message": "Thông số username hoặc udp_port không hợp lệ"
         },
         "submitted_udp_port": 70000,
         "server_accepts_next_client": true
       },
-      "traceback": "Traceback (most recent call last):\n  File \"E:\\Downloads\\BTL_MMT\\MangMayTinh1\\audits\\final_2026_10_26\\protocol_security\\audit_protocol.py\", line 279, in main\n    test(evidence)\n    ~~~~^^^^^^^^^^\n  File \"E:\\Downloads\\BTL_MMT\\MangMayTinh1\\audits\\final_2026_10_26\\protocol_security\\audit_protocol.py\", line 250, in auth_port_validation\n    assert peer.auth.status == STATUS_ERR, 'Server reports successful authentication for impossible UDP port 70000'\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: Server reports successful authentication for impossible UDP port 70000\n",
-      "duration_s": 1.361
+      "duration_s": 1.337
     },
     {
       "name": "P08_password_semantics_observation",
@@ -163,11 +162,11 @@
         "arbitrary_password_accepted": true,
         "grading_note": "Specification does not explicitly require password verification; risk observation, not failed requirement"
       },
-      "duration_s": 1.369
+      "duration_s": 1.335
     }
   ],
-  "duration_s": 18.46,
-  "passed": 1,
-  "failed": 6,
+  "duration_s": 21.599,
+  "passed": 6,
+  "failed": 1,
   "observations": 1
 }
