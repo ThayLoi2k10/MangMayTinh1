@@ -1,12 +1,12 @@
 {
-  "baseline": "4db6fd0d54894f3a64dd5b4a64ac6f353da66773",
+  "baseline": "76afde918cdd2064b4b3a0cb317afdb182bf4dc9",
   "scope": "valid application traffic only; isolated loopback; no malformed/security injection",
   "integrated_file": [
     {
       "case": "normal_binary",
       "sender": {
         "direction": "send",
-        "file_id": "3a4e8fcefd71487abc6cb7db05891424",
+        "file_id": "237198a4233d45ba81872a060ef0602e",
         "filename": "ordinary.bin",
         "peer": "audit_bob",
         "status": "done",
@@ -15,7 +15,7 @@
       },
       "receiver": {
         "direction": "receive",
-        "file_id": "3a4e8fcefd71487abc6cb7db05891424",
+        "file_id": "237198a4233d45ba81872a060ef0602e",
         "filename": "ordinary.bin",
         "peer": "audit_alice",
         "status": "completed",
@@ -28,7 +28,7 @@
       "case": "same_filename_different_contents",
       "sender": {
         "direction": "send",
-        "file_id": "d63d1e1ca79b4d9693df4a91cf357a36",
+        "file_id": "8f90a84a4bf04915854282458604e407",
         "filename": "ordinary.bin",
         "peer": "audit_bob",
         "status": "failed: File đích đã tồn tại; không ghi đè",
@@ -37,7 +37,7 @@
       },
       "receiver": {
         "direction": "receive",
-        "file_id": "d63d1e1ca79b4d9693df4a91cf357a36",
+        "file_id": "8f90a84a4bf04915854282458604e407",
         "filename": "ordinary.bin",
         "peer": "audit_alice",
         "status": "failed: destination exists",
@@ -53,7 +53,7 @@
       "case": "same_filename_repeat_confirmation",
       "sender": {
         "direction": "send",
-        "file_id": "d35542db11794940a306f2e61684dc30",
+        "file_id": "00b7d8cb979e4dde922dc827853554ac",
         "filename": "ordinary.bin",
         "peer": "audit_bob",
         "status": "failed: File đích đã tồn tại; không ghi đè",
@@ -62,7 +62,7 @@
       },
       "receiver": {
         "direction": "receive",
-        "file_id": "d35542db11794940a306f2e61684dc30",
+        "file_id": "00b7d8cb979e4dde922dc827853554ac",
         "filename": "ordinary.bin",
         "peer": "audit_alice",
         "status": "failed: destination exists",
@@ -75,7 +75,7 @@
       "case": "empty_file_integrated",
       "sender": {
         "direction": "send",
-        "file_id": "7f352ce252684e77bb48e877d4535b30",
+        "file_id": "1462f7ce68a14fc98ab6d8f6e4c3cb98",
         "filename": "empty.bin",
         "peer": "audit_bob",
         "status": "done",
@@ -84,7 +84,7 @@
       },
       "receiver": {
         "direction": "receive",
-        "file_id": "7f352ce252684e77bb48e877d4535b30",
+        "file_id": "1462f7ce68a14fc98ab6d8f6e4c3cb98",
         "filename": "empty.bin",
         "peer": "audit_alice",
         "status": "completed",
@@ -97,7 +97,7 @@
       "case": "literal_end_marker_integrated",
       "sender": {
         "direction": "send",
-        "file_id": "6ebe194fc3f345889b4bb1bd309f9b72",
+        "file_id": "0096998684c141fa8883b75ad3830ec1",
         "filename": "literal_marker.bin",
         "peer": "audit_bob",
         "status": "done",
@@ -106,7 +106,7 @@
       },
       "receiver": {
         "direction": "receive",
-        "file_id": "6ebe194fc3f345889b4bb1bd309f9b72",
+        "file_id": "0096998684c141fa8883b75ad3830ec1",
         "filename": "literal_marker.bin",
         "peer": "audit_alice",
         "status": "completed",
@@ -238,5 +238,5 @@
       "errors": []
     }
   ],
-  "elapsed_seconds": 4.509
+  "elapsed_seconds": 7.831
 }

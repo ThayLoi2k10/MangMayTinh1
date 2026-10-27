@@ -91,6 +91,25 @@ def decode_secure_json(payload: bytes) -> dict[str, Any]:
 
     return value
 
+def seal_chat_text(text: str) -> str:
+    """Mã hóa nội dung chat thành Fernet token dạng chuỗi."""
+    if not isinstance(text, str):
+        raise FileTransferError("Nội dung chat phải là chuỗi")
+
+    return encrypt_payload(text.encode("utf-8")).decode("ascii")
+
+
+def open_chat_text(token: str) -> str:
+    """Giải mã Fernet token thành nội dung chat."""
+    if not isinstance(token, str):
+        raise FileTransferError("Token chat phải là chuỗi")
+
+    try:
+        raw = decrypt_payload(token.encode("ascii"))
+        return raw.decode("utf-8")
+    except (UnicodeEncodeError, UnicodeDecodeError) as exc:
+        raise FileTransferError("Token chat không hợp lệ") from exc
+    
 """ Kiểm tra tính hợp lệ """
 def safe_filename(name: Any) -> str:
     if not isinstance(name , str):

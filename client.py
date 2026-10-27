@@ -36,7 +36,11 @@ from protocol import (
     load_json,
 )
 from file_client import FileTransferHandler
-from file_transfer import FileTransferError
+from file_transfer import (
+    FileTransferError,
+    seal_chat_text,
+    open_chat_text,
+)
 
 
 class CollaborationClient:
@@ -158,10 +162,12 @@ class CollaborationClient:
         text = str(text).strip()
         if not text:
             raise ValueError("Tin nhắn không được để trống")
+        
+        sealed_message = seal_chat_text(text)
         if target == "*":
-            body = {"mode": "broadcast", "message": text}
+            body = {"mode": "broadcast", "message": sealed_message, "enc": True,}
         else:
-            body = {"mode": "unicast", "recipient": target, "message": text}
+            body = {"mode": "unicast", "recipient": target, "message": sealed_message, "enc": True,}
         self._send_tcp(
             Packet(
                 MSG_DATA,
@@ -227,6 +233,12 @@ class CollaborationClient:
 
             sender = body.get("sender", "?")
             message = body.get("message", "")
+            if body.get("enc") is True and isinstance(message, str):
+                try:
+                    message = open_chat_text(message)
+                except FileTransferError:
+                    message = "[Không thể giải mã tin nhắn]"
+                    
             self.messages.append(
                 {
                     "from": sender,

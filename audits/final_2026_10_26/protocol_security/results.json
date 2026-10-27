@@ -1,10 +1,10 @@
 {
-  "baseline": "01e47039ba648c9d88cdba610c155b631c0b4cba",
+  "baseline": "76afde918cdd2064b4b3a0cb317afdb182bf4dc9",
   "ports": [
     19000,
     19001
   ],
-  "interpreter": "D:\\Phan Ngoc Xuan Loi\\MMT\\BTL\\BTL1\\network_assignment_demo\\.venv\\Scripts\\python.exe",
+  "interpreter": "C:\\Users\\Asus\\MangMayTinh1\\.venv\\Scripts\\python.exe",
   "cases": [
     {
       "name": "P01_tcp_framing_auth_logout",
@@ -16,18 +16,17 @@
         "wrong_token_did_not_logout": true,
         "graceful_logout": true
       },
-      "duration_s": 1.738
+      "duration_s": 1.96
     },
     {
       "name": "P02_chat_payload_encryption",
-      "status": "FAIL",
+      "status": "PASS",
       "evidence": {
-        "payload_hex": "7b226d6f6465223a22756e6963617374222c2273656e646572223a22616c696365222c226d657373616765223a2241554449545f505249564154455f5041594c4f41445f3230323631303236222c22726563697069656e74223a22626f62227d",
-        "plaintext": "{\"mode\":\"unicast\",\"sender\":\"alice\",\"message\":\"AUDIT_PRIVATE_PAYLOAD_20261026\",\"recipient\":\"bob\"}",
+        "payload_hex": "7b226d6f6465223a22756e6963617374222c2273656e646572223a22616c696365222c226d657373616765223a226741414141414271344346585f32343749616233455a746862413041445a76417a465f6f336b437137456f61367650556175727970736e3836595458514a4156734f47474a7a334f7655325f6a6832497741715f3776694c5f304377734a6e524466664264504161554e6c32484b625432486e3535676b3d222c22656e63223a747275652c22726563697069656e74223a22626f62227d",
+        "plaintext": "{\"mode\":\"unicast\",\"sender\":\"alice\",\"message\":\"gAAAAABq4CFX_247Iab3EZthbA0ADZvAzF_o3kCq7Eoa6vPUaurypsn86YTXQJAVsOGGJz3OvU2_jh2IwAq_7viL_0CwsJnRDffBdPAaUNl2HKbT2Hn55gk=\",\"enc\":true,\"recipient\":\"bob\"}",
         "transport": "raw TCP"
       },
-      "traceback": "Traceback (most recent call last):\n  File \"D:\\Phan Ngoc Xuan Loi\\MMT\\BTL\\BTL1\\network_assignment_demo\\audits\\final_2026_10_26\\protocol_security\\audit_protocol.py\", line 279, in main\n    test(evidence)\n    ~~~~^^^^^^^^^^\n  File \"D:\\Phan Ngoc Xuan Loi\\MMT\\BTL\\BTL1\\network_assignment_demo\\audits\\final_2026_10_26\\protocol_security\\audit_protocol.py\", line 161, in chat_payload_encryption\n    assert marker.encode() not in packet.payload, 'Private chat payload is readable without decrypting'\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: Private chat payload is readable without decrypting\n",
-      "duration_s": 1.373
+      "duration_s": 1.661
     },
     {
       "name": "P03_unauthenticated_discovery_poison",
@@ -35,7 +34,7 @@
       "evidence": {
         "attacker_source": [
           "127.0.0.1",
-          49669
+          60216
         ],
         "expected_server_source": [
           "127.0.0.1",
@@ -45,17 +44,17 @@
           {
             "username": "alice",
             "ip": "127.0.0.1",
-            "udp_port": 49668
+            "udp_port": 60215
           }
         ],
         "peer_addrs": {
           "alice": [
             "127.0.0.1",
-            49668
+            60215
           ]
         }
       },
-      "duration_s": 2.353
+      "duration_s": 2.62
     },
     {
       "name": "P04_malformed_discovery_survival",
@@ -68,39 +67,39 @@
           {
             "username": "alice",
             "ip": "127.0.0.1",
-            "udp_port": 49670
+            "udp_port": 60217
           },
           {
             "username": "bob",
             "ip": "127.0.0.1",
-            "udp_port": 49671
+            "udp_port": 60218
           },
           {
             "username": "carol",
             "ip": "127.0.0.1",
-            "udp_port": 49673
+            "udp_port": 60220
           }
         ],
         "bob_users": [
           {
             "username": "alice",
             "ip": "127.0.0.1",
-            "udp_port": 49670
+            "udp_port": 60217
           },
           {
             "username": "bob",
             "ip": "127.0.0.1",
-            "udp_port": 49671
+            "udp_port": 60218
           },
           {
             "username": "carol",
             "ip": "127.0.0.1",
-            "udp_port": 49673
+            "udp_port": 60220
           }
         ],
         "tcp_chat_still_received": true
       },
-      "duration_s": 2.399
+      "duration_s": 2.691
     },
     {
       "name": "P05_delayed_server_snapshot",
@@ -115,18 +114,18 @@
           {
             "username": "observer",
             "ip": "127.0.0.1",
-            "udp_port": 49674
+            "udp_port": 60221
           },
           {
             "username": "alice",
             "ip": "127.0.0.1",
-            "udp_port": 49675
+            "udp_port": 55029
           }
         ],
         "client_stopped": false,
         "observed_seconds": 5.3
       },
-      "duration_s": 7.68
+      "duration_s": 7.921
     },
     {
       "name": "P06_valid_chat_payload_boundary",
@@ -138,7 +137,7 @@
         "sender_closed": false,
         "explicit_error_response": true
       },
-      "duration_s": 3.381
+      "duration_s": 3.422
     },
     {
       "name": "P07_auth_port_validation",
@@ -152,7 +151,7 @@
         "submitted_udp_port": 70000,
         "server_accepts_next_client": true
       },
-      "duration_s": 1.337
+      "duration_s": 1.622
     },
     {
       "name": "P08_password_semantics_observation",
@@ -162,11 +161,11 @@
         "arbitrary_password_accepted": true,
         "grading_note": "Specification does not explicitly require password verification; risk observation, not failed requirement"
       },
-      "duration_s": 1.335
+      "duration_s": 1.586
     }
   ],
-  "duration_s": 21.599,
-  "passed": 6,
-  "failed": 1,
+  "duration_s": 23.49,
+  "passed": 7,
+  "failed": 0,
   "observations": 1
 }

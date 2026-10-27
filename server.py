@@ -221,6 +221,9 @@ class CollaborationServer:
             "message": message,
         }
 
+        if body.get("enc") is True:
+            forward_body["enc"] = True
+            
         if mode == "unicast":
             recipient = body.get("recipient", "").strip()
             if not recipient:
