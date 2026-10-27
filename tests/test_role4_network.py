@@ -89,7 +89,7 @@ class Role4NetworkTests(unittest.TestCase):
             self.alice.send_file("missing", self.source())
         self.assertEqual(self.alice.state()["transfers"], [])
 
-    @unittest.expectedFailure
+    # @unittest.expectedFailure
     def test_upstream_final_ack_loss_should_recover(self):
         """Known Role 3 defect: completed receiver ignores retransmit without ACK."""
         original = self.bob.file_handler.send_packet_fn
@@ -109,7 +109,7 @@ class Role4NetworkTests(unittest.TestCase):
         print("Known final-ACK defect:", self.record(self.alice, file_id)["status"])
         self.assertEqual(self.record(self.alice, file_id)["status"], "done")
 
-    @unittest.expectedFailure
+    # @unittest.expectedFailure
     def test_upstream_receiver_timeout_should_reach_state(self):
         """Known Role 3 contract gap; accelerate cleanup, not network timeout."""
         original = self.alice.file_handler.send_packet_fn
@@ -128,6 +128,11 @@ class Role4NetworkTests(unittest.TestCase):
         print("Known timeout-state gap:", self.record(self.bob, file_id)["status"])
         self.assertEqual(self.record(self.bob, file_id)["status"], "timeout")
 
-
+    def test_meta_ack_allows_transfer_to_complete(self):
+        """Receiver must ACK FILE_META so sender can finish."""
+        file_id = self.alice.send_file("bob", self.source("meta-ack.bin", 200))
+        wait_for(lambda: self.record(self.alice, file_id)["status"] == "done")
+        wait_for(lambda: self.record(self.bob, file_id)["status"] == "completed")
+        
 if __name__ == "__main__":
     unittest.main()

@@ -4,6 +4,7 @@ server.py - Collaboration Server với Chat Routing (Broadcast / Unicast)
 """
 
 import socket
+import struct
 import threading
 import time
 import uuid
@@ -124,6 +125,8 @@ class CollaborationServer:
      # Khởi tạo server, registry và socket UDP phục vụ heartbeat/broadcast
     def __init__(self):
         self.registry = ServerRegistry()
+        self.user_list_seq = 0
+        self.seq_lock = threading.Lock()
         self.udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         if hasattr(socket, "SIO_UDP_CONNRESET"):
             try:
@@ -134,10 +137,17 @@ class CollaborationServer:
         self.is_running = True
 
      # Khởi tạo server, registry và socket UDP phục vụ heartbeat/broadcast
-    def broadcast_user_list(self):
+    def broadcast_user_list(self, bump_seq: bool = True):
+        with self.seq_lock:
+            if bump_seq or self.user_list_seq == 0:
+                self.user_list_seq = (self.user_list_seq + 1) & 0xFFFF
+                if self.user_list_seq == 0:
+                    self.user_list_seq = 1
+            current_seq = self.user_list_seq
+
         payload = dump_json({"users": self.registry.get_online_users()})
         wire_data = encode_packet(
-            Packet(msg_type=MSG_USER_LIST, status=STATUS_OK, payload=payload)
+            Packet(msg_type=MSG_USER_LIST, status=STATUS_OK, seq_no=current_seq, payload=payload)
         )
         for target in self.registry.get_all_udp_targets():
             try:
@@ -160,6 +170,7 @@ class CollaborationServer:
 
     # Định kỳ quét danh bạ, đóng socket và broadcast cập nhật nếu có peer quá hạn
     def watchdog_loop(self):
+        last_sync = time.time()
         while self.is_running:
             time.sleep(WATCHDOG_INTERVAL)
             dead_list = self.registry.scan_dead_peers(PEER_TIMEOUT)
@@ -174,7 +185,10 @@ class CollaborationServer:
                         tcp_sock.close()
                     except OSError:
                         pass
-                self.broadcast_user_list()
+                self.broadcast_user_list(bump_seq=True)
+            elif time.time() - last_sync >= 10.0:
+                self.broadcast_user_list(bump_seq=False)
+                last_sync = time.time()
 
     # Gửi một packet an toàn tới một peer
     def _send_safely(self, peer_info, packet: Packet) -> bool:
@@ -182,7 +196,7 @@ class CollaborationServer:
             with peer_info["send_lock"]:
                 peer_info["tcp_sock"].sendall(encode_packet(packet))
             return True
-        except (OSError, ConnectionResetError, BrokenPipeError):
+        except (OSError, ConnectionResetError, BrokenPipeError, struct.error):
             return False
 
     # Xử lý packet kiểu MSG_DATA (tin nhắn chat).
@@ -207,6 +221,38 @@ class CollaborationServer:
             "message": message,
         }
 
+        if mode == "unicast":
+            recipient = body.get("recipient", "").strip()
+            if not recipient:
+                print(f"[!] [{sender_username}] Unicast thiếu recipient")
+                return
+            forward_body["recipient"] = recipient
+
+        # Kiểm tra kích thước payload chuyển tiếp không vượt quá giới hạn 16-bit
+        try:
+            forward_payload = dump_json(forward_body)
+        except Exception:
+            return
+
+        if len(forward_payload) > 65535:
+            print(f"[!] [{sender_username}] Payload sau đóng gói vượt quá 65535 bytes")
+            sender_peer = self.registry.get_peer(sender_username)
+            if sender_peer:
+                err_pkt = Packet(
+                    msg_type=MSG_DATA,
+                    status=STATUS_ERR,
+                    seq_no=pkt.seq_no,
+                    payload=dump_json(
+                        {
+                            "mode": mode,
+                            "error": "payload_too_large",
+                            "message": "Nội dung tin nhắn vượt quá kích thước cho phép",
+                        }
+                    ),
+                )
+                self._send_safely(sender_peer, err_pkt)
+            return
+
         if mode == "broadcast":
             targets = self.registry.get_all_peers_except(exclude_username=sender_username)
             success_count = 0
@@ -219,7 +265,7 @@ class CollaborationServer:
                         msg_type=MSG_DATA,
                         status=STATUS_OK,
                         seq_no=pkt.seq_no,
-                        payload=dump_json(forward_body),
+                        payload=forward_payload,
                     ),
                 )
                 if ok:
@@ -234,12 +280,7 @@ class CollaborationServer:
                 print(f"    [!] Gửi thất bại tới: {failed_users}")
 
         elif mode == "unicast":
-            recipient = body.get("recipient", "").strip()
-            if not recipient:
-                print(f"[!] [{sender_username}] Unicast thiếu recipient")
-                return
-
-            forward_body["recipient"] = recipient
+            recipient = forward_body["recipient"]
             peer_info = self.registry.get_peer(recipient)
 
             if peer_info is None:
@@ -268,7 +309,7 @@ class CollaborationServer:
                     msg_type=MSG_DATA,
                     status=STATUS_OK,
                     seq_no=pkt.seq_no,
-                    payload=dump_json(forward_body),
+                    payload=forward_payload,
                 ),
             )
             if ok:
@@ -300,12 +341,34 @@ class CollaborationServer:
                 return
 
             body = load_json(pkt_auth.payload)
-            req_username = body.get("username", "").strip()
-            client_udp_port = int(body.get("udp_port", 0))
-
-            if not req_username or client_udp_port <= 0:
+            if not isinstance(body, dict):
+                err_payload = dump_json(
+                    {"error_code": "ERR_INVALID_PAYLOAD", "message": "Payload xác thực không hợp lệ"}
+                )
                 conn.sendall(
-                    encode_packet(Packet(msg_type=MSG_AUTH_RESP, status=STATUS_ERR))
+                    encode_packet(
+                        Packet(msg_type=MSG_AUTH_RESP, status=STATUS_ERR, payload=err_payload)
+                    )
+                )
+                return
+
+            req_username = str(body.get("username", "")).strip()
+            raw_port = body.get("udp_port")
+            try:
+                if isinstance(raw_port, bool) or raw_port is None:
+                    raise ValueError("Invalid port type")
+                client_udp_port = int(raw_port)
+            except (ValueError, TypeError):
+                client_udp_port = 0
+
+            if not req_username or not (1 <= client_udp_port <= 65535):
+                err_payload = dump_json(
+                    {"error_code": "ERR_INVALID_PORT", "message": "Thông số username hoặc udp_port không hợp lệ"}
+                )
+                conn.sendall(
+                    encode_packet(
+                        Packet(msg_type=MSG_AUTH_RESP, status=STATUS_ERR, payload=err_payload)
+                    )
                 )
                 return
 

@@ -47,6 +47,7 @@ class CollaborationClient:
         self.messages: list = []
         self.peer_addrs: dict[str, tuple[str, int]] = {}  # username -> (ip, udp_port)
         self.session_id = ""
+        self.latest_user_list_seq = 0
         self.stop_event = threading.Event()
 
         self.tcp_send_lock = threading.Lock()
@@ -246,20 +247,60 @@ class CollaborationClient:
                 if self.stop_event.is_set():
                     break
                 continue
+            except Exception:
+                if self.stop_event.is_set():
+                    break
+                continue
 
             if packet.msg_type == MSG_USER_LIST:
+                # D04: verify source is from server
                 try:
-                    users = load_json(packet.payload).get("users", [])
-                    self.users = users
+                    server_ip = socket.gethostbyname(self.server_udp[0])
+                except OSError:
+                    server_ip = self.server_udp[0]
+
+                if addr[1] != self.server_udp[1]:
+                    continue
+                if addr[0] != server_ip and addr[0] != self.server_udp[0]:
+                    is_local = (addr[0] in ("127.0.0.1", "::1", "localhost") and server_ip in ("127.0.0.1", "::1", "localhost"))
+                    if not is_local:
+                        continue
+
+                # D05: sequence number checking for out-of-order/replayed snapshots
+                if self.latest_user_list_seq != 0 and packet.seq_no != 0:
+                    diff = (packet.seq_no - self.latest_user_list_seq) & 0xFFFF
+                    if diff == 0 or diff >= 0x8000:
+                        continue
+
+                try:
+                    payload_data = load_json(packet.payload)
+                    if not isinstance(payload_data, dict):
+                        continue
+                    users = payload_data.get("users")
+                    if not isinstance(users, list):
+                        continue
+
                     addrs: dict[str, tuple[str, int]] = {}
+                    valid_users = []
                     for u in users:
+                        if not isinstance(u, dict):
+                            continue
                         name = u.get("username")
                         ip = u.get("ip")
                         port = u.get("udp_port")
-                        if name and ip is not None and port is not None:
+                        if (
+                            name and isinstance(name, str)
+                            and ip and isinstance(ip, str)
+                            and port is not None and isinstance(port, int) and 1 <= port <= 65535
+                        ):
                             addrs[str(name)] = (str(ip), int(port))
+                            valid_users.append(u)
+
+                    self.users = valid_users
                     self.peer_addrs = addrs
-                except (ValueError, UnicodeDecodeError, TypeError, KeyError):
+                    if packet.seq_no != 0:
+                        self.latest_user_list_seq = packet.seq_no
+                except Exception:
                     pass
                 continue
 
