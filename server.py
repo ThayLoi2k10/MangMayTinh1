@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """
 server.py - Collaboration Server với Chat Routing (Broadcast / Unicast)
 """
@@ -8,6 +8,14 @@ import struct
 import threading
 import time
 import uuid
+from config import (
+    SERVER_BIND_HOST,
+    TCP_PORT,
+    UDP_PORT,
+    AUTH_TIMEOUT,
+    PEER_TIMEOUT,
+    WATCHDOG_INTERVAL,
+)
 from protocol import (
     Packet,
     MSG_HELLO_REQ,
@@ -28,12 +36,7 @@ from protocol import (
     load_json,
 )
 
-SERVER_HOST = "0.0.0.0"
-TCP_PORT = 9000
-UDP_PORT = 9001
-AUTH_TIMEOUT = 10.0
-PEER_TIMEOUT = 15.0
-WATCHDOG_INTERVAL = 3.0
+SERVER_HOST = SERVER_BIND_HOST
 
 
 class ServerRegistry:

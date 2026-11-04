@@ -1,4 +1,5 @@
-import socket
+﻿import socket
+from config import SERVER_HOST, TCP_PORT
 from protocol import (
     Packet,
     MSG_HELLO_REQ,
@@ -8,8 +9,7 @@ from protocol import (
     recv_tcp_packet,
 )
 
-SERVER_IP = "127.0.0.1"
-TCP_PORT = 9000
+SERVER_IP = SERVER_HOST
 
 
 def run_handshake():

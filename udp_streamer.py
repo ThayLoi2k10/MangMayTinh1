@@ -1,7 +1,8 @@
-import threading
+﻿import threading
 import socket
 import time
 from typing import Tuple, Dict, Optional, List
+from config import CHUNK_SIZE, WINDOW_SIZE, RETRY_TIMEOUT, MAX_RETRIES
 import protocol # Import để fallback các hằng số nếu cần
 from protocol import (
     Packet,
@@ -25,10 +26,6 @@ from protocol import (
     load_json,
 )
 
-CHUNK_SIZE = 700
-WINDOW_SIZE = 8
-RETRY_TIMEOUT = 0.5
-MAX_RETRIES = 5
 
 class UDPStreamSender:
     def __init__(self, sock: socket.socket, receiver_addr: Tuple[str, int]):

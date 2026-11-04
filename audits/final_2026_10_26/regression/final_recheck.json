@@ -1,0 +1,92 @@
+{
+  "baseline": "11e6291b151e8d50e412d03eb1a84a3210095f3b",
+  "label": "final_recheck",
+  "strict": true,
+  "markers_disabled": [
+    "test_role4_integration.Role4IntegrationTests.test_existing_heartbeat_script"
+  ],
+  "tests": [
+    "test_role4_integration.Role4IntegrationTests.test_actual_heartbeat_timeout_removes_user_and_other_client_survives",
+    "test_role4_integration.Role4IntegrationTests.test_existing_client_entrypoint_serves_ui_and_routes_chat",
+    "test_role4_integration.Role4IntegrationTests.test_existing_heartbeat_script",
+    "test_role4_integration.Role4IntegrationTests.test_existing_team_scripts_unchanged",
+    "test_role4_integration.Role4IntegrationTests.test_http_chat_files_and_sha256",
+    "test_role4_integration.Role4IntegrationTests.test_server_shutdown_state_limitation_and_manual_recovery",
+    "test_role4_integration.Role4IntegrationTests.test_twenty_clients_crash_isolation_and_repeated_login",
+    "test_role4_network.Role4NetworkTests.test_interrupted_transfer_sender_fails_and_chat_survives",
+    "test_role4_network.Role4NetworkTests.test_loss_delay_duplicate_reorder_recover",
+    "test_role4_network.Role4NetworkTests.test_meta_ack_allows_transfer_to_complete",
+    "test_role4_network.Role4NetworkTests.test_unavailable_recipient_rejected_by_existing_client",
+    "test_role4_network.Role4NetworkTests.test_upstream_final_ack_loss_should_recover",
+    "test_role4_network.Role4NetworkTests.test_upstream_receiver_timeout_should_reach_state",
+    "unittest.loader._FailedTest.test_role4_ui"
+  ],
+  "total": 14,
+  "pass": 0,
+  "fail": 0,
+  "error": 14,
+  "skip": 0,
+  "expected_failure": 0,
+  "unexpected_success": 0,
+  "duration_seconds": 0.07,
+  "failures": [],
+  "errors": [
+    [
+      "test_role4_integration.Role4IntegrationTests.test_actual_heartbeat_timeout_removes_user_and_other_client_survives",
+      "Traceback (most recent call last):\n  File \"D:\\Phan Ngoc Xuan Loi\\MMT\\BTL\\BTL1\\network_assignment_demo\\tests\\role4_harness.py\", line 78, in __enter__\n    probe.bind((\"0.0.0.0\", port))\n    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^\nOSError: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"D:\\Phan Ngoc Xuan Loi\\MMT\\BTL\\BTL1\\network_assignment_demo\\tests\\test_role4_integration.py\", line 22, in setUp\n    self.lab = Lab().__enter__()\n               ~~~~~~~~~~~~~~~^^\n  File \"D:\\Phan Ngoc Xuan Loi\\MMT\\BTL\\BTL1\\network_assignment_demo\\tests\\role4_harness.py\", line 80, in __enter__\n    raise RuntimeError(f\"Port {port} is occupied. Stop your demo before running tests.\") from error\nRuntimeError: Port 9000 is occupied. Stop your demo before running tests.\n"
+    ],
+    [
+      "test_role4_integration.Role4IntegrationTests.test_existing_client_entrypoint_serves_ui_and_routes_chat",
+      "Traceback (most recent call last):\n  File \"D:\\Phan Ngoc Xuan Loi\\MMT\\BTL\\BTL1\\network_assignment_demo\\tests\\role4_harness.py\", line 78, in __enter__\n    probe.bind((\"0.0.0.0\", port))\n    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^\nOSError: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"D:\\Phan Ngoc Xuan Loi\\MMT\\BTL\\BTL1\\network_assignment_demo\\tests\\test_role4_integration.py\", line 22, in setUp\n    self.lab = Lab().__enter__()\n               ~~~~~~~~~~~~~~~^^\n  File \"D:\\Phan Ngoc Xuan Loi\\MMT\\BTL\\BTL1\\network_assignment_demo\\tests\\role4_harness.py\", line 80, in __enter__\n    raise RuntimeError(f\"Port {port} is occupied. Stop your demo before running tests.\") from error\nRuntimeError: Port 9000 is occupied. Stop your demo before running tests.\n"
+    ],
+    [
+      "test_role4_integration.Role4IntegrationTests.test_existing_heartbeat_script",
+      "Traceback (most recent call last):\n  File \"D:\\Phan Ngoc Xuan Loi\\MMT\\BTL\\BTL1\\network_assignment_demo\\tests\\role4_harness.py\", line 78, in __enter__\n    probe.bind((\"0.0.0.0\", port))\n    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^\nOSError: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"D:\\Phan Ngoc Xuan Loi\\MMT\\BTL\\BTL1\\network_assignment_demo\\tests\\test_role4_integration.py\", line 22, in setUp\n    self.lab = Lab().__enter__()\n               ~~~~~~~~~~~~~~~^^\n  File \"D:\\Phan Ngoc Xuan Loi\\MMT\\BTL\\BTL1\\network_assignment_demo\\tests\\role4_harness.py\", line 80, in __enter__\n    raise RuntimeError(f\"Port {port} is occupied. Stop your demo before running tests.\") from error\nRuntimeError: Port 9000 is occupied. Stop your demo before running tests.\n"
+    ],
+    [
+      "test_role4_integration.Role4IntegrationTests.test_existing_team_scripts_unchanged",
+      "Traceback (most recent call last):\n  File \"D:\\Phan Ngoc Xuan Loi\\MMT\\BTL\\BTL1\\network_assignment_demo\\tests\\role4_harness.py\", line 78, in __enter__\n    probe.bind((\"0.0.0.0\", port))\n    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^\nOSError: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"D:\\Phan Ngoc Xuan Loi\\MMT\\BTL\\BTL1\\network_assignment_demo\\tests\\test_role4_integration.py\", line 22, in setUp\n    self.lab = Lab().__enter__()\n               ~~~~~~~~~~~~~~~^^\n  File \"D:\\Phan Ngoc Xuan Loi\\MMT\\BTL\\BTL1\\network_assignment_demo\\tests\\role4_harness.py\", line 80, in __enter__\n    raise RuntimeError(f\"Port {port} is occupied. Stop your demo before running tests.\") from error\nRuntimeError: Port 9000 is occupied. Stop your demo before running tests.\n"
+    ],
+    [
+      "test_role4_integration.Role4IntegrationTests.test_http_chat_files_and_sha256",
+      "Traceback (most recent call last):\n  File \"D:\\Phan Ngoc Xuan Loi\\MMT\\BTL\\BTL1\\network_assignment_demo\\tests\\role4_harness.py\", line 78, in __enter__\n    probe.bind((\"0.0.0.0\", port))\n    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^\nOSError: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"D:\\Phan Ngoc Xuan Loi\\MMT\\BTL\\BTL1\\network_assignment_demo\\tests\\test_role4_integration.py\", line 22, in setUp\n    self.lab = Lab().__enter__()\n               ~~~~~~~~~~~~~~~^^\n  File \"D:\\Phan Ngoc Xuan Loi\\MMT\\BTL\\BTL1\\network_assignment_demo\\tests\\role4_harness.py\", line 80, in __enter__\n    raise RuntimeError(f\"Port {port} is occupied. Stop your demo before running tests.\") from error\nRuntimeError: Port 9000 is occupied. Stop your demo before running tests.\n"
+    ],
+    [
+      "test_role4_integration.Role4IntegrationTests.test_server_shutdown_state_limitation_and_manual_recovery",
+      "Traceback (most recent call last):\n  File \"D:\\Phan Ngoc Xuan Loi\\MMT\\BTL\\BTL1\\network_assignment_demo\\tests\\role4_harness.py\", line 78, in __enter__\n    probe.bind((\"0.0.0.0\", port))\n    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^\nOSError: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"D:\\Phan Ngoc Xuan Loi\\MMT\\BTL\\BTL1\\network_assignment_demo\\tests\\test_role4_integration.py\", line 22, in setUp\n    self.lab = Lab().__enter__()\n               ~~~~~~~~~~~~~~~^^\n  File \"D:\\Phan Ngoc Xuan Loi\\MMT\\BTL\\BTL1\\network_assignment_demo\\tests\\role4_harness.py\", line 80, in __enter__\n    raise RuntimeError(f\"Port {port} is occupied. Stop your demo before running tests.\") from error\nRuntimeError: Port 9000 is occupied. Stop your demo before running tests.\n"
+    ],
+    [
+      "test_role4_integration.Role4IntegrationTests.test_twenty_clients_crash_isolation_and_repeated_login",
+      "Traceback (most recent call last):\n  File \"D:\\Phan Ngoc Xuan Loi\\MMT\\BTL\\BTL1\\network_assignment_demo\\tests\\role4_harness.py\", line 78, in __enter__\n    probe.bind((\"0.0.0.0\", port))\n    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^\nOSError: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"D:\\Phan Ngoc Xuan Loi\\MMT\\BTL\\BTL1\\network_assignment_demo\\tests\\test_role4_integration.py\", line 22, in setUp\n    self.lab = Lab().__enter__()\n               ~~~~~~~~~~~~~~~^^\n  File \"D:\\Phan Ngoc Xuan Loi\\MMT\\BTL\\BTL1\\network_assignment_demo\\tests\\role4_harness.py\", line 80, in __enter__\n    raise RuntimeError(f\"Port {port} is occupied. Stop your demo before running tests.\") from error\nRuntimeError: Port 9000 is occupied. Stop your demo before running tests.\n"
+    ],
+    [
+      "test_role4_network.Role4NetworkTests.test_interrupted_transfer_sender_fails_and_chat_survives",
+      "Traceback (most recent call last):\n  File \"D:\\Phan Ngoc Xuan Loi\\MMT\\BTL\\BTL1\\network_assignment_demo\\tests\\role4_harness.py\", line 78, in __enter__\n    probe.bind((\"0.0.0.0\", port))\n    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^\nOSError: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"D:\\Phan Ngoc Xuan Loi\\MMT\\BTL\\BTL1\\network_assignment_demo\\tests\\test_role4_network.py\", line 15, in setUp\n    self.lab = Lab().__enter__()\n               ~~~~~~~~~~~~~~~^^\n  File \"D:\\Phan Ngoc Xuan Loi\\MMT\\BTL\\BTL1\\network_assignment_demo\\tests\\role4_harness.py\", line 80, in __enter__\n    raise RuntimeError(f\"Port {port} is occupied. Stop your demo before running tests.\") from error\nRuntimeError: Port 9000 is occupied. Stop your demo before running tests.\n"
+    ],
+    [
+      "test_role4_network.Role4NetworkTests.test_loss_delay_duplicate_reorder_recover",
+      "Traceback (most recent call last):\n  File \"D:\\Phan Ngoc Xuan Loi\\MMT\\BTL\\BTL1\\network_assignment_demo\\tests\\role4_harness.py\", line 78, in __enter__\n    probe.bind((\"0.0.0.0\", port))\n    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^\nOSError: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"D:\\Phan Ngoc Xuan Loi\\MMT\\BTL\\BTL1\\network_assignment_demo\\tests\\test_role4_network.py\", line 15, in setUp\n    self.lab = Lab().__enter__()\n               ~~~~~~~~~~~~~~~^^\n  File \"D:\\Phan Ngoc Xuan Loi\\MMT\\BTL\\BTL1\\network_assignment_demo\\tests\\role4_harness.py\", line 80, in __enter__\n    raise RuntimeError(f\"Port {port} is occupied. Stop your demo before running tests.\") from error\nRuntimeError: Port 9000 is occupied. Stop your demo before running tests.\n"
+    ],
+    [
+      "test_role4_network.Role4NetworkTests.test_meta_ack_allows_transfer_to_complete",
+      "Traceback (most recent call last):\n  File \"D:\\Phan Ngoc Xuan Loi\\MMT\\BTL\\BTL1\\network_assignment_demo\\tests\\role4_harness.py\", line 78, in __enter__\n    probe.bind((\"0.0.0.0\", port))\n    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^\nOSError: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"D:\\Phan Ngoc Xuan Loi\\MMT\\BTL\\BTL1\\network_assignment_demo\\tests\\test_role4_network.py\", line 15, in setUp\n    self.lab = Lab().__enter__()\n               ~~~~~~~~~~~~~~~^^\n  File \"D:\\Phan Ngoc Xuan Loi\\MMT\\BTL\\BTL1\\network_assignment_demo\\tests\\role4_harness.py\", line 80, in __enter__\n    raise RuntimeError(f\"Port {port} is occupied. Stop your demo before running tests.\") from error\nRuntimeError: Port 9000 is occupied. Stop your demo before running tests.\n"
+    ],
+    [
+      "test_role4_network.Role4NetworkTests.test_unavailable_recipient_rejected_by_existing_client",
+      "Traceback (most recent call last):\n  File \"D:\\Phan Ngoc Xuan Loi\\MMT\\BTL\\BTL1\\network_assignment_demo\\tests\\role4_harness.py\", line 78, in __enter__\n    probe.bind((\"0.0.0.0\", port))\n    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^\nOSError: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"D:\\Phan Ngoc Xuan Loi\\MMT\\BTL\\BTL1\\network_assignment_demo\\tests\\test_role4_network.py\", line 15, in setUp\n    self.lab = Lab().__enter__()\n               ~~~~~~~~~~~~~~~^^\n  File \"D:\\Phan Ngoc Xuan Loi\\MMT\\BTL\\BTL1\\network_assignment_demo\\tests\\role4_harness.py\", line 80, in __enter__\n    raise RuntimeError(f\"Port {port} is occupied. Stop your demo before running tests.\") from error\nRuntimeError: Port 9000 is occupied. Stop your demo before running tests.\n"
+    ],
+    [
+      "test_role4_network.Role4NetworkTests.test_upstream_final_ack_loss_should_recover",
+      "Traceback (most recent call last):\n  File \"D:\\Phan Ngoc Xuan Loi\\MMT\\BTL\\BTL1\\network_assignment_demo\\tests\\role4_harness.py\", line 78, in __enter__\n    probe.bind((\"0.0.0.0\", port))\n    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^\nOSError: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"D:\\Phan Ngoc Xuan Loi\\MMT\\BTL\\BTL1\\network_assignment_demo\\tests\\test_role4_network.py\", line 15, in setUp\n    self.lab = Lab().__enter__()\n               ~~~~~~~~~~~~~~~^^\n  File \"D:\\Phan Ngoc Xuan Loi\\MMT\\BTL\\BTL1\\network_assignment_demo\\tests\\role4_harness.py\", line 80, in __enter__\n    raise RuntimeError(f\"Port {port} is occupied. Stop your demo before running tests.\") from error\nRuntimeError: Port 9000 is occupied. Stop your demo before running tests.\n"
+    ],
+    [
+      "test_role4_network.Role4NetworkTests.test_upstream_receiver_timeout_should_reach_state",
+      "Traceback (most recent call last):\n  File \"D:\\Phan Ngoc Xuan Loi\\MMT\\BTL\\BTL1\\network_assignment_demo\\tests\\role4_harness.py\", line 78, in __enter__\n    probe.bind((\"0.0.0.0\", port))\n    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^\nOSError: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"D:\\Phan Ngoc Xuan Loi\\MMT\\BTL\\BTL1\\network_assignment_demo\\tests\\test_role4_network.py\", line 15, in setUp\n    self.lab = Lab().__enter__()\n               ~~~~~~~~~~~~~~~^^\n  File \"D:\\Phan Ngoc Xuan Loi\\MMT\\BTL\\BTL1\\network_assignment_demo\\tests\\role4_harness.py\", line 80, in __enter__\n    raise RuntimeError(f\"Port {port} is occupied. Stop your demo before running tests.\") from error\nRuntimeError: Port 9000 is occupied. Stop your demo before running tests.\n"
+    ],
+    [
+      "unittest.loader._FailedTest.test_role4_ui",
+      "ImportError: Failed to import test module: test_role4_ui\nTraceback (most recent call last):\n  File \"C:\\Users\\phann\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\unittest\\loader.py\", line 403, in _find_test_path\n    module = self._get_module_from_name(name)\n  File \"C:\\Users\\phann\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\unittest\\loader.py\", line 346, in _get_module_from_name\n    __import__(name)\n    ~~~~~~~~~~^^^^^^\n  File \"D:\\Phan Ngoc Xuan Loi\\MMT\\BTL\\BTL1\\network_assignment_demo\\tests\\test_role4_ui.py\", line 14, in <module>\n    from playwright.sync_api import expect\nModuleNotFoundError: No module named 'playwright'\n\n"
+    ]
+  ],
+  "unexpected_successes": []
+}
