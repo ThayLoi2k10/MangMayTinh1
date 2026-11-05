@@ -1,5 +1,7 @@
 # Role 4 — Client UI & Testing
 
+> **Cập nhật 05/11/2026:** phần dưới là hồ sơ lịch sử baseline ab63e31, không phải trạng thái hiện tại. Xem [Role 4 finalization](role4_finalization.md) và `audits/finalization_2026_11_05/` cho baseline3c41747, test terminal-state được siết lại và lỗi còn tồn tại. Marker heartbeat đã được bỏ; không còn expectedFailure trong bộ Role4 hiện tại. Bộ mới23 test có3 failure upstream được giữ nguyên, không tuyên bố đã đạt toàn đề.
+
 ## Phạm vi và baseline
 
 - Repository: `https://github.com/ThayLoi2k10/MangMayTinh1`.

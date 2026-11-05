@@ -1,0 +1,108 @@
+{
+  "status": "PASS",
+  "evidence": {
+    "bytes": 25165824,
+    "seconds": 55.653,
+    "samples": [
+      {
+        "seconds": 0.04,
+        "sender": {
+          "direction": "send",
+          "file_id": "76aacea62fa24fd690750a1f05d256f2",
+          "filename": "24-mib.bin",
+          "peer": "audit_bob",
+          "status": "sending",
+          "progress": 0,
+          "total_chunks": 35952
+        },
+        "receiver": {}
+      },
+      {
+        "seconds": 15.05,
+        "sender": {
+          "direction": "send",
+          "file_id": "76aacea62fa24fd690750a1f05d256f2",
+          "filename": "24-mib.bin",
+          "peer": "audit_bob",
+          "status": "sending",
+          "progress": 24,
+          "total_chunks": 35952
+        },
+        "receiver": {
+          "direction": "receive",
+          "file_id": "76aacea62fa24fd690750a1f05d256f2",
+          "filename": "24-mib.bin",
+          "peer": "audit_alice",
+          "status": "receiving",
+          "progress": 24,
+          "total_chunks": 35952
+        }
+      },
+      {
+        "seconds": 30.01,
+        "sender": {
+          "direction": "send",
+          "file_id": "76aacea62fa24fd690750a1f05d256f2",
+          "filename": "24-mib.bin",
+          "peer": "audit_bob",
+          "status": "sending",
+          "progress": 52,
+          "total_chunks": 35952
+        },
+        "receiver": {
+          "direction": "receive",
+          "file_id": "76aacea62fa24fd690750a1f05d256f2",
+          "filename": "24-mib.bin",
+          "peer": "audit_alice",
+          "status": "receiving",
+          "progress": 52,
+          "total_chunks": 35952
+        }
+      },
+      {
+        "seconds": 45.02,
+        "sender": {
+          "direction": "send",
+          "file_id": "76aacea62fa24fd690750a1f05d256f2",
+          "filename": "24-mib.bin",
+          "peer": "audit_bob",
+          "status": "sending",
+          "progress": 80,
+          "total_chunks": 35952
+        },
+        "receiver": {
+          "direction": "receive",
+          "file_id": "76aacea62fa24fd690750a1f05d256f2",
+          "filename": "24-mib.bin",
+          "peer": "audit_alice",
+          "status": "receiving",
+          "progress": 80,
+          "total_chunks": 35952
+        }
+      }
+    ],
+    "sender": {
+      "direction": "send",
+      "file_id": "76aacea62fa24fd690750a1f05d256f2",
+      "filename": "24-mib.bin",
+      "peer": "audit_bob",
+      "status": "done",
+      "progress": 100,
+      "total_chunks": 35952
+    },
+    "receiver": {
+      "direction": "receive",
+      "file_id": "76aacea62fa24fd690750a1f05d256f2",
+      "filename": "24-mib.bin",
+      "peer": "audit_alice",
+      "status": "completed",
+      "progress": 100,
+      "total_chunks": 35952
+    },
+    "expected_sha256": "206320acc7e9ae70b2e614a2a98ef92a9aa6b3b21cb0aa378c5c16c1a4b0e993",
+    "actual_sha256": "206320acc7e9ae70b2e614a2a98ef92a9aa6b3b21cb0aa378c5c16c1a4b0e993",
+    "intermediate_progress": true,
+    "natural_timeout": true
+  },
+  "seconds": 57.197
+}

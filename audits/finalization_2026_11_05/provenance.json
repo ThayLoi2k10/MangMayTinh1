@@ -1,0 +1,55 @@
+{
+  "date": "2026-11-05",
+  "source_files": [
+    {
+      "path": "E:\\Downloads\\BTL_MMT\\Assignment 1 - Distributed Streaming-based Client-Server Collaboration Application(1).pdf",
+      "bytes": 102736,
+      "sha256": "c16b856e0659a7801a435944c8b758ab2a287acd0eff416ff6f4d70b4819f567"
+    },
+    {
+      "path": "E:\\Downloads\\BTL_MMT\\Assignment 2 - Large Enterprise Network Design and Implementation.pdf",
+      "bytes": 729304,
+      "sha256": "dbc359e01766cab37ab194b244e16265b8d6c2c1dd25c8c9e2f08e1f83d2e6e4"
+    },
+    {
+      "path": "E:\\Downloads\\BTL_MMT\\Assignment1_Network_Application_Guide.pptx",
+      "bytes": 771094,
+      "sha256": "50f0e7d118b4f94ecab97ba9df183ffacccd5fd24d08383bcc58e478ead4fcdc"
+    }
+  ],
+  "head": "3c4174791a7e796a18e6d57c98c03111359cc1a5",
+  "upstream_commits": [
+    "3c41747 Loi: Fix hardcore (config.py)",
+    "11e6291 Khang fix file_streaming",
+    "87e479a fix P02 encrypt",
+    "76afde9 Fix D02 D09 - Role 3",
+    "4db6fd0 Fix D02 D09 - Role 3",
+    "1c63552 L\u00e1\u00bb\u00a3i - S\u00e1\u00bb\u00ada l\u00e1\u00bb\u2014i"
+  ],
+  "upstream_changed_files": [
+    "audits/final_2026_10_26/file_streaming/large_file_results.json",
+    "audits/final_2026_10_26/file_streaming/results.json",
+    "audits/final_2026_10_26/http/final_recheck.json",
+    "audits/final_2026_10_26/protocol_security/execution.log",
+    "audits/final_2026_10_26/protocol_security/results.json",
+    "audits/final_2026_10_26/protocol_security/server.log",
+    "audits/final_2026_10_26/regression/final_recheck.json",
+    "audits/final_2026_10_26/regression/verify_role1.json",
+    "client.py",
+    "client_handshake.py",
+    "config.py",
+    "downloads/AD-C02.png",
+    "downloads/SD-C02.png",
+    "downloads_alice/stateB.png",
+    "downloads_bob/stateA.png",
+    "file_client.py",
+    "file_transfer.py",
+    "protocol.py",
+    "server.py",
+    "test_file_client.py",
+    "test_file_transfer.py",
+    "test_transfer.txt",
+    "tests/test_role4_network.py",
+    "udp_streamer.py"
+  ]
+}

@@ -1,0 +1,292 @@
+{
+  "baseline": "3c4174791a7e796a18e6d57c98c03111359cc1a5",
+  "python": "E:\\Downloads\\BTL_MMT\\MangMayTinh1\\.venv\\Scripts\\python.exe",
+  "ports": [
+    29000,
+    29001
+  ],
+  "cases": [
+    {
+      "name": "lost_file_result",
+      "status": "FAIL",
+      "evidence": {
+        "dropped": [
+          {
+            "kind": "FILE_RESULT",
+            "file_id": "c1b44724a9d4449a91e9871644ee4a51",
+            "status": "completed",
+            "error": "",
+            "to": "audit_alice"
+          }
+        ],
+        "sender": {
+          "direction": "send",
+          "file_id": "c1b44724a9d4449a91e9871644ee4a51",
+          "filename": "terminal.bin",
+          "peer": "audit_bob",
+          "status": "sending",
+          "progress": 100,
+          "total_chunks": 1
+        },
+        "receiver": {
+          "direction": "receive",
+          "file_id": "c1b44724a9d4449a91e9871644ee4a51",
+          "filename": "terminal.bin",
+          "peer": "audit_alice",
+          "status": "completed",
+          "progress": 100,
+          "total_chunks": 1
+        },
+        "sender_history": [
+          {
+            "seconds": 0.028,
+            "direction": "send",
+            "file_id": "c1b44724a9d4449a91e9871644ee4a51",
+            "filename": "terminal.bin",
+            "peer": "audit_bob",
+            "status": "sending",
+            "progress": 100,
+            "total_chunks": 1
+          }
+        ],
+        "bytes_match": true,
+        "pending_count": 0,
+        "observation_seconds": 7,
+        "chat_still_operates": true
+      },
+      "traceback": "Traceback (most recent call last):\n  File \"E:\\Downloads\\BTL_MMT\\finalization_2026_11_05\\audits\\finalization_2026_11_05\\backend\\verify_backend.py\", line 265, in main\n    case(evidence);row={\"name\":name,\"status\":\"PASS\",\"evidence\":evidence}\n    ~~~~^^^^^^^^^^\n  File \"E:\\Downloads\\BTL_MMT\\finalization_2026_11_05\\audits\\finalization_2026_11_05\\backend\\verify_backend.py\", line 255, in <lambda>\n    cases=[(\"lost_file_result\",lambda e:terminal_loss(e,\"result\")),(\"lost_final_chunk_ack\",lambda e:terminal_loss(e,\"ack\"))]\n                                        ~~~~~~~~~~~~~^^^^^^^^^^^^\n  File \"E:\\Downloads\\BTL_MMT\\finalization_2026_11_05\\audits\\finalization_2026_11_05\\backend\\verify_backend.py\", line 126, in terminal_loss\n    assert e[\"sender\"][\"status\"] == \"done\", \"Sender must recover one lost terminal packet and remain done after retry horizon\"\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: Sender must recover one lost terminal packet and remain done after retry horizon\n",
+      "seconds": 8.778
+    },
+    {
+      "name": "lost_final_chunk_ack",
+      "status": "FAIL",
+      "evidence": {
+        "dropped": [
+          {
+            "kind": "ACK",
+            "file_id": "3a7bdc5436814d07b500521ed8c42e73",
+            "chunk_index": 0,
+            "to": "audit_alice"
+          }
+        ],
+        "sender": {
+          "direction": "send",
+          "file_id": "3a7bdc5436814d07b500521ed8c42e73",
+          "filename": "terminal.bin",
+          "peer": "audit_bob",
+          "status": "failed: Timeout chunks [0]",
+          "progress": 100,
+          "total_chunks": 1
+        },
+        "receiver": {
+          "direction": "receive",
+          "file_id": "3a7bdc5436814d07b500521ed8c42e73",
+          "filename": "terminal.bin",
+          "peer": "audit_alice",
+          "status": "completed",
+          "progress": 100,
+          "total_chunks": 1
+        },
+        "sender_history": [
+          {
+            "seconds": 0.022,
+            "direction": "send",
+            "file_id": "3a7bdc5436814d07b500521ed8c42e73",
+            "filename": "terminal.bin",
+            "peer": "audit_bob",
+            "status": "done",
+            "progress": 100,
+            "total_chunks": 1
+          },
+          {
+            "seconds": 2.543,
+            "direction": "send",
+            "file_id": "3a7bdc5436814d07b500521ed8c42e73",
+            "filename": "terminal.bin",
+            "peer": "audit_bob",
+            "status": "failed: Timeout chunks [0]",
+            "progress": 100,
+            "total_chunks": 1
+          }
+        ],
+        "bytes_match": true,
+        "pending_count": 1,
+        "observation_seconds": 7,
+        "chat_still_operates": true
+      },
+      "traceback": "Traceback (most recent call last):\n  File \"E:\\Downloads\\BTL_MMT\\finalization_2026_11_05\\audits\\finalization_2026_11_05\\backend\\verify_backend.py\", line 265, in main\n    case(evidence);row={\"name\":name,\"status\":\"PASS\",\"evidence\":evidence}\n    ~~~~^^^^^^^^^^\n  File \"E:\\Downloads\\BTL_MMT\\finalization_2026_11_05\\audits\\finalization_2026_11_05\\backend\\verify_backend.py\", line 255, in <lambda>\n    cases=[(\"lost_file_result\",lambda e:terminal_loss(e,\"result\")),(\"lost_final_chunk_ack\",lambda e:terminal_loss(e,\"ack\"))]\n                                                                                                    ~~~~~~~~~~~~~^^^^^^^^^\n  File \"E:\\Downloads\\BTL_MMT\\finalization_2026_11_05\\audits\\finalization_2026_11_05\\backend\\verify_backend.py\", line 126, in terminal_loss\n    assert e[\"sender\"][\"status\"] == \"done\", \"Sender must recover one lost terminal packet and remain done after retry horizon\"\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: Sender must recover one lost terminal packet and remain done after retry horizon\n",
+      "seconds": 8.375
+    },
+    {
+      "name": "valid_files",
+      "status": "PASS",
+      "evidence": {
+        "files": [
+          {
+            "name": "empty.bin",
+            "expected_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "actual_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "sender": {
+              "direction": "send",
+              "file_id": "23afe14adb7f491c8a2a8c4051852c17",
+              "filename": "empty.bin",
+              "peer": "audit_bob",
+              "status": "done",
+              "progress": 100,
+              "total_chunks": 1
+            },
+            "receiver": {
+              "direction": "receive",
+              "file_id": "23afe14adb7f491c8a2a8c4051852c17",
+              "filename": "empty.bin",
+              "peer": "audit_alice",
+              "status": "completed",
+              "progress": 100,
+              "total_chunks": 1
+            }
+          },
+          {
+            "name": "marker.bin",
+            "expected_sha256": "8564291864265a184ce2022d3104ee1f95d4be660cd794909fe93c64cddee9a2",
+            "actual_sha256": "8564291864265a184ce2022d3104ee1f95d4be660cd794909fe93c64cddee9a2",
+            "sender": {
+              "direction": "send",
+              "file_id": "5c3dec2fe4ae43518f470f4b23792374",
+              "filename": "marker.bin",
+              "peer": "audit_bob",
+              "status": "done",
+              "progress": 100,
+              "total_chunks": 1
+            },
+            "receiver": {
+              "direction": "receive",
+              "file_id": "5c3dec2fe4ae43518f470f4b23792374",
+              "filename": "marker.bin",
+              "peer": "audit_alice",
+              "status": "completed",
+              "progress": 100,
+              "total_chunks": 1
+            }
+          },
+          {
+            "name": "binary unicode tên.bin",
+            "expected_sha256": "4043ab3659cd61351795c186762a045221774893a97dcc74f6ba3deade65ac03",
+            "actual_sha256": "4043ab3659cd61351795c186762a045221774893a97dcc74f6ba3deade65ac03",
+            "sender": {
+              "direction": "send",
+              "file_id": "7e8426b89efa43038752975eda8e2d7e",
+              "filename": "binary unicode tên.bin",
+              "peer": "audit_bob",
+              "status": "done",
+              "progress": 100,
+              "total_chunks": 7
+            },
+            "receiver": {
+              "direction": "receive",
+              "file_id": "7e8426b89efa43038752975eda8e2d7e",
+              "filename": "binary unicode tên.bin",
+              "peer": "audit_alice",
+              "status": "completed",
+              "progress": 100,
+              "total_chunks": 7
+            }
+          }
+        ]
+      },
+      "seconds": 3.326
+    },
+    {
+      "name": "destination_collision",
+      "status": "PASS",
+      "evidence": {
+        "sender": {
+          "direction": "send",
+          "file_id": "f01dae3805d04580a96dd64a62b7bdcd",
+          "filename": "same.bin",
+          "peer": "audit_bob",
+          "status": "failed: Timeout chunks [3]",
+          "progress": 100,
+          "total_chunks": 4
+        },
+        "receiver": {
+          "direction": "receive",
+          "file_id": "f01dae3805d04580a96dd64a62b7bdcd",
+          "filename": "same.bin",
+          "peer": "audit_alice",
+          "status": "failed: destination exists",
+          "progress": 100,
+          "total_chunks": 4
+        },
+        "destination_preserved": true,
+        "pending_count": 4
+      },
+      "seconds": 4.931
+    },
+    {
+      "name": "encrypted_chat",
+      "status": "PASS",
+      "evidence": {
+        "plaintext_absent_from_emitted_wire": true,
+        "receiver_decrypted_correctly": true,
+        "wire_packet_count": 1
+      },
+      "seconds": 1.386
+    },
+    {
+      "name": "standalone_streams",
+      "status": "PASS",
+      "evidence": {
+        "streams": [
+          {
+            "case": "empty",
+            "input_bytes": 0,
+            "output_bytes": 0,
+            "bytes_equal": true,
+            "sender_success": true,
+            "sender_finished": true,
+            "receiver_complete": true,
+            "dropped_eof_ack": [],
+            "errors": []
+          },
+          {
+            "case": "literal_marker",
+            "input_bytes": 7,
+            "output_bytes": 7,
+            "bytes_equal": true,
+            "sender_success": true,
+            "sender_finished": true,
+            "receiver_complete": true,
+            "dropped_eof_ack": [],
+            "errors": []
+          },
+          {
+            "case": "marker_boundary",
+            "input_bytes": 707,
+            "output_bytes": 707,
+            "bytes_equal": true,
+            "sender_success": true,
+            "sender_finished": true,
+            "receiver_complete": true,
+            "dropped_eof_ack": [],
+            "errors": []
+          },
+          {
+            "case": "lost_eof_ack",
+            "input_bytes": 1280,
+            "output_bytes": 1280,
+            "bytes_equal": true,
+            "sender_success": true,
+            "sender_finished": true,
+            "receiver_complete": true,
+            "dropped_eof_ack": [
+              2
+            ],
+            "errors": []
+          }
+        ]
+      },
+      "seconds": 1.397
+    }
+  ],
+  "production_edits": false
+}

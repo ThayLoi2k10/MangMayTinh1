@@ -1,0 +1,167 @@
+..FF.FFF....................F......                                      [100%]
+================================== FAILURES ===================================
+__ TestFileClientAdvanced.test_duplicate_metadata_does_not_add_second_record __
+
+self = <test_file_client.TestFileClientAdvanced testMethod=test_duplicate_metadata_does_not_add_second_record>
+
+    def test_duplicate_metadata_does_not_add_second_record(self):
+        """Metadata trùng file_id không tạo thêm bản ghi nhận."""
+        with tempfile.TemporaryDirectory() as tmp:
+            handler = self.make_handler(tmp)
+
+            outgoing = OutgoingFile.from_bytes(
+                "duplicate.txt", b"hello"
+            )
+            metadata = outgoing.metadata_message("Bob")
+
+            packet = Packet(
+                msg_type=MSG_DATA,
+                payload=encode_secure_json(metadata),
+            )
+
+>           self.assertTrue(handler.handle_packet(packet, sender="Alice"))
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_file_client.py:287:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+file_client.py:198: in handle_packet
+    self._reply_ack(msg.get("file_id"), -1, sender)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <file_client.FileTransferHandler object at 0x000002502F1D65D0>
+file_id = '73adeb8f3c6e4afdbe23f52e7f9878af', chunk_index = -1
+to_user = 'Alice'
+
+    def _reply_ack(self, file_id: str, chunk_index: int, to_user: str) -> None:
+        ack = {
+            "kind": "ACK",
+            "file_id": file_id,
+            "chunk_index": chunk_index,
+            "to": to_user,
+        }
+        payload = encode_secure_json(ack)
+        pkt = Packet(
+            msg_type=MSG_DATA,
+            status=STATUS_OK,
+            seq_no=self.next_seq_fn(),
+            payload=payload,
+        )
+>       self.send_packet_fn(pkt, to_user)
+E       TypeError: TestFileClientAdvanced.make_handler.<locals>.<lambda>() takes 1 positional argument but 2 were given
+
+file_client.py:225: TypeError
+_______ TestFileClientAdvanced.test_empty_file_can_be_sent_and_received _______
+
+self = <test_file_client.TestFileClientAdvanced testMethod=test_empty_file_can_be_sent_and_received>
+
+    def test_empty_file_can_be_sent_and_received(self):
+        """File rỗng vẫn phải truyền và nhận thành công."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "empty.txt"
+            source.write_bytes(b"")
+
+            receiver_dir = root / "downloads"
+            receiver_dir.mkdir()
+
+            receiver = self.make_handler(receiver_dir)
+
+            sender = self.make_handler(
+                root / "sender_downloads",
+                send_fn=lambda packet: receiver.handle_packet(
+                    packet, sender="Alice"
+                ),
+            )
+
+>           file_id = sender.send_file(source)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^
+E           TypeError: FileTransferHandler.send_file() missing 1 required positional argument: 'recipient'
+
+test_file_client.py:118: TypeError
+____________ TestFileClientAdvanced.test_packets_are_sent_in_order ____________
+
+self = <test_file_client.TestFileClientAdvanced testMethod=test_packets_are_sent_in_order>
+
+    def test_packets_are_sent_in_order(self):
+        """Metadata phải được gửi trước các chunk."""
+        with tempfile.TemporaryDirectory() as tmp:
+            source = Path(tmp) / "multi.txt"
+            source.write_bytes(b"A" * 1500)
+
+            sent_packets = []
+            lock = threading.Lock()
+
+            def collect(packet):
+                with lock:
+                    sent_packets.append(packet)
+
+            handler = self.make_handler(
+                Path(tmp) / "downloads",
+                send_fn=collect,
+            )
+
+>           file_id = handler.send_file(source)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+E           TypeError: FileTransferHandler.send_file() missing 1 required positional argument: 'recipient'
+
+test_file_client.py:158: TypeError
+______ TestFileClientAdvanced.test_send_callback_failure_updates_status _______
+
+self = <test_file_client.TestFileClientAdvanced testMethod=test_send_callback_failure_updates_status>
+
+    def test_send_callback_failure_updates_status(self):
+        """Nếu callback gửi packet lỗi, trạng thái phải là failed."""
+        with tempfile.TemporaryDirectory() as tmp:
+            source = Path(tmp) / "source.txt"
+            source.write_bytes(b"some content")
+
+            def fail_send(packet):
+                raise OSError("simulated send failure")
+
+            handler = self.make_handler(
+                Path(tmp) / "downloads",
+                send_fn=fail_send,
+            )
+
+>           file_id = handler.send_file(source)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+E           TypeError: FileTransferHandler.send_file() missing 1 required positional argument: 'recipient'
+
+test_file_client.py:86: TypeError
+______________ TestFileClientAdvanced.test_send_nonexistent_file ______________
+
+self = <test_file_client.TestFileClientAdvanced testMethod=test_send_nonexistent_file>
+
+    def test_send_nonexistent_file(self):
+        """Đường dẫn không tồn tại phải báo lỗi khi gọi send_file."""
+        with tempfile.TemporaryDirectory() as tmp:
+            handler = self.make_handler(tmp)
+            missing_file = Path(tmp) / "missing.txt"
+
+            with self.assertRaises(FileTransferError):
+>               handler.send_file(missing_file)
+E               TypeError: FileTransferHandler.send_file() missing 1 required positional argument: 'recipient'
+
+test_file_client.py:70: TypeError
+_____________ TestFileReceiver.test_accept_metadata_duplicate_id ______________
+
+self = <test_file_transfer.TestFileReceiver object at 0x000002502F339A90>
+
+    def test_accept_metadata_duplicate_id(self):
+        out = self._make_outgoing("doc.txt", b"content")
+        meta = out.metadata_message("alice")
+        self.receiver.accept_metadata(meta, sender="bob")
+
+>       with pytest.raises(FileTransferError, match="đã tồn tại"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE FileTransferError
+
+test_file_transfer.py:186: Failed
+=========================== short test summary info ===========================
+FAILED test_file_client.py::TestFileClientAdvanced::test_duplicate_metadata_does_not_add_second_record
+FAILED test_file_client.py::TestFileClientAdvanced::test_empty_file_can_be_sent_and_received
+FAILED test_file_client.py::TestFileClientAdvanced::test_packets_are_sent_in_order
+FAILED test_file_client.py::TestFileClientAdvanced::test_send_callback_failure_updates_status
+FAILED test_file_client.py::TestFileClientAdvanced::test_send_nonexistent_file
+FAILED test_file_transfer.py::TestFileReceiver::test_accept_metadata_duplicate_id
+6 failed, 29 passed in 0.26s

@@ -1,0 +1,140 @@
+test_same_filename_uploads_preserve_request_content (test_role4_delivery.Role4DeliveryTests.test_same_filename_uploads_preserve_request_content) ...
+  test_same_filename_uploads_preserve_request_content (test_role4_delivery.Role4DeliveryTests.test_same_filename_uploads_preserve_request_content) (recipient='bob') ... FAIL
+test_actual_heartbeat_timeout_removes_user_and_other_client_survives (test_role4_integration.Role4IntegrationTests.test_actual_heartbeat_timeout_removes_user_and_other_client_survives) ... ok
+test_existing_client_entrypoint_serves_ui_and_routes_chat (test_role4_integration.Role4IntegrationTests.test_existing_client_entrypoint_serves_ui_and_routes_chat) ... ok
+test_existing_heartbeat_script (test_role4_integration.Role4IntegrationTests.test_existing_heartbeat_script) ... ok
+test_existing_team_scripts_unchanged (test_role4_integration.Role4IntegrationTests.test_existing_team_scripts_unchanged) ... ok
+test_http_chat_files_and_sha256 (test_role4_integration.Role4IntegrationTests.test_http_chat_files_and_sha256) ... ok
+test_server_shutdown_state_limitation_and_manual_recovery (test_role4_integration.Role4IntegrationTests.test_server_shutdown_state_limitation_and_manual_recovery) ... ok
+test_twenty_clients_crash_isolation_and_repeated_login (test_role4_integration.Role4IntegrationTests.test_twenty_clients_crash_isolation_and_repeated_login) ... ok
+test_interrupted_transfer_sender_fails_and_chat_survives (test_role4_network.Role4NetworkTests.test_interrupted_transfer_sender_fails_and_chat_survives) ... ok
+test_loss_delay_duplicate_reorder_recover (test_role4_network.Role4NetworkTests.test_loss_delay_duplicate_reorder_recover) ... ok
+test_lost_terminal_result_recovers (test_role4_network.Role4NetworkTests.test_lost_terminal_result_recovers)
+One lost FILE_RESULT must not leave a completed file sending forever. ... FAIL
+test_meta_ack_allows_transfer_to_complete (test_role4_network.Role4NetworkTests.test_meta_ack_allows_transfer_to_complete)
+Receiver must ACK FILE_META so sender can finish. ... ok
+test_unavailable_recipient_rejected_by_existing_client (test_role4_network.Role4NetworkTests.test_unavailable_recipient_rejected_by_existing_client) ... ok
+test_upstream_final_ack_loss_should_recover (test_role4_network.Role4NetworkTests.test_upstream_final_ack_loss_should_recover)
+Completion must remain successful after the sending worker terminates. ... FAIL
+test_upstream_receiver_timeout_should_reach_state (test_role4_network.Role4NetworkTests.test_upstream_receiver_timeout_should_reach_state)
+Receiver expiry must propagate into the public client snapshot. ... ok
+test_drafts_enter_shift_enter_and_honest_submission (test_role4_ui.Role4BrowserTests.test_drafts_enter_shift_enter_and_honest_submission) ... ok
+test_file_validation_submission_and_backend_status_transitions (test_role4_ui.Role4BrowserTests.test_file_validation_submission_and_backend_status_transitions) ... ok
+test_injection_and_bounded_history (test_role4_ui.Role4BrowserTests.test_injection_and_bounded_history) ... ok
+test_malformed_missing_collections_and_progress (test_role4_ui.Role4BrowserTests.test_malformed_missing_collections_and_progress) ... ok
+test_mobile_layout_keyboard_and_snapshot_bounds (test_role4_ui.Role4BrowserTests.test_mobile_layout_keyboard_and_snapshot_bounds) ... ok
+test_real_schema_polling_selection_and_disappearing_recipient (test_role4_ui.Role4BrowserTests.test_real_schema_polling_selection_and_disappearing_recipient) ... ok
+test_request_timeouts_recovery_and_no_overlapping_poll (test_role4_ui.Role4BrowserTests.test_request_timeouts_recovery_and_no_overlapping_poll) ... ok
+test_two_browser_clients_chat_file_progress_hash_and_disconnect (test_role4_ui.Role4RealBrowserIntegration.test_two_browser_clients_chat_file_progress_hash_and_disconnect) ... ok
+
+======================================================================
+FAIL: test_same_filename_uploads_preserve_request_content (test_role4_delivery.Role4DeliveryTests.test_same_filename_uploads_preserve_request_content) (recipient='bob')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "E:\Downloads\BTL_MMT\finalization_2026_11_05\tests\test_role4_delivery.py", line 37, in test_same_filename_uploads_preserve_request_content
+    self.assertEqual(hashlib.sha256(received).hexdigest(), hashlib.sha256(content).hexdigest(),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        "HTTP staging must preserve the bytes from each request")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'bf80cbf1c34659bba2795f8d5ab8b6e17090f0a5291684305627b31dda9f86d8' != '9d9dafab76801a5e2265ecc680a3b56de56effcb7a7856af06835c862110dddf'
+- bf80cbf1c34659bba2795f8d5ab8b6e17090f0a5291684305627b31dda9f86d8
++ 9d9dafab76801a5e2265ecc680a3b56de56effcb7a7856af06835c862110dddf
+ : HTTP staging must preserve the bytes from each request
+
+======================================================================
+FAIL: test_lost_terminal_result_recovers (test_role4_network.Role4NetworkTests.test_lost_terminal_result_recovers)
+One lost FILE_RESULT must not leave a completed file sending forever.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "E:\Downloads\BTL_MMT\finalization_2026_11_05\tests\test_role4_network.py", line 154, in test_lost_terminal_result_recovers
+    wait_for(lambda: self.record(self.alice, file_id)["status"] == "done", timeout=10,
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+             description="sender recovers a single lost terminal result")
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Downloads\BTL_MMT\finalization_2026_11_05\tests\role4_harness.py", line 43, in wait_for
+    raise AssertionError(f"Timed out after {timeout}s: {description}; last error={last_error}")
+AssertionError: Timed out after 10s: sender recovers a single lost terminal result; last error=None
+
+======================================================================
+FAIL: test_upstream_final_ack_loss_should_recover (test_role4_network.Role4NetworkTests.test_upstream_final_ack_loss_should_recover)
+Completion must remain successful after the sending worker terminates.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "E:\Downloads\BTL_MMT\finalization_2026_11_05\tests\test_role4_network.py", line 119, in test_upstream_final_ack_loss_should_recover
+    self.assertEqual(self.record(self.alice, file_id)["status"], "done")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'failed: Timeout chunks [0]' != 'done'
+- failed: Timeout chunks [0]
++ done
+
+
+----------------------------------------------------------------------
+Ran 23 tests in 158.492s
+
+FAILED (failures=3)
+[TCP] Kết nối đã đóng: Kết nối bị đóng giữa chừng khi đang đọc dữ liệu
+Existing heartbeat script: exit 0
+Existing script test_proto.py: exit 0
+Existing script test_handshake.py: exit 0
+Existing script test_auth.py: exit 0
+Existing script test_logout.py: exit 0
+ROLE4 evidence: 5 SHA-256 matches; large=2097152 bytes; observed intermediate progress.
+[TCP] Kết nối đã đóng: [WinError 10054] An existing connection was forcibly closed by the remote host
+[TCP] Kết nối đã đóng: [WinError 10054] An existing connection was forcibly closed by the remote host
+ROLE4 evidence: 20 simultaneous clients; crash isolated; 3 reconnect cycles.
+Known timeout-state gap: timeout
+[TCP] Kết nối đã đóng: [WinError 10054] An existing connection was forcibly closed by the remote host
+[TCP] Kết nối đã đóng: [WinError 10054] An existing connection was forcibly closed by the remote host
+{
+  "baseline": "3c4174791a7e796a18e6d57c98c03111359cc1a5",
+  "strict": false,
+  "disabled_markers": [],
+  "tests": [
+    "test_role4_delivery.Role4DeliveryTests.test_same_filename_uploads_preserve_request_content",
+    "test_role4_integration.Role4IntegrationTests.test_actual_heartbeat_timeout_removes_user_and_other_client_survives",
+    "test_role4_integration.Role4IntegrationTests.test_existing_client_entrypoint_serves_ui_and_routes_chat",
+    "test_role4_integration.Role4IntegrationTests.test_existing_heartbeat_script",
+    "test_role4_integration.Role4IntegrationTests.test_existing_team_scripts_unchanged",
+    "test_role4_integration.Role4IntegrationTests.test_http_chat_files_and_sha256",
+    "test_role4_integration.Role4IntegrationTests.test_server_shutdown_state_limitation_and_manual_recovery",
+    "test_role4_integration.Role4IntegrationTests.test_twenty_clients_crash_isolation_and_repeated_login",
+    "test_role4_network.Role4NetworkTests.test_interrupted_transfer_sender_fails_and_chat_survives",
+    "test_role4_network.Role4NetworkTests.test_loss_delay_duplicate_reorder_recover",
+    "test_role4_network.Role4NetworkTests.test_lost_terminal_result_recovers",
+    "test_role4_network.Role4NetworkTests.test_meta_ack_allows_transfer_to_complete",
+    "test_role4_network.Role4NetworkTests.test_unavailable_recipient_rejected_by_existing_client",
+    "test_role4_network.Role4NetworkTests.test_upstream_final_ack_loss_should_recover",
+    "test_role4_network.Role4NetworkTests.test_upstream_receiver_timeout_should_reach_state",
+    "test_role4_ui.Role4BrowserTests.test_drafts_enter_shift_enter_and_honest_submission",
+    "test_role4_ui.Role4BrowserTests.test_file_validation_submission_and_backend_status_transitions",
+    "test_role4_ui.Role4BrowserTests.test_injection_and_bounded_history",
+    "test_role4_ui.Role4BrowserTests.test_malformed_missing_collections_and_progress",
+    "test_role4_ui.Role4BrowserTests.test_mobile_layout_keyboard_and_snapshot_bounds",
+    "test_role4_ui.Role4BrowserTests.test_real_schema_polling_selection_and_disappearing_recipient",
+    "test_role4_ui.Role4BrowserTests.test_request_timeouts_recovery_and_no_overlapping_poll",
+    "test_role4_ui.Role4RealBrowserIntegration.test_two_browser_clients_chat_file_progress_hash_and_disconnect"
+  ],
+  "total": 23,
+  "pass": 20,
+  "fail": 3,
+  "error": 0,
+  "skip": 0,
+  "expected_failure": 0,
+  "unexpected_success": 0,
+  "duration_seconds": 158.522,
+  "failures": [
+    [
+      "test_role4_delivery.Role4DeliveryTests.test_same_filename_uploads_preserve_request_content (recipient='bob')",
+      "Traceback (most recent call last):\n  File \"E:\\Downloads\\BTL_MMT\\finalization_2026_11_05\\tests\\test_role4_delivery.py\", line 37, in test_same_filename_uploads_preserve_request_content\n    self.assertEqual(hashlib.sha256(received).hexdigest(), hashlib.sha256(content).hexdigest(),\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        \"HTTP staging must preserve the bytes from each request\")\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 'bf80cbf1c34659bba2795f8d5ab8b6e17090f0a5291684305627b31dda9f86d8' != '9d9dafab76801a5e2265ecc680a3b56de56effcb7a7856af06835c862110dddf'\n- bf80cbf1c34659bba2795f8d5ab8b6e17090f0a5291684305627b31dda9f86d8\n+ 9d9dafab76801a5e2265ecc680a3b56de56effcb7a7856af06835c862110dddf\n : HTTP staging must preserve the bytes from each request\n"
+    ],
+    [
+      "test_role4_network.Role4NetworkTests.test_lost_terminal_result_recovers",
+      "Traceback (most recent call last):\n  File \"E:\\Downloads\\BTL_MMT\\finalization_2026_11_05\\tests\\test_role4_network.py\", line 154, in test_lost_terminal_result_recovers\n    wait_for(lambda: self.record(self.alice, file_id)[\"status\"] == \"done\", timeout=10,\n    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n             description=\"sender recovers a single lost terminal result\")\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"E:\\Downloads\\BTL_MMT\\finalization_2026_11_05\\tests\\role4_harness.py\", line 43, in wait_for\n    raise AssertionError(f\"Timed out after {timeout}s: {description}; last error={last_error}\")\nAssertionError: Timed out after 10s: sender recovers a single lost terminal result; last error=None\n"
+    ],
+    [
+      "test_role4_network.Role4NetworkTests.test_upstream_final_ack_loss_should_recover",
+      "Traceback (most recent call last):\n  File \"E:\\Downloads\\BTL_MMT\\finalization_2026_11_05\\tests\\test_role4_network.py\", line 119, in test_upstream_final_ack_loss_should_recover\n    self.assertEqual(self.record(self.alice, file_id)[\"status\"], \"done\")\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 'failed: Timeout chunks [0]' != 'done'\n- failed: Timeout chunks [0]\n+ done\n\n"
+    ]
+  ],
+  "errors": []
+}

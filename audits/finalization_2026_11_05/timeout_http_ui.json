@@ -1,0 +1,35 @@
+{
+  "status": "PASS",
+  "file_id": "9bc8bcc6953f40b5947205d934b79589",
+  "http_state": {
+    "username": "timeout_bob",
+    "users": [
+      {
+        "username": "timeout_alice",
+        "ip": "127.0.0.1",
+        "udp_port": 60051
+      },
+      {
+        "username": "timeout_bob",
+        "ip": "127.0.0.1",
+        "udp_port": 64419
+      }
+    ],
+    "messages": [],
+    "transfers": [
+      {
+        "direction": "receive",
+        "file_id": "9bc8bcc6953f40b5947205d934b79589",
+        "filename": "interrupted.bin",
+        "peer": "timeout_alice",
+        "status": "timeout",
+        "progress": 0,
+        "total_chunks": 1
+      }
+    ]
+  },
+  "dom_text": "interrupted.bin\n\nNhận từ timeout_alice\n\n0% · Hết thời gian chờ\n\nID: 9bc8bcc6953f40b5947205d934b79589",
+  "javascript_errors": [],
+  "expiry_trigger": "cleanup_expired(max_age=0), no wall-clock timeout claim",
+  "seconds": 11.945
+}

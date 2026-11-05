@@ -1,0 +1,46 @@
+{
+  "head": "3c4174791a7e796a18e6d57c98c03111359cc1a5",
+  "python": "3.14.4 (tags/v3.14.4:23116f9, Apr  7 2026, 14:10:54) [MSC v.1944 64 bit (AMD64)]",
+  "platform": "win32",
+  "results": [
+    {
+      "name": "encrypted_chat_fragmented_handshake_and_discovery",
+      "status": "PASS",
+      "detail": {
+        "actual_wire_enc": true,
+        "plaintext_absent": true,
+        "decrypted_equal": true,
+        "broadcast_and_private": true,
+        "fragmented_hello": true
+      },
+      "seconds": 0.064
+    },
+    {
+      "name": "legal_maximum_frame_graceful_forward_overflow",
+      "status": "PASS",
+      "detail": {
+        "request_payload_bytes": 65535,
+        "error": {
+          "mode": "unicast",
+          "error": "payload_too_large",
+          "message": "Nội dung tin nhắn vượt quá kích thước cho phép"
+        },
+        "same_session_survives": true,
+        "legacy_plaintext_accepted": true
+      },
+      "seconds": 0.022
+    },
+    {
+      "name": "accepted_identity_has_unambiguous_private_address",
+      "status": "FAIL",
+      "traceback": "Traceback (most recent call last):\n  File \"E:\\Downloads\\BTL_MMT\\finalization_2026_11_05\\audits\\finalization_2026_11_05\\review\\verify_review.py\", line 89, in record\n    detail = fn()\n  File \"E:\\Downloads\\BTL_MMT\\finalization_2026_11_05\\audits\\finalization_2026_11_05\\review\\verify_review.py\", line 147, in reserved_name\n    star = client.CollaborationClient(\"*\", \"\", \"127.0.0.1\")\n  File \"E:\\Downloads\\BTL_MMT\\finalization_2026_11_05\\client.py\", line 75, in __init__\n    self.file_handler = FileTransferHandler(\n                        ~~~~~~~~~~~~~~~~~~~^\n        send_packet_fn=self._send_file_packet,\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        next_seq_fn=self._next_seq,\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        download_dir=f\"downloads_{username}\" # Tránh ghi đè file\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"E:\\Downloads\\BTL_MMT\\finalization_2026_11_05\\file_client.py\", line 34, in __init__\n    self.receiver = FileReceiver(download_dir=download_dir)\n                    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"E:\\Downloads\\BTL_MMT\\finalization_2026_11_05\\file_transfer.py\", line 246, in __init__\n    self.download_dir.mkdir(parents=True , exist_ok=True)\n    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Python314\\Lib\\pathlib\\__init__.py\", line 1011, in mkdir\n    os.mkdir(self, mode)\n    ~~~~~~~~^^^^^^^^^^^^\nOSError: [WinError 123] The filename, directory name, or volume label syntax is incorrect: 'E:\\\\CodexTemp\\\\a1-review-lri6v27s\\\\downloads_*'\n",
+      "seconds": 0.012
+    },
+    {
+      "name": "client_handshake_has_response_deadline",
+      "status": "FAIL",
+      "traceback": "Traceback (most recent call last):\n  File \"E:\\Downloads\\BTL_MMT\\finalization_2026_11_05\\audits\\finalization_2026_11_05\\review\\verify_review.py\", line 89, in record\n    detail = fn()\n  File \"E:\\Downloads\\BTL_MMT\\finalization_2026_11_05\\audits\\finalization_2026_11_05\\review\\verify_review.py\", line 164, in bounded_handshake\n    listener.bind((\"127.0.0.1\", 19000))\n    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^\nOSError: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted\n",
+      "seconds": 0.001
+    }
+  ]
+}

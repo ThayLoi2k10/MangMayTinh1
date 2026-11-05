@@ -12,11 +12,6 @@ from urllib.request import urlopen
 from role4_harness import ROOT, Lab, api, names, wait_for
 
 
-def known_windows_reset(test):
-    """The unchanged legacy heartbeat test does not handle Windows TCP reset."""
-    return unittest.expectedFailure(test) if sys.platform == "win32" else test
-
-
 class Role4IntegrationTests(unittest.TestCase):
     def setUp(self):
         self.lab = Lab().__enter__()
@@ -154,7 +149,6 @@ class Role4IntegrationTests(unittest.TestCase):
                     self.assertIn("SUCCESS", result.stdout)
                 print(f"Existing script {script}: exit 0")
 
-    @known_windows_reset
     def test_existing_heartbeat_script(self):
         result = subprocess.run(
             [sys.executable, str(ROOT / "test_heartbeat.py")],

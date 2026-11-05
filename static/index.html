@@ -264,6 +264,9 @@
       bar.setAttribute("aria-label", `Tiến trình ${text(transfer.filename, "file")}`);
       item.append(bar);
       item.append(element("p", `${percent === null ? "Chưa rõ" : Math.round(percent) + "%"} · ${labels[status] || status}`));
+      if (sending && status === "sending" && percent === 100) {
+        item.append(element("p", "Chờ kết quả từ bên nhận; chưa xác nhận hoàn tất.", "note"));
+      }
       item.append(element("p", `ID: ${text(transfer.file_id, "?")}`, "note"));
       return item;
     });

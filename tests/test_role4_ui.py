@@ -7,7 +7,6 @@ import copy
 import hashlib
 import os
 from pathlib import Path
-import tempfile
 import threading
 import unittest
 
@@ -202,20 +201,25 @@ class Role4BrowserTests(unittest.TestCase):
         record = {"filename": "ghi chú.txt", "peer": "bob", "file_id": "abc", "direction": "send", "status": "sending", "progress": 31}
         self.fixture.value["transfers"] = [record]
         expect(page.locator("progress")).to_have_attribute("value", "31")
+        record.update(status="sending", progress=100)
+        expect(page.locator(".transfer")).to_contain_text("Chờ kết quả từ bên nhận")
         record.update(status="failed: Timeout ACK", progress=31)
         expect(page.locator(".transfer")).to_contain_text("failed: Timeout ACK")
         record.update(status="done", progress=100)
         expect(page.locator(".transfer")).to_contain_text("Bên gửi báo xong")
         record.update(direction="receive", status="completed")
         expect(page.locator(".transfer")).to_contain_text("Bên nhận đã hoàn tất")
-        # Sparse file exercises File.size validation without transferring 83 MiB.
-        with tempfile.TemporaryDirectory(prefix="role4-ui-file-") as directory:
-            oversized = Path(directory) / "too-large.bin"
-            with oversized.open("wb") as stream:
-                stream.truncate(83 * 1024 * 1024)
-            page.locator("#file-input").set_input_files(oversized)
-            page.locator("#file-submit").click()
-            expect(page.locator("#file-feedback")).to_contain_text("quá lớn")
+        # A real browser File has the full size; no 83 MiB disk fixture is needed.
+        # This tests pre-upload validation, not transport of the oversized bytes.
+        page.locator("#file-input").evaluate("""el => {
+            const transfer = new DataTransfer();
+            transfer.items.add(new File([new Uint8Array(83 * 1024 * 1024)], "too-large.bin"));
+            el.files = transfer.files;
+            el.dispatchEvent(new Event("change", {bubbles: true}));
+        }""")
+        self.assertEqual(page.locator("#file-input").evaluate("el => el.files[0].size"), 83 * 1024 * 1024)
+        page.locator("#file-submit").click()
+        expect(page.locator("#file-feedback")).to_contain_text("quá lớn")
         self.assertEqual(len(submissions), 1)
         page.locator("#file-input").set_input_files({"name": "bad?.txt", "mimeType": "text/plain", "buffer": b""})
         page.locator("#file-submit").click()

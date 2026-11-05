@@ -1,0 +1,14 @@
+{
+  "command": [
+    "E:\\Downloads\\BTL_MMT\\MangMayTinh1\\.venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-m",
+    "unittest",
+    "test_file_client",
+    "test_file_transfer",
+    "-v"
+  ],
+  "exit_code": 1,
+  "seconds": 0.688
+}

@@ -1,0 +1,46 @@
+{
+  "head": "3c4174791a7e796a18e6d57c98c03111359cc1a5",
+  "python": "3.14.4 (tags/v3.14.4:23116f9, Apr  7 2026, 14:10:54) [MSC v.1944 64 bit (AMD64)]",
+  "platform": "win32",
+  "results": [
+    {
+      "name": "encrypted_chat_fragmented_handshake_and_discovery",
+      "status": "PASS",
+      "detail": {
+        "actual_wire_enc": true,
+        "plaintext_absent": true,
+        "decrypted_equal": true,
+        "broadcast_and_private": true,
+        "fragmented_hello": true
+      },
+      "seconds": 0.063
+    },
+    {
+      "name": "legal_maximum_frame_graceful_forward_overflow",
+      "status": "PASS",
+      "detail": {
+        "request_payload_bytes": 65535,
+        "error": {
+          "mode": "unicast",
+          "error": "payload_too_large",
+          "message": "Nội dung tin nhắn vượt quá kích thước cho phép"
+        },
+        "same_session_survives": true,
+        "legacy_plaintext_accepted": true
+      },
+      "seconds": 0.022
+    },
+    {
+      "name": "accepted_identity_has_unambiguous_private_address",
+      "status": "FAIL",
+      "traceback": "Traceback (most recent call last):\n  File \"E:\\Downloads\\BTL_MMT\\finalization_2026_11_05\\audits\\finalization_2026_11_05\\review\\verify_review.py\", line 93, in record\n    detail = fn()\n  File \"E:\\Downloads\\BTL_MMT\\finalization_2026_11_05\\audits\\finalization_2026_11_05\\review\\verify_review.py\", line 159, in reserved_name\n    assert not any(x.get(\"text\") == marker for x in bob.state()[\"messages\"]), \"Server accepts username '*', but existing client/API reserves '*' for broadcast: unrelated bob receives intended private message.\"\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: Server accepts username '*', but existing client/API reserves '*' for broadcast: unrelated bob receives intended private message.\n",
+      "seconds": 0.047
+    },
+    {
+      "name": "client_handshake_has_response_deadline",
+      "status": "FAIL",
+      "traceback": "Traceback (most recent call last):\n  File \"E:\\Downloads\\BTL_MMT\\finalization_2026_11_05\\audits\\finalization_2026_11_05\\review\\verify_review.py\", line 93, in record\n    detail = fn()\n  File \"E:\\Downloads\\BTL_MMT\\finalization_2026_11_05\\audits\\finalization_2026_11_05\\review\\verify_review.py\", line 183, in bounded_handshake\n    assert exited, \"Client constructor remains blocked >6s after accepted TCP connection and unanswered HELLO; configured create_connection timeout does not bound handshake reads.\"\n           ^^^^^^\nAssertionError: Client constructor remains blocked >6s after accepted TCP connection and unanswered HELLO; configured create_connection timeout does not bound handshake reads.\n",
+      "seconds": 6.274
+    }
+  ]
+}
