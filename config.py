@@ -8,6 +8,8 @@ CLIENT_TIMEOUT = 10.0
 PEER_TIMEOUT = 15.0
 WATCHDOG_INTERVAL = 3.0
 AUTH_TIMEOUT = 10.0
+HANDSHAKE_TIMEOUT = 5.0  # Total client HELLO + AUTH response deadline.
+SERVER_LIVENESS_TIMEOUT = 20.0  # Periodic discovery refresh is 10 seconds.
 
 RETRY_TIMEOUT = 0.5
 MAX_RETRIES = 5

@@ -117,11 +117,12 @@ class Role4IntegrationTests(unittest.TestCase):
         bridge = self.lab.bridge(alice)
         self.lab.stop_server()
         wait_for(lambda: alice.stop_event.is_set() and bob.stop_event.is_set(), description="TCP disconnect detected")
-        # Characterize the missing UI contract honestly, rather than invent connectivity.
+        # The additive connection contract must report the real TCP closure.
         state = api(bridge.url)
         self.assertEqual(state["username"], "alice")
         self.assertNotIn("connected", state)
-        self.assertEqual({user["username"] for user in state["users"]}, {"alice", "bob"})
+        self.assertEqual(state["connection"]["status"], "disconnected")
+        self.assertEqual(state["users"], [])
         alice.close()
         bob.close()
         self.lab.start_server()

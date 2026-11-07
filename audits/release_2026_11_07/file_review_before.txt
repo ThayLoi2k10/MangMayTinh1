@@ -1,0 +1,59 @@
+============================= test session starts =============================
+platform win32 -- Python 3.14.4, pytest-9.2.0, pluggy-1.7.0 -- E:\Downloads\BTL_MMT\MangMayTinh1\.venv\Scripts\python.exe
+rootdir: E:\Downloads\BTL_MMT\release_closure_2026_11_05
+collecting ... collected 10 items / 8 deselected / 2 selected
+
+tests/test_release_file.py::ReleaseFileTests::test_healthy_file_window_enters_congestion_avoidance FAILED [ 50%]
+tests/test_release_file.py::ReleaseFileTests::test_peer_disappears_while_replying_does_not_kill_receive_loop FAILED [100%]
+
+================================== FAILURES ===================================
+____ ReleaseFileTests.test_healthy_file_window_enters_congestion_avoidance ____
+
+self = <test_release_file.ReleaseFileTests testMethod=test_healthy_file_window_enters_congestion_avoidance>
+
+    def test_healthy_file_window_enters_congestion_avoidance(self):
+        with DatagramPair() as pair:
+            payload = bytes(range(256))*1024
+            fid = pair.send(payload)
+            wait(lambda: pair.finished(fid))
+            record = pair.record('alice', fid)
+            self.assertEqual(record['status'], 'done')
+>           self.assertGreater(record['congestion']['cwnd'], 8)
+E           AssertionError: 8.0 not greater than 8
+
+tests\test_release_file.py:100: AssertionError
+_ ReleaseFileTests.test_peer_disappears_while_replying_does_not_kill_receive_loop _
+
+self = <test_release_file.ReleaseFileTests testMethod=test_peer_disappears_while_replying_does_not_kill_receive_loop>
+
+    def test_peer_disappears_while_replying_does_not_kill_receive_loop(self):
+        with DatagramPair() as pair:
+            receiver = pair.handlers['bob']
+            send = receiver.send_packet_fn
+            refused = []
+            def reply(packet, recipient):
+                if not refused:
+                    refused.append(decode_secure_json(packet.payload)['kind'])
+                    # The real CollaborationClient raises RuntimeError if its
+                    # discovery snapshot loses the peer between receive/reply.
+                    raise RuntimeError('Peer no longer in discovery snapshot')
+                send(packet, recipient)
+            receiver.send_packet_fn = reply
+            fid = pair.send()
+            wait(lambda: pair.finished(fid))
+            self.assertEqual(refused, ['ACK'])
+>           self.assertEqual(pair.errors, [])
+E           AssertionError: Lists differ: ["RuntimeError('Peer no longer in discovery snapshot')"] != []
+E
+E           First list contains 1 additional elements.
+E           First extra element 0:
+E           "RuntimeError('Peer no longer in discovery snapshot')"
+E
+E           - ["RuntimeError('Peer no longer in discovery snapshot')"]
+E           + []
+
+tests\test_release_file.py:120: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_release_file.py::ReleaseFileTests::test_healthy_file_window_enters_congestion_avoidance
+FAILED tests/test_release_file.py::ReleaseFileTests::test_peer_disappears_while_replying_does_not_kill_receive_loop
+======================= 2 failed, 8 deselected in 2.80s =======================

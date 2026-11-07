@@ -1,0 +1,18 @@
+============================= test session starts =============================
+platform win32 -- Python 3.14.4, pytest-9.2.0, pluggy-1.7.0 -- E:\Downloads\BTL_MMT\MangMayTinh1\.venv\Scripts\python.exe
+rootdir: E:\Downloads\BTL_MMT\release_closure_2026_11_05
+collecting ... collected 8 items
+
+tests/test_release_client.py::ReleaseClientTests::test_http_disconnect_invalidates_browser_server_confirmation PASSED [ 12%]
+tests/test_release_client.py::ReleaseClientTests::test_http_rejects_cross_origin_actions_and_rebinding_host
+tests/test_release_client.py::ReleaseClientTests::test_http_rejects_cross_origin_actions_and_rebinding_host PASSED [ 25%]
+tests/test_release_client.py::ReleaseClientTests::test_http_worker_failure_is_visible_in_real_browser_and_session_disconnect PASSED [ 37%]
+tests/test_release_client.py::ReleaseClientTests::test_offline_chat_error_correlates_to_operation PASSED [ 50%]
+tests/test_release_client.py::ReleaseClientTests::test_reserved_identity_rejected_unicode_and_malformed_chat_survive
+tests/test_release_client.py::ReleaseClientTests::test_reserved_identity_rejected_unicode_and_malformed_chat_survive PASSED [ 62%]
+tests/test_release_client.py::ReleaseClientTests::test_upload_staging_is_request_owned_and_cleanup_runs_on_failure PASSED [ 75%]
+tests/test_release_client.py::ReleaseDeadlineAndQueueTests::test_partial_hello_and_silent_auth_have_total_deadline
+tests/test_release_client.py::ReleaseDeadlineAndQueueTests::test_partial_hello_and_silent_auth_have_total_deadline PASSED [ 87%]
+tests/test_release_client.py::ReleaseDeadlineAndQueueTests::test_slow_reader_queue_does_not_block_healthy_peer PASSED [100%]
+
+==================== 8 passed, 12 subtests passed in 9.85s ====================

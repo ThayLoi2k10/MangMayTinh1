@@ -1,0 +1,2 @@
+# Optional: rebuilding the submission PDF, not needed by the application.
+reportlab==5.1.0

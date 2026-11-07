@@ -1,0 +1,111 @@
+{
+  "status": "PASS",
+  "full_suite_methods_per_run": 90,
+  "role4_methods_per_run": 23,
+  "new_release_methods_per_run": 32,
+  "team_file_methods_per_run": 35,
+  "successful_subtests_per_run": 21,
+  "expected_failures": 0,
+  "skips": 0,
+  "source_identical_between_runs": true,
+  "runs": [
+    {
+      "label": "final_run_1",
+      "interpreter": "E:\\Downloads\\BTL_MMT\\MangMayTinh1\\.venv\\Scripts\\python.exe",
+      "counts": {
+        "tests": 90,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "passed": 90
+      },
+      "seconds": 172.907
+    },
+    {
+      "label": "final_run_2",
+      "interpreter": "E:\\Downloads\\BTL_MMT\\release_verify_env_2026_11_07\\Scripts\\python.exe",
+      "counts": {
+        "tests": 90,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "passed": 90
+      },
+      "seconds": 169.731
+    }
+  ],
+  "three_previous_defects": {
+    "test_upstream_final_ack_loss_should_recover": [
+      {
+        "run": 1,
+        "status": "PASS",
+        "seconds": 1.471
+      },
+      {
+        "run": 2,
+        "status": "PASS",
+        "seconds": 1.421
+      }
+    ],
+    "test_upstream_receiver_timeout_should_reach_state": [
+      {
+        "run": 1,
+        "status": "PASS",
+        "seconds": 4.487
+      },
+      {
+        "run": 2,
+        "status": "PASS",
+        "seconds": 4.486
+      }
+    ],
+    "test_existing_heartbeat_script": [
+      {
+        "run": 1,
+        "status": "PASS",
+        "seconds": 28.194
+      },
+      {
+        "run": 2,
+        "status": "PASS",
+        "seconds": 28.201
+      }
+    ]
+  },
+  "fingerprint": "74e42fdbd74a9e3a562fc4eda32cd26f2b5a3eaa18a2f008000ca932d6b7b9dd",
+  "post_suite_changes": {
+    "test_udp_streaming.py": {
+      "suite_sha256": "5b91ee0c309d71d2ba55cf3299c37881b9be10dee63144e1b594a91c33a81d41",
+      "release_sha256": "1c11b280456edd72cb8f0d4bf6dfba3a9e7065a0fb0fc4f412591fb205b3d789"
+    }
+  },
+  "post_suite_change_note": "Only standalone legacy harness changed; it is not executed by the90-method suite. Runtime and all90 suite methods remain byte-identical. Legacy harness stops receiver only after sender finishes; separately rerun twice with unchanged loss/retry/assertions.",
+  "legacy_final": [
+    {
+      "command": [
+        "E:\\Downloads\\BTL_MMT\\release_verify_env_2026_11_07\\Scripts\\python.exe",
+        "-X",
+        "utf8",
+        "E:\\Downloads\\BTL_MMT\\release_closure_2026_11_05\\test_chat_routing.py"
+      ],
+      "exit_code": 0,
+      "pass_groups": 4,
+      "expected_groups": 4,
+      "status": "PASS",
+      "seconds": 9.202
+    },
+    {
+      "command": [
+        "E:\\Downloads\\BTL_MMT\\release_verify_env_2026_11_07\\Scripts\\python.exe",
+        "-X",
+        "utf8",
+        "E:\\Downloads\\BTL_MMT\\release_closure_2026_11_05\\test_udp_streaming.py"
+      ],
+      "exit_code": 0,
+      "pass_groups": 6,
+      "expected_groups": 6,
+      "status": "PASS",
+      "seconds": 18.712
+    }
+  ]
+}

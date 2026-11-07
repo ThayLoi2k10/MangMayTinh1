@@ -1,0 +1,35 @@
+{
+  "head": "bd191f31f8e47c0801e37d80a8bdfa70f3f7fec4",
+  "command": [
+    "E:\\Downloads\\BTL_MMT\\MangMayTinh1\\.venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-m",
+    "pytest",
+    "tests",
+    "test_file_client.py",
+    "test_file_transfer.py",
+    "-v",
+    "-p",
+    "no:cacheprovider",
+    "--junitxml=E:\\Downloads\\BTL_MMT\\release_closure_2026_11_05\\audits\\release_2026_11_07\\full_run_1.xml"
+  ],
+  "exit_code": 1,
+  "counts": {
+    "tests": 85,
+    "passed": 82,
+    "failures": 3,
+    "errors": 0,
+    "skipped": 0
+  },
+  "seconds": 182.062,
+  "status": "FAIL",
+  "junit_counts_including_subtests": {
+    "tests": 102,
+    "failures": 3,
+    "errors": 0,
+    "skipped": 0,
+    "passed": 99
+  },
+  "count_note": "Corrected from collected85items and pytest summary; original JUnit suite tests102 includes17 successfulsubtests. Rawlog/XML unchanged."
+}

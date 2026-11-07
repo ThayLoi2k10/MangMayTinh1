@@ -17,6 +17,8 @@ import os
 import re
 import uuid
 import time
+import threading
+from collections import OrderedDict
 
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -25,6 +27,7 @@ from typing import Any
 from cryptography.fernet import Fernet, InvalidToken
 
 from config import CHUNK_SIZE, FERNET_KEY
+from stream_transport import OrderedByteStream
 
 MAX_FILE_SIZE = 100*1024*1024
 MAX_FILENAME_SIZE = 255
@@ -226,8 +229,9 @@ class IncomingFile:
     chunk_size: int
     sender: str = "?"
     chunks: dict[int, bytes] = field(default_factory=dict)
-    created_at: float = field(default_factory=time.time)
-    last_activity: float = field(default_factory=time.time)
+    created_at: float = field(default_factory=time.monotonic)
+    last_activity: float = field(default_factory=time.monotonic)
+    stream: OrderedByteStream = field(default_factory=lambda: OrderedByteStream(max_buffer_bytes=MAX_FILE_SIZE))
 
     @property
     def progress(self) -> int:
@@ -239,217 +243,213 @@ class IncomingFile:
 
     
 class FileReceiver:
-    """ Quản lý metadata , chunk , tiến trình và lưu file nhận """
+    """Validate files and expose provisional ordered bytes before atomic commit.
+
+    Receiver state is serialized independently of sender/UI locks. Terminal
+    outcomes retain metadata, never file bytes, for a bounded replay horizon.
+    """
+    TERMINAL_TTL = 120.0
+    MAX_HISTORY = 256
+    MAX_ACTIVE = 8
+
     def __init__(self, download_dir: str | Path = "downloads"):
         self.download_dir = Path(download_dir).resolve()
-
-        self.download_dir.mkdir(parents=True , exist_ok=True)
+        self.download_dir.mkdir(parents=True, exist_ok=True)
         self.incoming: dict[str, IncomingFile] = {}
         self.progress: dict[str, dict[str, Any]] = {}
+        self._terminal: OrderedDict[str, dict] = OrderedDict()
+        self._lock = threading.RLock()
+
+    @staticmethod
+    def _identity(item: IncomingFile) -> tuple:
+        return (item.filename, item.size, item.sha256, item.total_chunks, item.chunk_size)
+
+    def _prune(self) -> None:
+        now = time.monotonic()
+        for fid, value in list(self._terminal.items()):
+            if now - value["finished_at"] > self.TERMINAL_TTL:
+                self._terminal.pop(fid)
+        while len(self._terminal) > self.MAX_HISTORY:
+            self._terminal.popitem(last=False)
+        for fid in list(self.progress):
+            if len(self.progress) <= self.MAX_HISTORY + self.MAX_ACTIVE:
+                break
+            if fid not in self.incoming:
+                self.progress.pop(fid)
+
+    def _finish(self, item: IncomingFile, status: str, error: str = "") -> dict:
+        rec = self.progress[item.file_id]
+        rec["status"] = status if status in ("completed", "timeout") else f"failed: {error}"
+        if status == "completed":
+            rec["progress"] = 100
+            item.stream.finish(item.total_chunks)
+        else:
+            item.stream.fail(FileTransferError(error or status))
+        result = {"file_id": item.file_id, "status": status, "error": error,
+                  "size": item.size, "sha256": item.sha256,
+                  "peer": item.sender, "identity": self._identity(item),
+                  "finished_at": time.monotonic()}
+        self._terminal[item.file_id] = result
+        self.incoming.pop(item.file_id, None)
+        self._prune()
+        return dict(result)
+
+    def terminal_result(self, file_id: str, sender: str) -> dict | None:
+        with self._lock:
+            self._prune()
+            result = self._terminal.get(file_id)
+            return dict(result) if result and result["peer"] == sender else None
+
+    def metadata_matches(self, result: dict, message: dict) -> bool:
+        return result["identity"] == (
+            message.get("filename"), message.get("size"), message.get("sha256"),
+            message.get("total_chunks"), message.get("chunk_size", CHUNK_SIZE))
+
+    def get_stream(self, file_id: str) -> OrderedByteStream:
+        """Subscribe while receiving; EOF means verified/committed, not just bytes."""
+        with self._lock:
+            return self.incoming[file_id].stream
+
+    def abort(self, file_id: str, sender: str, error: str) -> dict | None:
+        with self._lock:
+            item = self.incoming.get(file_id)
+            if item is None or item.sender != sender:
+                return None
+            return self._finish(item, "failed", error)
+
+    def close(self) -> None:
+        with self._lock:
+            for item in list(self.incoming.values()):
+                self._finish(item, "failed", "Client closed")
 
     def cleanup_expired(self, max_age: float = 120.0) -> list[str]:
-        """Xóa các file nhận quá thời gian cho phép """
-        now = time.time()
-        expired = [
-            fid for fid, item in self.incoming.items()
-            if now - item.last_activity > max_age
-        ]
-        for fid in expired:
-            self.incoming.pop(fid, None)
-            if fid in self.progress:
-                self.progress[fid]["status"] = "timeout"
-        return expired
-    
-    def accept_metadata(self, message: dict[str, Any] , sender: str = "?") -> IncomingFile:
-        """ Kiểm tra metadata và khởi tạo trạng thái nhận file """
-        if(not isinstance(message, dict) or message.get("kind") != FILE_META):
-            raise FileTransferError("Thông điệp metadata không hợp lệ")
+        with self._lock:
+            now = time.monotonic()
+            expired = [fid for fid, item in self.incoming.items()
+                       if now - item.last_activity > max_age]
+            for fid in expired:
+                self._finish(self.incoming[fid], "timeout", "Receiver inactivity timeout")
+            self._prune()
+            return expired
 
-        fid = message.get("file_id")
+    def accept_metadata(self, message: dict[str, Any], sender: str = "?") -> IncomingFile:
+        with self._lock:
+            if not isinstance(message, dict) or message.get("kind") != FILE_META:
+                raise FileTransferError("Thông điệp metadata không hợp lệ")
+            fid = message.get("file_id")
+            if not isinstance(fid, str) or not re.fullmatch(r"[0-9a-f]{32}", fid):
+                raise FileTransferError("file_id không hợp lệ")
+            name = safe_filename(message.get("filename"))
+            size, total = message.get("size"), message.get("total_chunks")
+            chunk_size, digest = message.get("chunk_size", CHUNK_SIZE), message.get("sha256")
+            if type(size) is not int or not 0 <= size <= MAX_FILE_SIZE:
+                raise FileTransferError("Size không hợp lệ")
+            if type(chunk_size) is not int or not 1 <= chunk_size <= CHUNK_SIZE:
+                raise FileTransferError("Chunk_size không hợp lệ")
+            expected_total = max(1, (size + chunk_size - 1) // chunk_size)
+            if type(total) is not int or total != expected_total or total > 200000:
+                raise FileTransferError("Total không hợp lệ")
+            if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest):
+                raise FileTransferError("SHA-256 không hợp lệ")
+            identity = (name, size, digest, total, chunk_size)
+            existing = self.incoming.get(fid)
+            if existing:
+                if existing.sender != sender or self._identity(existing) != identity:
+                    raise FileTransferError("Metadata trùng không khớp hoặc khác người gửi")
+                return existing
+            self._prune()
+            if fid in self._terminal:
+                raise FileTransferError("Transfer đã kết thúc; không tạo lại")
+            if len(self.incoming) >= self.MAX_ACTIVE:
+                raise FileTransferError("Too many active receiving transfers")
+            item = IncomingFile(fid, name, size, digest, total, chunk_size, sender=sender)
+            self.incoming[fid] = item
+            self.progress[fid] = {
+                "file_id": fid, "filename": name, "sender": sender,
+                "status": "receiving", "progress": 0, "received_chunks": 0,
+                "total_chunks": total}
+            self._prune()
+            return item
 
-        if (not isinstance(fid, str) or not re.fullmatch(r"[0-9a-fA-F]{32}", fid)):
-            raise FileTransferError("file_id không hợp lệ")
-
-        fid = fid.lower()
-
-        if fid in self.incoming:
-            return self.incoming[fid]
-
-        name = safe_filename(message.get("filename"))
-
-        size = message.get("size")
-        total = message.get("total_chunks")
-        chunk_size = message.get("chunk_size", CHUNK_SIZE)
-        digest = message.get("sha256")
-
-        if type(size) is not int or not 0 <= size <= MAX_FILE_SIZE:
-            raise FileTransferError("Size không hợp lệ")
-
-        if type(chunk_size) is not int or chunk_size <= 0:
-            raise FileTransferError("Chunk_size không hợp lệ")
-
-        expected_total = max(1, (size + chunk_size - 1) // chunk_size)
-
-        if type(total) is not int or total != expected_total:
-            raise FileTransferError("Total không hợp lệ")
-
-        if (not isinstance(digest, str) or not re.fullmatch(r"[0-9a-fA-F]{64}",digest)):
-            raise FileTransferError("SHA-256 không hợp lệ")
-
-        item = IncomingFile(
-            file_id=fid,
-            filename=name,
-            size=size,
-            sha256=digest.lower(),
-            total_chunks=total,
-            chunk_size=chunk_size,
-            sender=sender,
-        )
-
-        self.incoming[fid] = item
-
-        self.progress[fid] = {
-            "file_id": fid,
-            "filename": name,
-            "sender": sender,
-            "status": "receiving",
-            "progress": 0,
-            "received_chunks": 0,
-            "total_chunks": total,
-        }
-
-        return item
-
-    def accept_chunk(self, message: dict[str, Any],) -> dict[str, Any]:
-        """Nhận một chunk, ghép và kiểm tra khi đã đủ chunk """
-        if (not isinstance(message, dict) or message.get("kind") != FILE_CHUNK):
-            raise FileTransferError("Thông điệp chunk không hợp lệ")
-
-        fid = message.get("file_id")
-
-        if not isinstance(fid, str):
-            raise FileTransferError("file_id không hợp lệ")
-
-        item = self.incoming.get(fid.lower())
-
-        if item is None:
-            # Retransmit / chunk muộn sau khi đã hoàn tất hoặc đã hủy
-            return {
-                "kind": "ACK",
-                "file_id": fid.lower() if isinstance(fid, str) else "",
-                "chunk_index": message.get("chunk_index", -1),
-                "complete": False,
-                "ignored": True
-            }
-
-        total = message.get("total_chunks")
-
-        if type(total) is not int or total != item.total_chunks:
-            raise FileTransferError("Total_chunks không khớp metadata")
-        
-        idx = message.get("chunk_index")
-
-        if (type(idx) is not int or not 0 <= idx < item.total_chunks):
-            raise FileTransferError("Chunk_index nằm ngoài phạm vi")
-
-        encoded = message.get("data")
-
-        if not isinstance(encoded, str):
-            raise FileTransferError("Dữ liệu chunk phải là Base64 string")
-
-        try:
-            chunk = base64.b64decode(encoded,validate=True)
-        except (binascii.Error, ValueError) as exc:
-            raise FileTransferError("Dữ liệu Base64 không hợp lệ") from exc
-
-        if idx < item.total_chunks - 1:
-            expected_len = item.chunk_size
-        else:
-            expected_len = (item.size - item.chunk_size * (item.total_chunks - 1))
-
-        if len(chunk) != expected_len:
-            raise FileTransferError("Kích thước chunk không hợp lệ")
-
-        """Chunk trùng không làm tăng tiến trình.
-        Nếu cùng chỉ số nhưng nội dung khác thì từ chối"""
-        previous = item.chunks.get(idx)
-
-        if previous is not None and previous != chunk:
-            raise FileTransferError("Chunk trùng có nội dung khác nhau")
-
-        item.last_activity = time.time()
-        item.chunks.setdefault(idx, chunk)
-
-        rec = self.progress[item.file_id]
-        rec["received_chunks"] = len(item.chunks)
-        rec["progress"] = item.progress
-
-        if len(item.chunks) < item.total_chunks:
-            return {
-                "kind": "ACK",
-                "file_id": item.file_id,
-                "chunk_index": idx,
-                "complete": False,
-                "progress": item.progress,
-            }
-
-        data = b"".join(item.chunks[i] for i in range(item.total_chunks))
-
-        if len(data) != item.size:
-            rec["status"] = "failed: size mismatch"
-            raise FileTransferError("Kích thước file sau khi ghép không khớp")
-
-        actual_digest = hashlib.sha256(data).hexdigest()
-
-        if actual_digest != item.sha256:
-            rec["status"] = "failed: hash mismatch"
-            self.incoming.pop(item.file_id, None)
-            raise FileTransferError("SHA-256 không khớp")
-
-        target = self.download_dir / item.filename
-
-        if target.exists():
-            rec["status"] = "failed: destination exists"
-            self.incoming.pop(item.file_id, None)
-            raise FileTransferError("File đích đã tồn tại; không ghi đè")
-
-        temp = self.download_dir / (f".{item.file_id}.part")
-
-        try:
-            with temp.open("wb") as stream:
-                stream.write(data)
-
-            os.replace(temp, target)
-
-        except FileTransferError:
-            temp.unlink(missing_ok=True)
-            raise
-
-        except OSError as exc:
-            temp.unlink(missing_ok=True)
-            rec["status"] = "failed: disk error"
-            self.incoming.pop(item.file_id, None)
-            raise FileTransferError("Không thể lưu file nhận được") from exc
-
-        rec["status"] = "completed"
-        rec["progress"] = 100
-
-        self.incoming.pop(item.file_id, None)
-
-        return {
-            "kind": FILE_COMPLETE,
-            "file_id": item.file_id,
-            "filename": item.filename,
-            "size": item.size,
-            "sha256": actual_digest,
-            "path": str(target),
-        }
+    def accept_chunk(self, message: dict[str, Any], sender: str | None = None) -> dict[str, Any]:
+        with self._lock:
+            if not isinstance(message, dict) or message.get("kind") != FILE_CHUNK:
+                raise FileTransferError("Thông điệp chunk không hợp lệ")
+            fid = message.get("file_id")
+            if not isinstance(fid, str):
+                raise FileTransferError("file_id không hợp lệ")
+            item = self.incoming.get(fid)
+            if item is None or (sender is not None and item.sender != sender):
+                return {"ignored": True, "file_id": fid, "complete": False}
+            total, idx, encoded = message.get("total_chunks"), message.get("chunk_index"), message.get("data")
+            try:
+                if type(total) is not int or total != item.total_chunks:
+                    raise FileTransferError("Total_chunks không khớp metadata")
+                if type(idx) is not int or not 0 <= idx < item.total_chunks:
+                    raise FileTransferError("Chunk_index nằm ngoài phạm vi")
+                if not isinstance(encoded, str):
+                    raise FileTransferError("Dữ liệu chunk phải là Base64 string")
+                try:
+                    chunk = base64.b64decode(encoded, validate=True)
+                except (binascii.Error, ValueError) as exc:
+                    raise FileTransferError("Dữ liệu Base64 không hợp lệ") from exc
+                expected_len = item.chunk_size if idx < item.total_chunks - 1 else item.size - item.chunk_size * (item.total_chunks - 1)
+                if len(chunk) != expected_len:
+                    raise FileTransferError("Kích thước chunk không hợp lệ")
+                previous = item.chunks.get(idx)
+                if previous is not None and previous != chunk:
+                    raise FileTransferError("Chunk trùng có nội dung khác nhau")
+                if previous is None:
+                    item.stream.feed(idx, chunk)
+                    item.chunks[idx] = chunk
+                item.last_activity = time.monotonic()
+                rec = self.progress[fid]
+                rec.update(received_chunks=len(item.chunks), progress=item.progress)
+                if len(item.chunks) < item.total_chunks:
+                    return {"kind": "ACK", "file_id": fid, "chunk_index": idx,
+                            "complete": False, "progress": item.progress}
+                # Streaming hash/write avoids a second whole-file concatenation.
+                digest = hashlib.sha256()
+                for index in range(item.total_chunks):
+                    digest.update(item.chunks[index])
+                if digest.hexdigest() != item.sha256:
+                    raise FileTransferError("SHA-256 không khớp")
+                target = self.download_dir / item.filename
+                temporary = self.download_dir / f".{item.file_id}.part"
+                owned_temp = False
+                try:
+                    with temporary.open("xb") as stream:
+                        owned_temp = True
+                        for index in range(item.total_chunks):
+                            stream.write(item.chunks[index])
+                        stream.flush()
+                        os.fsync(stream.fileno())
+                    # Same-filesystem hard link atomically publishes without replacing
+                    # an existing file, including a destination created after metadata.
+                    os.link(temporary, target)
+                except FileExistsError as exc:
+                    raise FileTransferError("File đích đã tồn tại; không ghi đè") from exc
+                except OSError as exc:
+                    raise FileTransferError("Không thể lưu file nhận được") from exc
+                finally:
+                    if owned_temp:
+                        try:
+                            temporary.unlink(missing_ok=True)
+                        except OSError:
+                            pass  # Never turn a successfully published file into failure.
+                self._finish(item, "completed")
+                return {"kind": FILE_COMPLETE, "file_id": fid, "filename": item.filename,
+                        "size": item.size, "sha256": item.sha256, "path": str(target),
+                        "progress": 100}
+            except (FileTransferError, BufferError) as exc:
+                self._finish(item, "failed", str(exc))
+                if isinstance(exc, FileTransferError):
+                    raise
+                raise FileTransferError(str(exc)) from exc
 
     def get_progress(self, file_id: str) -> dict[str, Any] | None:
-        """Lấy bản sao trạng thái truyền file"""
         if not isinstance(file_id, str):
             return None
-
-        record = self.progress.get(file_id.lower())
-
-        return dict(record) if record else None
+        with self._lock:
+            record = self.progress.get(file_id)
+            return dict(record) if record else None

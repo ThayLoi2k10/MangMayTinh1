@@ -115,9 +115,10 @@
           <button id="file-submit" type="submit" disabled>Gửi file</button>
           <p id="file-feedback" class="feedback" role="status" aria-live="polite"></p>
         </form>
-        <p class="note">HTTP chấp nhận yêu cầu chưa có nghĩa người nhận đã nhận được. Theo dõi trạng thái bên dưới; xem terminal nếu worker báo lỗi.</p>
+        <p class="note">HTTP chấp nhận yêu cầu chưa có nghĩa người nhận đã nhận được. Theo dõi trạng thái truyền và lỗi yêu cầu bên dưới.</p>
       </div>
       <div id="transfers" role="region" aria-label="Tiến trình truyền file" tabindex="0"><p class="empty">Chưa có lượt truyền file.</p></div>
+      <div id="operations" role="status" aria-live="polite" aria-label="Lỗi yêu cầu"></div>
     </section>
   </main>
   <footer>Đăng nhập bằng <code>client.py --username … --ui-port …</code>. Khi mất phiên server, khởi động lại client để đăng nhập lại. Hiển thị tối đa 100 tin nhắn và 40 lượt truyền gần nhất.</footer>
@@ -125,7 +126,7 @@
 <script>
 "use strict";
 (() => {
-  // Verified against client.py / file_transfer.py at ab63e31. No transport logic here.
+  // Presentation only. Older bridges without connection/operations stay usable.
   const MAX_FILE_BYTES = 100 * 1024 * 1024;
   const MAX_REQUEST_BYTES = 110 * 1024 * 1024;
   const $ = id => document.getElementById(id);
@@ -134,6 +135,7 @@
   const rows = value => Array.isArray(value) ? value.filter(object) : [];
   const encoder = new TextEncoder();
   let apiReady = false, chatBusy = false, fileBusy = false, username = "";
+  let sessionUsable = true;
   let peers = new Set(), pollTimer, pollBusy = false, stopped = false, failures = 0;
   let messageSignature = "", transferSignature = "", userSignature = "";
   const controllers = new Set();
@@ -148,8 +150,8 @@
     $(id).dataset.tone = tone;
   }
   function buttons() {
-    $("chat-submit").disabled = !apiReady || chatBusy || !$("draft").value.trim() || !validTarget($("chat-to").value, true);
-    $("file-submit").disabled = !apiReady || fileBusy || !$("file-input").files.length || !validTarget($("file-to").value, false);
+    $("chat-submit").disabled = !apiReady || !sessionUsable || chatBusy || !$("draft").value.trim() || !validTarget($("chat-to").value, true);
+    $("file-submit").disabled = !apiReady || !sessionUsable || fileBusy || !$("file-input").files.length || !validTarget($("file-to").value, false);
     $("file-input").disabled = fileBusy;
     $("file-to").disabled = fileBusy;
   }
@@ -280,6 +282,21 @@
     renderUsers(state.users);
     renderMessages(state.messages);
     renderTransfers(state.transfers);
+    const connection = object(state.connection) ? state.connection : {};
+    const status = text(connection.status);
+    sessionUsable = status !== "disconnected" && status !== "stale";
+    if (status === "connected") {
+      feedback("server-status", "Server: đã xác minh phiên qua phản hồi gần đây", "good");
+    } else if (status === "disconnected") {
+      feedback("server-status", "Server: mất kết nối — khởi động lại client để đăng nhập", "error");
+    } else if (status === "stale") {
+      feedback("server-status", "Server: phản hồi đã cũ; chưa xác minh kết nối hiện tại", "error");
+    } else {
+      feedback("server-status", "Server: chưa xác minh (API chưa cung cấp trạng thái phiên)");
+    }
+    const errors = rows(state.operations).filter(op => op.status === "failed").slice(-10);
+    $("operations").replaceChildren(...errors.map(op => element("p",
+      `${text(op.kind, "Yêu cầu")} → ${text(op.target, "?")}: ${text(op.error, "Không thành công")}`, "feedback")));
   }
   async function poll() {
     if (stopped || pollBusy || document.hidden) return;
@@ -292,8 +309,10 @@
       $("snapshot-time").textContent = `Đọc API lúc ${new Date().toLocaleTimeString("vi-VN")}`;
     } catch (error) {
       apiReady = false;
+      sessionUsable = false;
       failures++;
       feedback("api-status", `HTTP cục bộ: mất kết nối / lỗi — ${error.message}`, "error");
+      feedback("server-status", "Server: chưa xác minh — không đọc được trạng thái phiên hiện tại", "error");
       $("snapshot-time").textContent = "Dữ liệu hiển thị có thể đã cũ";
     } finally {
       pollBusy = false;
@@ -315,7 +334,7 @@
     event.preventDefault();
     if (chatBusy) return;
     const draft = $("draft").value, target = $("chat-to").value;
-    if (!apiReady || !draft.trim() || !validTarget(target, true)) {
+    if (!apiReady || !sessionUsable || !draft.trim() || !validTarget(target, true)) {
       feedback("chat-feedback", "Cần API hoạt động, người nhận hợp lệ và tin nhắn không trống.", "error"); return;
     }
     // 5,000 UTF-16 units stays below the protocol's 65,535-byte JSON payload, including escaped Unicode.
@@ -361,7 +380,7 @@
     if (fileBusy) return;
     const file = $("file-input").files[0], target = $("file-to").value;
     const error = fileError(file, target);
-    if (!apiReady || error) { feedback("file-feedback", error || "API cục bộ chưa hoạt động.", "error"); return; }
+    if (!apiReady || !sessionUsable || error) { feedback("file-feedback", error || "API hoặc phiên server chưa sẵn sàng.", "error"); return; }
     fileBusy = true;
     buttons();
     feedback("file-feedback", "Đang đọc file…");

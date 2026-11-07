@@ -1,0 +1,28 @@
+[
+  {
+    "command": [
+      "E:\\Downloads\\BTL_MMT\\release_verify_env_2026_11_07\\Scripts\\python.exe",
+      "-X",
+      "utf8",
+      "E:\\Downloads\\BTL_MMT\\release_closure_2026_11_05\\test_chat_routing.py"
+    ],
+    "exit_code": 0,
+    "pass_groups": 4,
+    "expected_groups": 4,
+    "status": "PASS",
+    "seconds": 9.213
+  },
+  {
+    "command": [
+      "E:\\Downloads\\BTL_MMT\\release_verify_env_2026_11_07\\Scripts\\python.exe",
+      "-X",
+      "utf8",
+      "E:\\Downloads\\BTL_MMT\\release_closure_2026_11_05\\test_udp_streaming.py"
+    ],
+    "exit_code": 1,
+    "pass_groups": 2,
+    "expected_groups": 6,
+    "status": "FAIL",
+    "seconds": 29.696
+  }
+]

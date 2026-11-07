@@ -157,29 +157,36 @@ def run_transfer(
 
     # Thread chạy Receiver
     recv_done = threading.Event()
+    sender_done = threading.Event()
+    receiver_errors = []
+    receiver_sock.settimeout(0.1)
 
     def receiver_loop():
-        deadline = time.time() + timeout
-        while time.time() < deadline and not receiver.is_complete():
+        deadline = time.monotonic() + timeout
+        # Completion of receive bytes is not completion of the sender's ACK
+        # exchange. Keep the real endpoint alive for late selective retries,
+        # just as an online application peer remains available after saving.
+        while time.monotonic() < deadline and not sender_done.is_set():
             try:
                 raw, addr = receiver_sock.recvfrom(2048)
                 receiver.handle_raw(raw, addr)
             except socket.timeout:
                 continue
-            except Exception:
+            except Exception as exc:
+                receiver_errors.append(repr(exc))
                 break
         recv_done.set()
 
     t_recv = threading.Thread(target=receiver_loop, daemon=True)
     t_recv.start()
 
-    # Cho receiver sẵn sàng
-    time.sleep(0.05)
-
     # Gửi
-    t0 = time.time()
-    ok = sender.send_data(data, timeout=timeout)
-    elapsed = time.time() - t0
+    t0 = time.monotonic()
+    try:
+        ok = sender.send_data(data, timeout=timeout)
+    finally:
+        sender_done.set()
+    elapsed = time.monotonic() - t0
 
     # Chờ receiver xử lý hết
     recv_done.wait(timeout=3.0)
@@ -196,6 +203,9 @@ def run_transfer(
     result["dropped_sender"] = sender_sock.dropped_count
     result["dropped_receiver"] = receiver_sock.dropped_count
     result["elapsed"] = elapsed
+    result["receiver_errors"] = receiver_errors
+    result["receiver_stopped"] = not t_recv.is_alive()
+    ok = ok and not receiver_errors and not t_recv.is_alive()
 
     # Dọn
     try:

@@ -8,6 +8,7 @@ import struct
 import threading
 import time
 import uuid
+import queue
 from config import (
     SERVER_BIND_HOST,
     TCP_PORT,
@@ -34,6 +35,9 @@ from protocol import (
     recv_tcp_packet,
     dump_json,
     load_json,
+    validate_username,
+    HEADER_SIZE,
+    decode_header,
 )
 
 SERVER_HOST = SERVER_BIND_HOST
@@ -56,8 +60,10 @@ class ServerRegistry:
                 "client_ip": client_ip,
                 "udp_port": udp_port,
                 "session_id": session_id,
-                "last_seen": time.time(),
+                "last_seen": time.monotonic(),
                 "send_lock": threading.Lock(),
+                "outbox": queue.Queue(maxsize=64),
+                "closed": threading.Event(),
             }
             return session_id
 
@@ -70,6 +76,7 @@ class ServerRegistry:
             if session_id and peer["session_id"] != session_id:
                 return False
             del self._peers[username]
+            peer["closed"].set()
             return True
         
     # Cập nhật mốc thời gian sống last_seen dựa theo cặp IP và UDP port gửi tới 
@@ -77,18 +84,19 @@ class ServerRegistry:
         with self._lock:
             for info in self._peers.values():
                 if info["client_ip"] == client_ip and info["udp_port"] == udp_port:
-                    info["last_seen"] = time.time()
+                    info["last_seen"] = time.monotonic()
                     return True
             return False
         
     # Lọc và gỡ bỏ các peer không gửi tín hiệu quá thời gian quy định
     def scan_dead_peers(self, timeout_sec: float):
         dead_peers = []
-        now = time.time()
+        now = time.monotonic()
         with self._lock:
             for username, info in list(self._peers.items()):
                 if now - info["last_seen"] > timeout_sec:
                     dead_peers.append((username, info["tcp_sock"]))
+                    info["closed"].set()
                     del self._peers[username]
         return dead_peers
     
@@ -147,16 +155,17 @@ class CollaborationServer:
                 if self.user_list_seq == 0:
                     self.user_list_seq = 1
             current_seq = self.user_list_seq
-
-        payload = dump_json({"users": self.registry.get_online_users()})
-        wire_data = encode_packet(
-            Packet(msg_type=MSG_USER_LIST, status=STATUS_OK, seq_no=current_seq, payload=payload)
-        )
-        for target in self.registry.get_all_udp_targets():
-            try:
-                self.udp_sock.sendto(wire_data, target)
-            except (ConnectionResetError, OSError):
-                pass
+            # Serialize version, snapshot and emission. A later version may never
+            # carry a registry snapshot captured earlier than an older version.
+            payload = dump_json({"users": self.registry.get_online_users()})
+            wire_data = encode_packet(
+                Packet(msg_type=MSG_USER_LIST, status=STATUS_OK, seq_no=current_seq, payload=payload)
+            )
+            for target in self.registry.get_all_udp_targets():
+                try:
+                    self.udp_sock.sendto(wire_data, target)
+                except (ConnectionResetError, OSError):
+                    pass
 
     # Lắng nghe các gói UDP heartbeat từ client để duy trì trạng thái online
     def udp_listener_loop(self):
@@ -165,7 +174,8 @@ class CollaborationServer:
                 data, addr = self.udp_sock.recvfrom(2048)
                 packet = decode_packet(data)
                 if packet.msg_type == MSG_HEARTBEAT:
-                    self.registry.touch_peer_by_addr(addr[0], addr[1])
+                    if self.registry.touch_peer_by_addr(addr[0], addr[1]):
+                        self.udp_sock.sendto(encode_packet(Packet(MSG_HEARTBEAT, STATUS_OK, packet.seq_no)), addr)
             except (ConnectionResetError, OSError):
                 continue
             except Exception:
@@ -173,7 +183,7 @@ class CollaborationServer:
 
     # Định kỳ quét danh bạ, đóng socket và broadcast cập nhật nếu có peer quá hạn
     def watchdog_loop(self):
-        last_sync = time.time()
+        last_sync = time.monotonic()
         while self.is_running:
             time.sleep(WATCHDOG_INTERVAL)
             dead_list = self.registry.scan_dead_peers(PEER_TIMEOUT)
@@ -189,18 +199,49 @@ class CollaborationServer:
                     except OSError:
                         pass
                 self.broadcast_user_list(bump_seq=True)
-            elif time.time() - last_sync >= 10.0:
-                self.broadcast_user_list(bump_seq=False)
-                last_sync = time.time()
+            elif time.monotonic() - last_sync >= 10.0:
+                self.broadcast_user_list(bump_seq=True)
+                last_sync = time.monotonic()
 
     # Gửi một packet an toàn tới một peer
     def _send_safely(self, peer_info, packet: Packet) -> bool:
+        """Enqueue bounded work for this peer; never block other recipients."""
         try:
-            with peer_info["send_lock"]:
-                peer_info["tcp_sock"].sendall(encode_packet(packet))
+            if peer_info["closed"].is_set():
+                return False
+            peer_info["outbox"].put_nowait((encode_packet(packet), None))
             return True
-        except (OSError, ConnectionResetError, BrokenPipeError, struct.error):
+        except (queue.Full, OSError, ValueError, struct.error):
+            self._close_peer_socket(peer_info)
             return False
+
+    @staticmethod
+    def _close_peer_socket(peer):
+        peer["closed"].set()
+        try:
+            peer["tcp_sock"].shutdown(socket.SHUT_RDWR)
+        except OSError:
+            pass
+
+    def _peer_writer(self, peer):
+        while not peer["closed"].is_set():
+            try:
+                data, receipt = peer["outbox"].get(timeout=.2)
+            except queue.Empty:
+                continue
+            try:
+                peer["tcp_sock"].sendall(data)
+                if receipt:
+                    receipt.set()
+            except OSError:
+                self._close_peer_socket(peer)
+                return
+
+    def _chat_error(self, username, packet, code, message):
+        peer = self.registry.get_peer(username)
+        if peer:
+            self._send_safely(peer, Packet(MSG_DATA, STATUS_ERR, packet.seq_no,
+                dump_json({"error": code, "message": message})))
 
     # Xử lý packet kiểu MSG_DATA (tin nhắn chat).
     def handle_msg_data(self, pkt: Packet, sender_username: str):
@@ -211,10 +252,14 @@ class CollaborationServer:
             print(f"[!] [{sender_username}] Payload MSG_DATA không hợp lệ")
             return
 
+        if not isinstance(body, dict) or not isinstance(body.get("mode"), str):
+            self._chat_error(sender_username, pkt, "invalid_message", "Payload chat không hợp lệ")
+            return
         mode = body.get("mode", "").lower()
         message = body.get("message", "")
 
-        if not message:
+        if not isinstance(message, str) or not message or mode not in ("broadcast", "unicast"):
+            self._chat_error(sender_username, pkt, "invalid_message", "Tin nhắn hoặc mode không hợp lệ")
             print(f"[!] [{sender_username}] Tin nhắn rỗng, bỏ qua")
             return
 
@@ -228,8 +273,10 @@ class CollaborationServer:
             forward_body["enc"] = True
             
         if mode == "unicast":
-            recipient = body.get("recipient", "").strip()
-            if not recipient:
+            try:
+                recipient = validate_username(body.get("recipient"))
+            except ValueError:
+                self._chat_error(sender_username, pkt, "invalid_recipient", "Người nhận không hợp lệ")
                 print(f"[!] [{sender_username}] Unicast thiếu recipient")
                 return
             forward_body["recipient"] = recipient
@@ -295,6 +342,7 @@ class CollaborationServer:
                 err_pkt = Packet(
                     msg_type=MSG_DATA,
                     status=STATUS_ERR,
+                    seq_no=pkt.seq_no,
                     payload=dump_json(
                         {
                             "mode": "unicast",
@@ -324,6 +372,7 @@ class CollaborationServer:
                 )
             else:
                 print(f"[!] [UNICAST] Gửi thất bại tới {recipient}")
+                self._chat_error(sender_username, pkt, "recipient_unavailable", "Không thể gửi tới người nhận")
 
         else:
             print(f"[!] [{sender_username}] mode không hợp lệ: {mode}")
@@ -333,16 +382,18 @@ class CollaborationServer:
         conn.settimeout(AUTH_TIMEOUT)
         username = None
         session_id = None
+        peer = None
 
         try:
             # 1. Bắt tay ban đầu
-            pkt_hello = recv_tcp_packet(conn)
+            deadline = time.monotonic() + AUTH_TIMEOUT
+            pkt_hello = recv_tcp_packet(conn, deadline=deadline)
             if pkt_hello.msg_type != MSG_HELLO_REQ:
                 return
             conn.sendall(encode_packet(Packet(msg_type=MSG_HELLO_RESP, status=STATUS_OK)))
 
             # 2. Xác thực tài khoản
-            pkt_auth = recv_tcp_packet(conn)
+            pkt_auth = recv_tcp_packet(conn, deadline=deadline)
             if pkt_auth.msg_type != MSG_AUTH_REQ:
                 return
 
@@ -358,10 +409,15 @@ class CollaborationServer:
                 )
                 return
 
-            req_username = str(body.get("username", "")).strip()
+            try:
+                req_username = validate_username(body.get("username"))
+            except ValueError as error:
+                conn.sendall(encode_packet(Packet(MSG_AUTH_RESP, STATUS_ERR,
+                    payload=dump_json({"error_code": "ERR_USERNAME", "message": str(error)}))))
+                return
             raw_port = body.get("udp_port")
             try:
-                if isinstance(raw_port, bool) or raw_port is None:
+                if type(raw_port) is not int:
                     raise ValueError("Invalid port type")
                 client_udp_port = int(raw_port)
             except (ValueError, TypeError):
@@ -410,22 +466,46 @@ class CollaborationServer:
                 )
             )
             print(f"[+] User '{username}' online ({addr[0]}:{client_udp_port})")
+            # A socket timeout bounds a stuck writer. The receiving loop below
+            # retains partial frames across timeouts rather than losing framing.
+            conn.settimeout(.5)
+            peer = self.registry.get_peer(username)
+            threading.Thread(target=self._peer_writer, args=(peer,), daemon=True).start()
             self.broadcast_user_list()
 
             # 3. Duy trì phiên và chờ lệnh điều khiển tiếp theo
-            conn.settimeout(None)
+            buffered = bytearray()
             while True:
-                pkt = recv_tcp_packet(conn)
+                if peer["closed"].is_set():
+                    break
+                if len(buffered) < HEADER_SIZE:
+                    need_more = True
+                else:
+                    *_, payload_length = decode_header(buffered[:HEADER_SIZE])
+                    need_more = len(buffered) < HEADER_SIZE + payload_length
+                if need_more:
+                    try:
+                        data = conn.recv(65536)
+                    except socket.timeout:
+                        continue
+                    if not data:
+                        break
+                    buffered.extend(data)
+                    continue
+                size = HEADER_SIZE + payload_length
+                pkt = decode_packet(bytes(buffered[:size]))
+                del buffered[:size]
 
                 if pkt.msg_type == MSG_LOGOUT_REQ:
                     logout_data = load_json(pkt.payload)
-                    if logout_data.get("session_id") == session_id:
+                    if isinstance(logout_data, dict) and logout_data.get("session_id") == session_id:
+                        receipt = threading.Event()
+                        try:
+                            peer["outbox"].put_nowait((encode_packet(Packet(MSG_LOGOUT_RESP, STATUS_OK)), receipt))
+                            receipt.wait(1.0)
+                        except queue.Full:
+                            pass
                         self.registry.unregister_peer(username, session_id)
-                        conn.sendall(
-                            encode_packet(
-                                Packet(msg_type=MSG_LOGOUT_RESP, status=STATUS_OK)
-                            )
-                        )
                         try:
                             conn.shutdown(socket.SHUT_RDWR)
                         except OSError:
@@ -442,9 +522,11 @@ class CollaborationServer:
                         f"[!] [{username}] Nhận packet không hỗ trợ: 0x{pkt.msg_type:02X}"
                     )
 
-        except (socket.timeout, ConnectionResetError, ValueError, ConnectionError):
+        except (OSError, ValueError, ConnectionError):
             pass
         finally:
+            if peer:
+                peer["closed"].set()
             if username:
                 if session_id:
                     self.registry.unregister_peer(username, session_id)
