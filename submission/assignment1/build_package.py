@@ -29,7 +29,7 @@ def main():
                 files[path.relative_to(ROOT).as_posix()] = path
     for path in (ROOT/'audits/release_2026_11_07').rglob('*'):
         if (path.is_file() and path.suffix in ('.json','.txt','.md','.xml')
-                and path.name not in ('package_smoke.json','package_build.json')):
+                and path.name != 'package_build.json'):
             files[path.relative_to(ROOT).as_posix()] = path
     report = ROOT/'output/pdf/Assignment1_Release_Report.pdf'
     assert report.exists(), 'Build and visually review the PDF before packaging'
