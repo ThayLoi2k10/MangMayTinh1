@@ -1,0 +1,339 @@
+============================= test session starts =============================
+platform win32 -- Python 3.14.4, pytest-9.2.0, pluggy-1.7.0 -- E:\Downloads\BTL_MMT\MangMayTinh1\.venv\Scripts\python.exe
+rootdir: E:\Downloads\BTL_MMT\release_closure_2026_11_05
+collecting ... collected 85 items
+
+tests/test_release_client.py::ReleaseClientTests::test_http_worker_failure_is_visible_in_real_browser_and_session_disconnect PASSED [  1%]
+tests/test_release_client.py::ReleaseClientTests::test_offline_chat_error_correlates_to_operation PASSED [  2%]
+tests/test_release_client.py::ReleaseClientTests::test_reserved_identity_rejected_unicode_and_malformed_chat_survive
+tests/test_release_client.py::ReleaseClientTests::test_reserved_identity_rejected_unicode_and_malformed_chat_survive PASSED [  3%]
+tests/test_release_client.py::ReleaseClientTests::test_upload_staging_is_request_owned_and_cleanup_runs_on_failure PASSED [  4%]
+tests/test_release_client.py::ReleaseDeadlineAndQueueTests::test_partial_hello_and_silent_auth_have_total_deadline
+tests/test_release_client.py::ReleaseDeadlineAndQueueTests::test_partial_hello_and_silent_auth_have_total_deadline PASSED [  5%]
+tests/test_release_client.py::ReleaseDeadlineAndQueueTests::test_slow_reader_queue_does_not_block_healthy_peer PASSED [  7%]
+tests/test_release_file.py::ReleaseFileTests::test_all_results_lost_is_bounded_unconfirmed_not_false_done PASSED [  8%]
+tests/test_release_file.py::ReleaseFileTests::test_async_bytes_before_finish_and_hash_failure_aborts_stream PASSED [  9%]
+tests/test_release_file.py::ReleaseFileTests::test_close_cancels_sender_without_pending_leak PASSED [ 10%]
+tests/test_release_file.py::ReleaseFileTests::test_destination_conflict_failure_recovers_lost_failure_result PASSED [ 11%]
+tests/test_release_file.py::ReleaseFileTests::test_lost_final_ack_and_result_together_recover PASSED [ 12%]
+tests/test_release_file.py::ReleaseFileTests::test_receiver_atomic_publish_does_not_replace_late_destination PASSED [ 14%]
+tests/test_release_file.py::ReleaseFileTests::test_terminal_cache_bound_preserves_receiver_outcome PASSED [ 15%]
+tests/test_release_file.py::ReleaseFileTests::test_wrong_peer_ack_and_result_cannot_complete_send FAILED [ 16%]
+tests/test_release_stream.py::ReleaseStreamTests::test_empty_and_literal_end_payload_are_byte_exact
+tests/test_release_stream.py::ReleaseStreamTests::test_empty_and_literal_end_payload_are_byte_exact PASSED [ 17%]
+tests/test_release_stream.py::ReleaseStreamTests::test_independent_udp_stream_does_not_wait_for_another_stream_gap PASSED [ 18%]
+tests/test_release_stream.py::ReleaseStreamTests::test_invalid_eof_duplicate_and_other_peer_are_not_acknowledged PASSED [ 20%]
+tests/test_release_stream.py::ReleaseStreamTests::test_real_udp_loss_duplicate_order_async_and_final_ack_recovery PASSED [ 21%]
+tests/test_release_stream.py::ReleaseStreamTests::test_sequence_capacity_rejects_before_sending PASSED [ 22%]
+tests/test_release_stream.py::ReleaseStreamTests::test_socket_send_error_cannot_report_success FAILED [ 23%]
+tests/test_release_stream.py::ReleaseByteStreamTests::test_cancelled_reader_removes_waiter_and_does_not_consume PASSED [ 24%]
+tests/test_release_stream.py::ReleaseByteStreamTests::test_capacity_failure_and_terminal_state PASSED [ 25%]
+tests/test_release_stream.py::ReleaseByteStreamTests::test_logical_indices_are_not_limited_by_packet_header_wrap PASSED [ 27%]
+tests/test_release_stream.py::ReleaseByteStreamTests::test_ordering_eof_and_conflicting_buffered_duplicate PASSED [ 28%]
+tests/test_release_stream.py::ReleaseCubicTests::test_growth_loss_recovery_and_idle_cap PASSED [ 29%]
+tests/test_release_stream.py::ReleaseCubicTests::test_invalid_measurements_are_rejected PASSED [ 30%]
+tests/test_release_system.py::ReleaseSystemTests::test_async_real_file_bytes_and_another_transfer_survive_loss PASSED [ 31%]
+tests/test_role4_delivery.py::Role4DeliveryTests::test_same_filename_uploads_preserve_request_content
+tests/test_role4_delivery.py::Role4DeliveryTests::test_same_filename_uploads_preserve_request_content PASSED [ 32%]
+tests/test_role4_integration.py::Role4IntegrationTests::test_actual_heartbeat_timeout_removes_user_and_other_client_survives PASSED [ 34%]
+tests/test_role4_integration.py::Role4IntegrationTests::test_existing_client_entrypoint_serves_ui_and_routes_chat PASSED [ 35%]
+tests/test_role4_integration.py::Role4IntegrationTests::test_existing_heartbeat_script PASSED [ 36%]
+tests/test_role4_integration.py::Role4IntegrationTests::test_existing_team_scripts_unchanged
+tests/test_role4_integration.py::Role4IntegrationTests::test_existing_team_scripts_unchanged PASSED [ 37%]
+tests/test_role4_integration.py::Role4IntegrationTests::test_http_chat_files_and_sha256 PASSED [ 38%]
+tests/test_role4_integration.py::Role4IntegrationTests::test_server_shutdown_state_limitation_and_manual_recovery PASSED [ 40%]
+tests/test_role4_integration.py::Role4IntegrationTests::test_twenty_clients_crash_isolation_and_repeated_login PASSED [ 41%]
+tests/test_role4_network.py::Role4NetworkTests::test_interrupted_transfer_sender_fails_and_chat_survives PASSED [ 42%]
+tests/test_role4_network.py::Role4NetworkTests::test_loss_delay_duplicate_reorder_recover PASSED [ 43%]
+tests/test_role4_network.py::Role4NetworkTests::test_lost_terminal_result_recovers PASSED [ 44%]
+tests/test_role4_network.py::Role4NetworkTests::test_meta_ack_allows_transfer_to_complete PASSED [ 45%]
+tests/test_role4_network.py::Role4NetworkTests::test_unavailable_recipient_rejected_by_existing_client PASSED [ 47%]
+tests/test_role4_network.py::Role4NetworkTests::test_upstream_final_ack_loss_should_recover PASSED [ 48%]
+tests/test_role4_network.py::Role4NetworkTests::test_upstream_receiver_timeout_should_reach_state PASSED [ 49%]
+tests/test_role4_ui.py::Role4BrowserTests::test_drafts_enter_shift_enter_and_honest_submission PASSED [ 50%]
+tests/test_role4_ui.py::Role4BrowserTests::test_file_validation_submission_and_backend_status_transitions PASSED [ 51%]
+tests/test_role4_ui.py::Role4BrowserTests::test_injection_and_bounded_history PASSED [ 52%]
+tests/test_role4_ui.py::Role4BrowserTests::test_malformed_missing_collections_and_progress PASSED [ 54%]
+tests/test_role4_ui.py::Role4BrowserTests::test_mobile_layout_keyboard_and_snapshot_bounds PASSED [ 55%]
+tests/test_role4_ui.py::Role4BrowserTests::test_real_schema_polling_selection_and_disappearing_recipient PASSED [ 56%]
+tests/test_role4_ui.py::Role4BrowserTests::test_request_timeouts_recovery_and_no_overlapping_poll PASSED [ 57%]
+tests/test_role4_ui.py::Role4RealBrowserIntegration::test_two_browser_clients_chat_file_progress_hash_and_disconnect FAILED [ 58%]
+test_file_client.py::TestFileClientAdvanced::test_ack_packet_is_ignored PASSED [ 60%]
+test_file_client.py::TestFileClientAdvanced::test_chunk_before_metadata_does_not_crash_handler PASSED [ 61%]
+test_file_client.py::TestFileClientAdvanced::test_duplicate_metadata_does_not_add_second_record PASSED [ 62%]
+test_file_client.py::TestFileClientAdvanced::test_empty_file_can_be_sent_and_received PASSED [ 63%]
+test_file_client.py::TestFileClientAdvanced::test_invalid_metadata_does_not_crash_handler PASSED [ 64%]
+test_file_client.py::TestFileClientAdvanced::test_packets_are_sent_in_order PASSED [ 65%]
+test_file_client.py::TestFileClientAdvanced::test_send_callback_failure_updates_status PASSED [ 67%]
+test_file_client.py::TestFileClientAdvanced::test_send_nonexistent_file PASSED [ 68%]
+test_file_client.py::TestFileClientAdvanced::test_tampered_encrypted_payload_is_ignored PASSED [ 69%]
+test_file_client.py::TestFileClientAdvanced::test_unknown_message_kind_is_not_handled_as_file PASSED [ 70%]
+test_file_transfer.py::TestEncryption::test_roundtrip_simple PASSED      [ 71%]
+test_file_transfer.py::TestEncryption::test_roundtrip_with_unicode PASSED [ 72%]
+test_file_transfer.py::TestEncryption::test_tampered_payload_raises PASSED [ 74%]
+test_file_transfer.py::TestEncryption::test_empty_dict PASSED            [ 75%]
+test_file_transfer.py::TestSafeFilename::test_normal_name PASSED         [ 76%]
+test_file_transfer.py::TestSafeFilename::test_reject_path_traversal PASSED [ 77%]
+test_file_transfer.py::TestSafeFilename::test_reject_dangerous_chars PASSED [ 78%]
+test_file_transfer.py::TestSafeFilename::test_reject_empty_and_dots PASSED [ 80%]
+test_file_transfer.py::TestSafeFilename::test_reject_control_chars PASSED [ 81%]
+test_file_transfer.py::TestOutgoingFile::test_split_empty_file PASSED    [ 82%]
+test_file_transfer.py::TestOutgoingFile::test_split_exact_chunks PASSED  [ 83%]
+test_file_transfer.py::TestOutgoingFile::test_split_remainder PASSED     [ 84%]
+test_file_transfer.py::TestOutgoingFile::test_from_bytes_basic PASSED    [ 85%]
+test_file_transfer.py::TestOutgoingFile::test_from_bytes_reject_bad_name PASSED [ 87%]
+test_file_transfer.py::TestOutgoingFile::test_metadata_message PASSED    [ 88%]
+test_file_transfer.py::TestOutgoingFile::test_chunk_message PASSED       [ 89%]
+test_file_transfer.py::TestOutgoingFile::test_chunk_index_out_of_range PASSED [ 90%]
+test_file_transfer.py::TestFileReceiver::test_accept_metadata_ok PASSED  [ 91%]
+test_file_transfer.py::TestFileReceiver::test_accept_metadata_duplicate_id PASSED [ 92%]
+test_file_transfer.py::TestFileReceiver::test_accept_metadata_bad_kind PASSED [ 94%]
+test_file_transfer.py::TestFileReceiver::test_full_transfer_success PASSED [ 95%]
+test_file_transfer.py::TestFileReceiver::test_hash_mismatch_detected PASSED [ 96%]
+test_file_transfer.py::TestFileReceiver::test_no_overwrite_existing_file PASSED [ 97%]
+test_file_transfer.py::TestFileReceiver::test_progress_updates PASSED    [ 98%]
+test_file_transfer.py::TestFileReceiver::test_cleanup_expired PASSED     [100%]
+
+================================== FAILURES ===================================
+____ ReleaseFileTests.test_wrong_peer_ack_and_result_cannot_complete_send _____
+
+self = <test_release_file.ReleaseFileTests testMethod=test_wrong_peer_ack_and_result_cannot_complete_send>
+
+    def test_wrong_peer_ack_and_result_cannot_complete_send(self):
+        with DatagramPair() as pair:
+            pair.drop=lambda sender,msg: sender=='bob'
+            fid=pair.send()
+>           wait(lambda:pair.record('bob',fid)['status']=='receiving')
+
+tests\test_release_file.py:131:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\test_release_file.py:21: in wait
+    value = predicate()
+            ^^^^^^^^^^^
+tests\test_release_file.py:131: in <lambda>
+    wait(lambda:pair.record('bob',fid)['status']=='receiving')
+                ^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <test_release_file.DatagramPair object at 0x000002E18EA2F360>
+peer = 'bob', fid = '54a7a56382bc482abcb1f2d0e6ed9a05'
+
+    def record(self,peer,fid):
+>       return next(r for r in self.handlers[peer].get_progress() if r['file_id']==fid)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       StopIteration
+
+tests\test_release_file.py:74: StopIteration
+_______ ReleaseStreamTests.test_socket_send_error_cannot_report_success _______
+
+self = <test_release_stream.ReleaseStreamTests testMethod=test_socket_send_error_cannot_report_success>
+
+    def test_socket_send_error_cannot_report_success(self):
+        a, b = udp(), udp()
+        a.close()
+        try:
+            sender = UDPStreamSender(a, b.getsockname())
+>           self.assertFalse(sender.send_data(b'not sent', timeout=.5))
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_release_stream.py:195:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <udp_streamer.UDPStreamSender object at 0x000002E18E65C4D0>
+data = b'not sent', timeout = 0.5
+
+    def send_data(self, data: bytes, timeout: float = 30.0) -> bool:
+        """
+        Gửi toàn bộ dữ liệu một cách tin cậy.
+        Luồng rỗng (b"") vẫn sẽ đi qua lifecycle đầy đủ với 0 chunk dữ liệu và 1 gói EOF.
+        """
+        if not isinstance(data, bytes):
+            raise TypeError("stream data must be bytes")
+        if timeout <= 0:
+            raise ValueError("timeout must be positive")
+        chunks = self._split_chunks(data)
+        total_chunks = len(chunks)
+        # Tổng số sequence cần truyền = số chunk dữ liệu + 1 gói thông báo EOF
+        total_seqs = total_chunks + 1
+        if total_chunks > 65535:
+            raise ValueError("Standalone stream exceeds the 16-bit sequence range; use the file protocol with logical chunk indices")
+
+        with self._lock:
+            if self._used:
+                raise RuntimeError("allocate a new sender and socket endpoint for each standalone transfer")
+            self._used = True
+            self.base = 0
+            self.next_seq = 0
+            self.window.clear()
+            self.is_finished = False
+            self.success = False
+            self._stop = False
+            self.stats = {"sent": 0, "retransmitted": 0, "acked": 0, "timeouts": 0}
+            self.congestion = CubicWindow(max_window=max(8, WINDOW_SIZE * 8))
+
+        # Thread nhận ACK chạy song song
+        # Capture before the listener changes it; original loss wrappers expose
+        # only the minimal socket API, so restoration is best-effort for wrappers.
+        old_timeout = self.sock.gettimeout() if hasattr(self.sock, "gettimeout") else None
+        ack_thread = threading.Thread(target=self._ack_listener, daemon=True)
+        ack_thread.start()
+
+        start_time = time.monotonic()
+
+        try:
+            while not self._stop:
+                if time.monotonic() - start_time > timeout:
+                    self._stop = True
+                    break
+
+                with self._lock:
+                    # ----- 1. Gửi các gói mới nếu cửa sổ còn chỗ -----
+                    while (
+                        self.next_seq < total_seqs
+                        and len(self.window) < self.congestion.window
+                    ):
+                        if self.next_seq < total_chunks:
+                            # Gửi dữ liệu thông thường
+                            self._send_chunk(self.next_seq, chunks[self.next_seq], is_retry=False, is_eof=False)
+                        else:
+                            # Gói cuối cùng chứa cờ EOF với độ lớn b""
+                            self._send_chunk(self.next_seq, b"", is_retry=False, is_eof=True)
+                        self.next_seq += 1
+
+                    # ----- 2. Kiểm tra timeout & gửi lại -----
+                    now = time.monotonic()
+                    to_retry: List[int] = []
+                    failed = False
+
+                    for seq, info in list(self.window.items()):
+                        if now - info["send_time"] >= RETRY_TIMEOUT:
+                            if info["retries"] < MAX_RETRIES:
+                                to_retry.append(seq)
+                            else:
+                                failed = True
+                                break
+
+                    if failed:
+                        self._stop = True
+                        self.success = False
+                        break
+
+                    if to_retry:
+                        self.congestion.on_loss(timeout=True)
+                    for seq in to_retry:
+                        info = self.window[seq]
+                        self._send_chunk(seq, info["data"], is_retry=True, is_eof=info["is_eof"])
+                        self.stats["timeouts"] += 1
+
+                    # ----- 3. Kiểm tra hoàn tất toàn bộ chu trình -----
+                    # Chỉ thành công khi đã nhận đủ toàn bộ ACK, bao gồm cả gói EOF
+                    if self.base >= total_seqs:
+                        self.is_finished = True
+                        self.success = True
+                        self._stop = True
+                        break
+
+                # Nhường CPU và chờ tín hiệu ACK
+                self._ack_event.wait(timeout=0.05)
+                self._ack_event.clear()
+
+        except OSError:
+            self.success = False
+        finally:
+            self._stop = True
+            ack_thread.join(timeout=1.0)
+>           self.sock.settimeout(old_timeout)
+E           OSError: [WinError 10038] An operation was attempted on something that is not a socket
+
+udp_streamer.py:163: OSError
+_ Role4RealBrowserIntegration.test_two_browser_clients_chat_file_progress_hash_and_disconnect _
+
+self = <test_role4_ui.Role4RealBrowserIntegration testMethod=test_two_browser_clients_chat_file_progress_hash_and_disconnect>
+
+    def test_two_browser_clients_chat_file_progress_hash_and_disconnect(self):
+        with Lab() as lab, browser() as instance:
+            alice, bob = lab.client("alice"), lab.client("bob")
+            wait_for(lambda: names(alice) == names(bob) == {"alice", "bob"})
+            a, b = lab.bridge(alice), lab.bridge(bob)
+            context = instance.new_context()
+            try:
+                page_a, page_b = context.new_page(), context.new_page()
+                page_a.goto(a.url)
+                page_b.goto(b.url)
+                expect(page_a.locator("#users")).to_contain_text("bob")
+                page_a.locator("#draft").fill("browser broadcast")
+                page_a.locator("#draft").press("Enter")
+                expect(page_b.locator("#messages")).to_contain_text("browser broadcast")
+                page_b.locator("#chat-to").select_option("alice")
+                page_b.locator("#draft").fill("browser private")
+                page_b.locator("#chat-submit").click()
+                expect(page_a.locator("#messages")).to_contain_text("browser private")
+                content = bytes(range(256)) * 4096  # 1 MiB, enough for real intermediate progress.
+                page_a.locator("#file-to").select_option("bob")
+                page_a.locator("#file-input").set_input_files({"name": "browser tiếng Việt.bin", "mimeType": "application/octet-stream", "buffer": content})
+                page_a.locator("#file-submit").click()
+>               page_a.wait_for_function("Array.from(document.querySelectorAll('progress')).some(p => p.value > 0 && p.value < 100)", timeout=30000)
+
+tests\test_role4_ui.py:268:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+..\MangMayTinh1\.venv\Lib\site-packages\playwright\sync_api\_generated.py:11559: in wait_for_function
+    self._sync(
+..\MangMayTinh1\.venv\Lib\site-packages\playwright\_impl\_page.py:1113: in wait_for_function
+    return await self._main_frame.wait_for_function(**locals_to_params(locals()))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\MangMayTinh1\.venv\Lib\site-packages\playwright\_impl\_frame.py:860: in wait_for_function
+    await self._channel.send("waitForFunction", self._timeout, params)
+..\MangMayTinh1\.venv\Lib\site-packages\playwright\_impl\_connection.py:69: in send
+    return await self._connection.wrap_api_call(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <playwright._impl._connection.Connection object at 0x000002E1907B7610>
+cb = <function Channel.send.<locals>.<lambda> at 0x000002E1908CF7F0>
+is_internal = False, title = None
+
+    async def wrap_api_call(
+        self, cb: Callable[[], Any], is_internal: bool = False, title: str = None
+    ) -> Any:
+        if self._api_zone.get():
+            return await cb()
+        task = asyncio.current_task(self._loop)
+        st: List[inspect.FrameInfo] = getattr(
+            task, "__pw_stack__", None
+        ) or inspect.stack(0)
+
+        parsed_st = _extract_stack_trace_information_from_stack(st, is_internal, title)
+        self._api_zone.set(parsed_st)
+        try:
+            return await cb()
+        except Exception as error:
+>           raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+E           playwright._impl._errors.TimeoutError: Page.wait_for_function: Timeout 30000ms exceeded.
+
+..\MangMayTinh1\.venv\Lib\site-packages\playwright\_impl\_connection.py:558: TimeoutError
+============================== warnings summary ===============================
+tests/test_release_stream.py::ReleaseStreamTests::test_socket_send_error_cannot_report_success
+  E:\Downloads\BTL_MMT\MangMayTinh1\.venv\Lib\site-packages\_pytest\threadexception.py:54: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-68 (_ack_listener)
+
+  Traceback (most recent call last):
+    File "C:\Python314\Lib\threading.py", line 1082, in _bootstrap_inner
+      self._context.run(self.run)
+      ~~~~~~~~~~~~~~~~~^^^^^^^^^^
+    File "C:\Python314\Lib\threading.py", line 1024, in run
+      self._target(*self._args, **self._kwargs)
+      ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    File "E:\Downloads\BTL_MMT\release_closure_2026_11_05\udp_streamer.py", line 204, in _ack_listener
+      self.sock.settimeout(0.2)
+      ~~~~~~~~~~~~~~~~~~~~^^^^^
+  OSError: [WinError 10038] An operation was attempted on something that is not a socket
+
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+- generated xml file: E:\Downloads\BTL_MMT\release_closure_2026_11_05\audits\release_2026_11_07\full_run_1.xml -
+=========================== short test summary info ===========================
+FAILED tests/test_release_file.py::ReleaseFileTests::test_wrong_peer_ack_and_result_cannot_complete_send
+FAILED tests/test_release_stream.py::ReleaseStreamTests::test_socket_send_error_cannot_report_success
+FAILED tests/test_role4_ui.py::Role4RealBrowserIntegration::test_two_browser_clients_chat_file_progress_hash_and_disconnect
+=== 3 failed, 82 passed, 1 warning, 17 subtests passed in 181.37s (0:03:01) ===

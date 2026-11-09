@@ -1,0 +1,156 @@
+{
+  "status": "PASS",
+  "archive": "E:\\Downloads\\BTL_MMT\\Assignment1_Release_2026-11-07.zip",
+  "archive_sha256": "1116e0bc5783ce0baaadd55ed33d8cfb281b3e6d27b628a75fd5ae233a106e6a",
+  "manifest_files_verified": 183,
+  "packaged_head": "bd191f31f8e47c0801e37d80a8bdfa70f3f7fec4",
+  "command": [
+    "E:\\Downloads\\BTL_MMT\\release_verify_env_2026_11_07\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "C:\\Users\\Admin\\AppData\\Local\\Temp\\a1-package-chanr4d2\\submission\\assignment1\\demo.py",
+    "--smoke",
+    "--output",
+    "C:\\Users\\Admin\\AppData\\Local\\Temp\\a1-package-chanr4d2\\package-smoke.json"
+  ],
+  "exit_code": 0,
+  "smoke": {
+    "mode": "real client.main + HTTP + TCP/UDP",
+    "status": "PASS",
+    "alice": {
+      "username": "demo-alice",
+      "users": [
+        {
+          "username": "demo-alice",
+          "ip": "127.0.0.1",
+          "udp_port": 64631
+        },
+        {
+          "username": "demo-bob",
+          "ip": "127.0.0.1",
+          "udp_port": 64632
+        }
+      ],
+      "messages": [
+        {
+          "from": "demo-alice",
+          "to": "*",
+          "text": "demo broadcast",
+          "time": "17:03:18"
+        },
+        {
+          "from": "demo-bob",
+          "to": "demo-alice",
+          "text": "demo private",
+          "time": "17:03:18"
+        }
+      ],
+      "transfers": [
+        {
+          "direction": "send",
+          "file_id": "77577b0e7f4742e3a1f89b827848be00",
+          "filename": "demo.bin",
+          "peer": "demo-bob",
+          "status": "done",
+          "progress": 100,
+          "total_chunks": 12,
+          "retransmissions": 0,
+          "congestion": {
+            "algorithm": "CUBIC",
+            "cwnd": 8.722793,
+            "window": 8,
+            "ssthresh": 8.0,
+            "srtt": 0.000726840689254925,
+            "loss_events": 0,
+            "acked_segments": 12,
+            "max_window": 64
+          }
+        }
+      ],
+      "connection": {
+        "status": "connected",
+        "server": "127.0.0.1",
+        "session_id": "45a1efb5-1290-4baf-9182-8e8e94b78304",
+        "last_response_age_seconds": 0.11,
+        "reason": "Đã xác thực phiên; có phản hồi server"
+      },
+      "operations": [
+        {
+          "id": "9a443230fc7e47e29a971b560f900552",
+          "kind": "chat",
+          "target": "*",
+          "status": "submitted",
+          "seq": 1
+        },
+        {
+          "id": "40ceb31e118442159e48d1422b4e362f",
+          "kind": "file",
+          "target": "demo-bob",
+          "status": "submitted",
+          "file_id": "77577b0e7f4742e3a1f89b827848be00"
+        }
+      ]
+    },
+    "bob": {
+      "username": "demo-bob",
+      "users": [
+        {
+          "username": "demo-alice",
+          "ip": "127.0.0.1",
+          "udp_port": 64631
+        },
+        {
+          "username": "demo-bob",
+          "ip": "127.0.0.1",
+          "udp_port": 64632
+        }
+      ],
+      "messages": [
+        {
+          "from": "demo-alice",
+          "to": "*",
+          "text": "demo broadcast",
+          "time": "17:03:18"
+        },
+        {
+          "from": "demo-bob",
+          "to": "demo-alice",
+          "text": "demo private",
+          "time": "17:03:18"
+        }
+      ],
+      "transfers": [
+        {
+          "direction": "receive",
+          "file_id": "77577b0e7f4742e3a1f89b827848be00",
+          "filename": "demo.bin",
+          "peer": "demo-alice",
+          "status": "completed",
+          "progress": 100,
+          "total_chunks": 12
+        }
+      ],
+      "connection": {
+        "status": "connected",
+        "server": "127.0.0.1",
+        "session_id": "c4b837f4-87b4-45a2-b2d6-063065150efb",
+        "last_response_age_seconds": 0.13,
+        "reason": "Đã xác thực phiên; có phản hồi server"
+      },
+      "operations": [
+        {
+          "id": "6216127cd46b4971959a50e1a11301d0",
+          "kind": "chat",
+          "target": "demo-alice",
+          "status": "submitted",
+          "seq": 1
+        }
+      ]
+    },
+    "sha256": "dc404a613fedaeb54034514bc6505f56b933caa5250299ba7d094377a51caa46",
+    "bytes": 8192,
+    "seconds": 2.657
+  },
+  "stdout": "Alice: http://127.0.0.1:57087\nBob: http://127.0.0.1:57090\nDemo downloads: C:\\Users\\Admin\\AppData\\Local\\Temp\\role4-0tln7352\n{\n  \"mode\": \"real client.main + HTTP + TCP/UDP\",\n  \"status\": \"PASS\",\n  \"alice\": {\n    \"username\": \"demo-alice\",\n    \"users\": [\n      {\n        \"username\": \"demo-alice\",\n        \"ip\": \"127.0.0.1\",\n        \"udp_port\": 64631\n      },\n      {\n        \"username\": \"demo-bob\",\n        \"ip\": \"127.0.0.1\",\n        \"udp_port\": 64632\n      }\n    ],\n    \"messages\": [\n      {\n        \"from\": \"demo-alice\",\n        \"to\": \"*\",\n        \"text\": \"demo broadcast\",\n        \"time\": \"17:03:18\"\n      },\n      {\n        \"from\": \"demo-bob\",\n        \"to\": \"demo-alice\",\n        \"text\": \"demo private\",\n        \"time\": \"17:03:18\"\n      }\n    ],\n    \"transfers\": [\n      {\n        \"direction\": \"send\",\n        \"file_id\": \"77577b0e7f4742e3a1f89b827848be00\",\n        \"filename\": \"demo.bin\",\n        \"peer\": \"demo-bob\",\n        \"status\": \"done\",\n        \"progress\": 100,\n        \"total_chunks\": 12,\n        \"retransmissions\": 0,\n        \"congestion\": {\n          \"algorithm\": \"CUBIC\",\n          \"cwnd\": 8.722793,\n          \"window\": 8,\n          \"ssthresh\": 8.0,\n          \"srtt\": 0.000726840689254925,\n          \"loss_events\": 0,\n          \"acked_segments\": 12,\n          \"max_window\": 64\n        }\n      }\n    ],\n    \"connection\": {\n      \"status\": \"connected\",\n      \"server\": \"127.0.0.1\",\n      \"session_id\": \"45a1efb5-1290-4baf-9182-8e8e94b78304\",\n      \"last_response_age_seconds\": 0.11,\n      \"reason\": \"Đã xác thực phiên; có phản hồi server\"\n    },\n    \"operations\": [\n      {\n        \"id\": \"9a443230fc7e47e29a971b560f900552\",\n        \"kind\": \"chat\",\n        \"target\": \"*\",\n        \"status\": \"submitted\",\n        \"seq\": 1\n      },\n      {\n        \"id\": \"40ceb31e118442159e48d1422b4e362f\",\n        \"kind\": \"file\",\n        \"target\": \"demo-bob\",\n        \"status\": \"submitted\",\n        \"file_id\": \"77577b0e7f4742e3a1f89b827848be00\"\n      }\n    ]\n  },\n  \"bob\": {\n    \"username\": \"demo-bob\",\n    \"users\": [\n      {\n        \"username\": \"demo-alice\",\n        \"ip\": \"127.0.0.1\",\n        \"udp_port\": 64631\n      },\n      {\n        \"username\": \"demo-bob\",\n        \"ip\": \"127.0.0.1\",\n        \"udp_port\": 64632\n      }\n    ],\n    \"messages\": [\n      {\n        \"from\": \"demo-alice\",\n        \"to\": \"*\",\n        \"text\": \"demo broadcast\",\n        \"time\": \"17:03:18\"\n      },\n      {\n        \"from\": \"demo-bob\",\n        \"to\": \"demo-alice\",\n        \"text\": \"demo private\",\n        \"time\": \"17:03:18\"\n      }\n    ],\n    \"transfers\": [\n      {\n        \"direction\": \"receive\",\n        \"file_id\": \"77577b0e7f4742e3a1f89b827848be00\",\n        \"filename\": \"demo.bin\",\n        \"peer\": \"demo-alice\",\n        \"status\": \"completed\",\n        \"progress\": 100,\n        \"total_chunks\": 12\n      }\n    ],\n    \"connection\": {\n      \"status\": \"connected\",\n      \"server\": \"127.0.0.1\",\n      \"session_id\": \"c4b837f4-87b4-45a2-b2d6-063065150efb\",\n      \"last_response_age_seconds\": 0.13,\n      \"reason\": \"Đã xác thực phiên; có phản hồi server\"\n    },\n    \"operations\": [\n      {\n        \"id\": \"6216127cd46b4971959a50e1a11301d0\",\n        \"kind\": \"chat\",\n        \"target\": \"demo-alice\",\n        \"status\": \"submitted\",\n        \"seq\": 1\n      }\n    ]\n  },\n  \"sha256\": \"dc404a613fedaeb54034514bc6505f56b933caa5250299ba7d094377a51caa46\",\n  \"bytes\": 8192,\n  \"seconds\": 2.657\n}\n",
+  "seconds": 3.141
+}

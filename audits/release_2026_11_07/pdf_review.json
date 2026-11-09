@@ -1,0 +1,8 @@
+{
+  "file": "output\\pdf\\Assignment1_Release_Report.pdf",
+  "sha256": "e8c744a7569fe3551cf3aad3e148c4558ddf08152bbb7d31b6d3302f5b7420ba",
+  "pages": 7,
+  "render_engine": "PyMuPDF 1.3x",
+  "review": "All7renderedpages visually inspected; coverdiagram overlap found and fixed; finalpages have no clipping or overlap",
+  "scope": "architecture, protocol, message/file sequences, actual evidence, one-page challenges, requirements and limitations"
+}

@@ -1,0 +1,183 @@
+{
+  "bytes": 104857600,
+  "status": "PASS",
+  "sender": {
+    "direction": "send",
+    "file_id": "0e075c41b40c408fa3ec640c7892e44a",
+    "filename": "maximum.bin",
+    "peer": "large_bob",
+    "status": "done",
+    "progress": 100,
+    "total_chunks": 149797,
+    "retransmissions": 1102,
+    "congestion": {
+      "algorithm": "CUBIC",
+      "cwnd": 2.0,
+      "window": 2,
+      "ssthresh": 4.5237,
+      "srtt": 0.007828597696821149,
+      "loss_events": 1031,
+      "acked_segments": 149797,
+      "max_window": 64
+    }
+  },
+  "receiver": {
+    "direction": "receive",
+    "file_id": "0e075c41b40c408fa3ec640c7892e44a",
+    "filename": "maximum.bin",
+    "peer": "large_alice",
+    "status": "completed",
+    "progress": 100,
+    "total_chunks": 149797
+  },
+  "samples": [
+    {
+      "seconds": 0.52,
+      "sender": {
+        "direction": "send",
+        "file_id": "0e075c41b40c408fa3ec640c7892e44a",
+        "filename": "maximum.bin",
+        "peer": "large_bob",
+        "status": "sending",
+        "progress": 0,
+        "total_chunks": 149797,
+        "retransmissions": 0
+      },
+      "receiver": {}
+    },
+    {
+      "seconds": 15.55,
+      "sender": {
+        "direction": "send",
+        "file_id": "0e075c41b40c408fa3ec640c7892e44a",
+        "filename": "maximum.bin",
+        "peer": "large_bob",
+        "status": "sending",
+        "progress": 23,
+        "total_chunks": 149797,
+        "retransmissions": 236,
+        "congestion": {
+          "algorithm": "CUBIC",
+          "cwnd": 40.738747,
+          "window": 40,
+          "ssthresh": 5.835396,
+          "srtt": 0.011892244645811597,
+          "loss_events": 222,
+          "acked_segments": 35244,
+          "max_window": 64
+        }
+      },
+      "receiver": {
+        "direction": "receive",
+        "file_id": "0e075c41b40c408fa3ec640c7892e44a",
+        "filename": "maximum.bin",
+        "peer": "large_alice",
+        "status": "receiving",
+        "progress": 23,
+        "total_chunks": 149797
+      }
+    },
+    {
+      "seconds": 30.59,
+      "sender": {
+        "direction": "send",
+        "file_id": "0e075c41b40c408fa3ec640c7892e44a",
+        "filename": "maximum.bin",
+        "peer": "large_bob",
+        "status": "sending",
+        "progress": 45,
+        "total_chunks": 149797,
+        "retransmissions": 470,
+        "congestion": {
+          "algorithm": "CUBIC",
+          "cwnd": 49.380848,
+          "window": 49,
+          "ssthresh": 10.641507,
+          "srtt": 0.016945505353756187,
+          "loss_events": 440,
+          "acked_segments": 68579,
+          "max_window": 64
+        }
+      },
+      "receiver": {
+        "direction": "receive",
+        "file_id": "0e075c41b40c408fa3ec640c7892e44a",
+        "filename": "maximum.bin",
+        "peer": "large_alice",
+        "status": "receiving",
+        "progress": 45,
+        "total_chunks": 149797
+      }
+    },
+    {
+      "seconds": 45.63,
+      "sender": {
+        "direction": "send",
+        "file_id": "0e075c41b40c408fa3ec640c7892e44a",
+        "filename": "maximum.bin",
+        "peer": "large_bob",
+        "status": "sending",
+        "progress": 67,
+        "total_chunks": 149797,
+        "retransmissions": 709,
+        "congestion": {
+          "algorithm": "CUBIC",
+          "cwnd": 42.36889,
+          "window": 42,
+          "ssthresh": 2.0,
+          "srtt": 0.01868940510667839,
+          "loss_events": 668,
+          "acked_segments": 101317,
+          "max_window": 64
+        }
+      },
+      "receiver": {
+        "direction": "receive",
+        "file_id": "0e075c41b40c408fa3ec640c7892e44a",
+        "filename": "maximum.bin",
+        "peer": "large_alice",
+        "status": "receiving",
+        "progress": 67,
+        "total_chunks": 149797
+      }
+    },
+    {
+      "seconds": 60.67,
+      "sender": {
+        "direction": "send",
+        "file_id": "0e075c41b40c408fa3ec640c7892e44a",
+        "filename": "maximum.bin",
+        "peer": "large_bob",
+        "status": "sending",
+        "progress": 87,
+        "total_chunks": 149797,
+        "retransmissions": 955,
+        "congestion": {
+          "algorithm": "CUBIC",
+          "cwnd": 2.0,
+          "window": 2,
+          "ssthresh": 2.0,
+          "srtt": 0.003348940554375915,
+          "loss_events": 901,
+          "acked_segments": 131253,
+          "max_window": 64
+        }
+      },
+      "receiver": {
+        "direction": "receive",
+        "file_id": "0e075c41b40c408fa3ec640c7892e44a",
+        "filename": "maximum.bin",
+        "peer": "large_alice",
+        "status": "receiving",
+        "progress": 87,
+        "total_chunks": 149797
+      }
+    }
+  ],
+  "expected_sha256": "4cbf988462cc3ba2e10e3aae9f5268546aa79016359fb45be7dd199c073125c0",
+  "actual_sha256": "4cbf988462cc3ba2e10e3aae9f5268546aa79016359fb45be7dd199c073125c0",
+  "header_sequence_start": 65530,
+  "pending": 0,
+  "chat_survives": true,
+  "seconds": 71.157
+}

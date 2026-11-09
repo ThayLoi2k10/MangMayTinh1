@@ -1,5 +1,7 @@
 import json
 import struct
+import time
+import unicodedata
 from dataclasses import dataclass
 
 MAGIC_NUMBER = 0xDCBA
@@ -71,15 +73,20 @@ def decode_packet(data: bytes) -> Packet:
     msg_type, status, seq_no, payload_len = decode_header(data[:HEADER_SIZE])
     payload = data[HEADER_SIZE : HEADER_SIZE + payload_len]
     
-    if len(payload) != payload_len:
+    if len(data) != HEADER_SIZE + payload_len:
         raise ValueError("Kích thước payload thực tế không khớp với độ dài trong header")
         
     return Packet(msg_type, status, seq_no, payload)
 
 
-def recv_exact(sock, n: int) -> bytes:
+def recv_exact(sock, n: int, deadline: float | None = None) -> bytes:
     buf = bytearray()
     while len(buf) < n:
+        if deadline is not None:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise TimeoutError("Packet receive deadline exceeded")
+            sock.settimeout(remaining)
         chunk = sock.recv(n - len(buf))
         if not chunk:
             raise ConnectionResetError("Kết nối bị đóng giữa chừng khi đang đọc dữ liệu")
@@ -87,15 +94,31 @@ def recv_exact(sock, n: int) -> bytes:
     return bytes(buf)
 
 
-def recv_tcp_packet(sock) -> Packet:
-    header_bytes = recv_exact(sock, HEADER_SIZE)
-    msg_type, status, seq_no, payload_len = decode_header(header_bytes)
-    
-    payload = b""
-    if payload_len > 0:
-        payload = recv_exact(sock, payload_len)
-        
-    return Packet(msg_type, status, seq_no, payload)
+def recv_tcp_packet(sock, deadline: float | None = None) -> Packet:
+    """Read one frame; an optional monotonic deadline also bounds partial frames."""
+    previous_timeout = sock.gettimeout() if deadline is not None else None
+    try:
+        header_bytes = recv_exact(sock, HEADER_SIZE, deadline)
+        msg_type, status, seq_no, payload_len = decode_header(header_bytes)
+        payload = recv_exact(sock, payload_len, deadline) if payload_len else b""
+        return Packet(msg_type, status, seq_no, payload)
+    finally:
+        if deadline is not None:
+            try:
+                sock.settimeout(previous_timeout)
+            except OSError:
+                pass  # Another thread may have closed the connection.
+
+
+def validate_username(value: object) -> str:
+    """One canonical, portable identity; '*' remains exclusively broadcast."""
+    if not isinstance(value, str):
+        raise ValueError("Username phải là chuỗi")
+    name = unicodedata.normalize("NFC", value.strip())
+    if (not name or len(name) > 64 or len(name.encode("utf-8")) > 120
+            or not all(ch.isalnum() or ch in "_- " for ch in name)):
+        raise ValueError("Username cần 1-64 chữ/số, dấu cách, '_' hoặc '-'; không dùng tên reserved hay ký tự đường dẫn")
+    return name
 
 
 def dump_json(obj: dict) -> bytes:

@@ -1,0 +1,44 @@
+================================================================
+  TEST UDP RELIABLE STREAMING (Sliding Window ARQ)
+  CHUNK_SIZE=700  WINDOW_SIZE=8
+================================================================
+
+=== TEST 1: Không mất gói ===
+  [PASS] size=    100  drop=0%  time=0.22s  sent=2  retrans=0  drop_data=0  drop_ack=0
+  [PASS] size=    700  drop=0%  time=0.22s  sent=2  retrans=0  drop_data=0  drop_ack=0
+  [PASS] size=   1400  drop=0%  time=0.21s  sent=3  retrans=0  drop_data=0  drop_ack=0
+  [PASS] size=   5000  drop=0%  time=0.21s  sent=9  retrans=0  drop_data=0  drop_ack=0
+  [PASS] size=  50000  drop=0%  time=0.21s  sent=73  retrans=0  drop_data=0  drop_ack=0
+
+=== TEST 2: Mất gói DATA (10% – 30%) ===
+  [PASS] size=  30000  drop=10%  time=1.31s  sent=44  retrans=10  drop_data=10  drop_ack=0
+  [PASS] size=  30000  drop=20%  time=1.32s  sent=44  retrans=9  drop_data=9  drop_ack=0
+  [PASS] size=  30000  drop=30%  time=1.88s  sent=44  retrans=17  drop_data=17  drop_ack=0
+
+=== TEST 3: Mất gói ACK (10% – 20%) ===
+  [PASS] size=  20000  drop=10%  time=1.33s  sent=30  retrans=4  drop_data=0  drop_ack=4
+  [PASS] size=  20000  drop=20%  time=1.31s  sent=30  retrans=12  drop_data=0  drop_ack=12
+
+=== TEST 4: Mất cả DATA + ACK (15%) ===
+  [PASS] size=  25000  drop=15%  time=1.87s  sent=37  retrans=15  drop_data=10  drop_ack=5
+
+=== TEST 5: File lớn (~200KB) với mất gói 10% ===
+  [PASS] size= 200000  drop=10%  time=6.30s  sent=287  retrans=75  drop_data=40  drop_ack=35
+
+=== TEST 6: File rỗng + file rất nhỏ ===
+  [PASS] size=      0  drop=0%  time=0.21s  sent=1  retrans=0  drop_data=0  drop_ack=0
+  [PASS] size=      5  drop=20%  time=1.32s  sent=2  retrans=2  drop_data=0  drop_ack=2
+  [PASS] size=      1  drop=0%  time=0.20s  sent=2  retrans=0  drop_data=0  drop_ack=0
+
+================================================================
+  TỔNG KẾT
+================================================================
+  PASS | Không mất gói
+  PASS | Mất DATA
+  PASS | Mất ACK
+  PASS | Mất DATA + ACK
+  PASS | File lớn + loss
+  PASS | File rỗng / nhỏ
+----------------------------------------------------------------
+  TẤT CẢ TEST ĐỀU PASS – Bộ truyền tin cậy hoạt động tốt!
+================================================================

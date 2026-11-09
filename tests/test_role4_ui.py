@@ -7,12 +7,12 @@ import copy
 import hashlib
 import os
 from pathlib import Path
-import tempfile
 import threading
 import unittest
 
 from playwright.sync_api import expect
 from role4_harness import Bridge, Lab, UIHandler, browser, names, wait_for
+from file_transfer import decode_secure_json
 
 
 class StateFixture:
@@ -202,20 +202,25 @@ class Role4BrowserTests(unittest.TestCase):
         record = {"filename": "ghi chú.txt", "peer": "bob", "file_id": "abc", "direction": "send", "status": "sending", "progress": 31}
         self.fixture.value["transfers"] = [record]
         expect(page.locator("progress")).to_have_attribute("value", "31")
+        record.update(status="sending", progress=100)
+        expect(page.locator(".transfer")).to_contain_text("Chờ kết quả từ bên nhận")
         record.update(status="failed: Timeout ACK", progress=31)
         expect(page.locator(".transfer")).to_contain_text("failed: Timeout ACK")
         record.update(status="done", progress=100)
         expect(page.locator(".transfer")).to_contain_text("Bên gửi báo xong")
         record.update(direction="receive", status="completed")
         expect(page.locator(".transfer")).to_contain_text("Bên nhận đã hoàn tất")
-        # Sparse file exercises File.size validation without transferring 83 MiB.
-        with tempfile.TemporaryDirectory(prefix="role4-ui-file-") as directory:
-            oversized = Path(directory) / "too-large.bin"
-            with oversized.open("wb") as stream:
-                stream.truncate(83 * 1024 * 1024)
-            page.locator("#file-input").set_input_files(oversized)
-            page.locator("#file-submit").click()
-            expect(page.locator("#file-feedback")).to_contain_text("quá lớn")
+        # A real browser File has the full size; no 83 MiB disk fixture is needed.
+        # This tests pre-upload validation, not transport of the oversized bytes.
+        page.locator("#file-input").evaluate("""el => {
+            const transfer = new DataTransfer();
+            transfer.items.add(new File([new Uint8Array(83 * 1024 * 1024)], "too-large.bin"));
+            el.files = transfer.files;
+            el.dispatchEvent(new Event("change", {bubbles: true}));
+        }""")
+        self.assertEqual(page.locator("#file-input").evaluate("el => el.files[0].size"), 83 * 1024 * 1024)
+        page.locator("#file-submit").click()
+        expect(page.locator("#file-feedback")).to_contain_text("quá lớn")
         self.assertEqual(len(submissions), 1)
         page.locator("#file-input").set_input_files({"name": "bad?.txt", "mimeType": "text/plain", "buffer": b""})
         page.locator("#file-submit").click()
@@ -258,10 +263,25 @@ class Role4RealBrowserIntegration(unittest.TestCase):
                 page_b.locator("#chat-submit").click()
                 expect(page_a.locator("#messages")).to_contain_text("browser private")
                 content = bytes(range(256)) * 4096  # 1 MiB, enough for real intermediate progress.
+                # Hold one actual outgoing chunk until the browser observes real
+                # partial progress. A fast loopback transfer can otherwise finish
+                # between polls. This is controlled delay, not synthetic state.
+                release_chunk = threading.Event()
+                original_send = alice.file_handler.send_packet_fn
+                def delayed_chunk(packet, recipient):
+                    message = decode_secure_json(packet.payload)
+                    if message.get('kind') == 'FILE_CHUNK' and message.get('chunk_index') == 128:
+                        if not release_chunk.wait(10):
+                            raise TimeoutError('browser did not observe in-flight progress')
+                    return original_send(packet, recipient)
+                alice.file_handler.send_packet_fn = delayed_chunk
                 page_a.locator("#file-to").select_option("bob")
                 page_a.locator("#file-input").set_input_files({"name": "browser tiếng Việt.bin", "mimeType": "application/octet-stream", "buffer": content})
                 page_a.locator("#file-submit").click()
-                page_a.wait_for_function("Array.from(document.querySelectorAll('progress')).some(p => p.value > 0 && p.value < 100)", timeout=30000)
+                try:
+                    page_a.wait_for_function("Array.from(document.querySelectorAll('progress')).some(p => p.value > 0 && p.value < 100)", timeout=8000)
+                finally:
+                    release_chunk.set()
                 expect(page_b.locator("#transfers")).to_contain_text("Bên nhận đã hoàn tất", timeout=120000)
                 expect(page_a.locator("#transfers")).to_contain_text("Bên gửi báo xong", timeout=15000)
                 target = lab.path / "downloads_bob" / "browser tiếng Việt.bin"
@@ -274,7 +294,8 @@ class Role4RealBrowserIntegration(unittest.TestCase):
                 lab.stop_server()
                 wait_for(lambda: alice.stop_event.is_set())
                 expect(page_a.locator("#api-status")).to_contain_text("hoạt động")
-                expect(page_a.locator("#server-status")).to_contain_text("chưa xác minh")
+                expect(page_a.locator("#server-status")).to_contain_text("mất kết nối")
+                expect(page_a.locator("#chat-submit")).to_be_disabled()
                 a.close()
                 lab.bridges.remove(a)
                 expect(page_a.locator("#api-status")).to_contain_text("mất kết nối", timeout=12000)

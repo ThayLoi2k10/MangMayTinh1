@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="3" skipped="0" tests="102" time="181.271" timestamp="2026-11-07T11:41:36.883244+07:00" hostname="DESKTOP-I4PS0GQ"><testcase classname="tests.test_release_client.ReleaseClientTests" name="test_http_worker_failure_is_visible_in_real_browser_and_session_disconnect" time="5.735" /><testcase classname="tests.test_release_client.ReleaseClientTests" name="test_offline_chat_error_correlates_to_operation" time="0.730" /><testcase classname="tests.test_release_client.ReleaseClientTests" name="test_reserved_identity_rejected_unicode_and_malformed_chat_survive" time="0.300" /><testcase classname="tests.test_release_client.ReleaseClientTests" name="test_upload_staging_is_request_owned_and_cleanup_runs_on_failure" time="0.700" /><testcase classname="tests.test_release_client.ReleaseDeadlineAndQueueTests" name="test_partial_hello_and_silent_auth_have_total_deadline" time="0.819" /><testcase classname="tests.test_release_client.ReleaseDeadlineAndQueueTests" name="test_slow_reader_queue_does_not_block_healthy_peer" time="0.005" /><testcase classname="tests.test_release_file.ReleaseFileTests" name="test_all_results_lost_is_bounded_unconfirmed_not_false_done" time="2.572" /><testcase classname="tests.test_release_file.ReleaseFileTests" name="test_async_bytes_before_finish_and_hash_failure_aborts_stream" time="0.006" /><testcase classname="tests.test_release_file.ReleaseFileTests" name="test_close_cancels_sender_without_pending_leak" time="0.008" /><testcase classname="tests.test_release_file.ReleaseFileTests" name="test_destination_conflict_failure_recovers_lost_failure_result" time="0.515" /><testcase classname="tests.test_release_file.ReleaseFileTests" name="test_lost_final_ack_and_result_together_recover" time="0.519" /><testcase classname="tests.test_release_file.ReleaseFileTests" name="test_receiver_atomic_publish_does_not_replace_late_destination" time="0.007" /><testcase classname="tests.test_release_file.ReleaseFileTests" name="test_terminal_cache_bound_preserves_receiver_outcome" time="0.017" /><testcase classname="tests.test_release_file.ReleaseFileTests" name="test_wrong_peer_ack_and_result_cannot_complete_send" time="0.007"><failure message="StopIteration">self = &lt;test_release_file.ReleaseFileTests testMethod=test_wrong_peer_ack_and_result_cannot_complete_send&gt;
+
+    def test_wrong_peer_ack_and_result_cannot_complete_send(self):
+        with DatagramPair() as pair:
+            pair.drop=lambda sender,msg: sender=='bob'
+            fid=pair.send()
+&gt;           wait(lambda:pair.record('bob',fid)['status']=='receiving')
+
+tests\test_release_file.py:131: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\test_release_file.py:21: in wait
+    value = predicate()
+            ^^^^^^^^^^^
+tests\test_release_file.py:131: in &lt;lambda&gt;
+    wait(lambda:pair.record('bob',fid)['status']=='receiving')
+                ^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;test_release_file.DatagramPair object at 0x000002E18EA2F360&gt;
+peer = 'bob', fid = '54a7a56382bc482abcb1f2d0e6ed9a05'
+
+    def record(self,peer,fid):
+&gt;       return next(r for r in self.handlers[peer].get_progress() if r['file_id']==fid)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       StopIteration
+
+tests\test_release_file.py:74: StopIteration</failure></testcase><testcase classname="tests.test_release_stream.ReleaseStreamTests" name="test_empty_and_literal_end_payload_are_byte_exact" time="0.635" /><testcase classname="tests.test_release_stream.ReleaseStreamTests" name="test_independent_udp_stream_does_not_wait_for_another_stream_gap" time="0.003" /><testcase classname="tests.test_release_stream.ReleaseStreamTests" name="test_invalid_eof_duplicate_and_other_peer_are_not_acknowledged" time="0.320" /><testcase classname="tests.test_release_stream.ReleaseStreamTests" name="test_real_udp_loss_duplicate_order_async_and_final_ack_recovery" time="0.767" /><testcase classname="tests.test_release_stream.ReleaseStreamTests" name="test_sequence_capacity_rejects_before_sending" time="0.107" /><testcase classname="tests.test_release_stream.ReleaseStreamTests" name="test_socket_send_error_cannot_report_success" time="0.010"><failure message="OSError: [WinError 10038] An operation was attempted on something that is not a socket">self = &lt;test_release_stream.ReleaseStreamTests testMethod=test_socket_send_error_cannot_report_success&gt;
+
+    def test_socket_send_error_cannot_report_success(self):
+        a, b = udp(), udp()
+        a.close()
+        try:
+            sender = UDPStreamSender(a, b.getsockname())
+&gt;           self.assertFalse(sender.send_data(b'not sent', timeout=.5))
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_release_stream.py:195: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;udp_streamer.UDPStreamSender object at 0x000002E18E65C4D0&gt;
+data = b'not sent', timeout = 0.5
+
+    def send_data(self, data: bytes, timeout: float = 30.0) -&gt; bool:
+        """
+        Gửi toàn bộ dữ liệu một cách tin cậy.
+        Luồng rỗng (b"") vẫn sẽ đi qua lifecycle đầy đủ với 0 chunk dữ liệu và 1 gói EOF.
+        """
+        if not isinstance(data, bytes):
+            raise TypeError("stream data must be bytes")
+        if timeout &lt;= 0:
+            raise ValueError("timeout must be positive")
+        chunks = self._split_chunks(data)
+        total_chunks = len(chunks)
+        # Tổng số sequence cần truyền = số chunk dữ liệu + 1 gói thông báo EOF
+        total_seqs = total_chunks + 1
+        if total_chunks &gt; 65535:
+            raise ValueError("Standalone stream exceeds the 16-bit sequence range; use the file protocol with logical chunk indices")
+    
+        with self._lock:
+            if self._used:
+                raise RuntimeError("allocate a new sender and socket endpoint for each standalone transfer")
+            self._used = True
+            self.base = 0
+            self.next_seq = 0
+            self.window.clear()
+            self.is_finished = False
+            self.success = False
+            self._stop = False
+            self.stats = {"sent": 0, "retransmitted": 0, "acked": 0, "timeouts": 0}
+            self.congestion = CubicWindow(max_window=max(8, WINDOW_SIZE * 8))
+    
+        # Thread nhận ACK chạy song song
+        # Capture before the listener changes it; original loss wrappers expose
+        # only the minimal socket API, so restoration is best-effort for wrappers.
+        old_timeout = self.sock.gettimeout() if hasattr(self.sock, "gettimeout") else None
+        ack_thread = threading.Thread(target=self._ack_listener, daemon=True)
+        ack_thread.start()
+    
+        start_time = time.monotonic()
+    
+        try:
+            while not self._stop:
+                if time.monotonic() - start_time &gt; timeout:
+                    self._stop = True
+                    break
+    
+                with self._lock:
+                    # ----- 1. Gửi các gói mới nếu cửa sổ còn chỗ -----
+                    while (
+                        self.next_seq &lt; total_seqs
+                        and len(self.window) &lt; self.congestion.window
+                    ):
+                        if self.next_seq &lt; total_chunks:
+                            # Gửi dữ liệu thông thường
+                            self._send_chunk(self.next_seq, chunks[self.next_seq], is_retry=False, is_eof=False)
+                        else:
+                            # Gói cuối cùng chứa cờ EOF với độ lớn b""
+                            self._send_chunk(self.next_seq, b"", is_retry=False, is_eof=True)
+                        self.next_seq += 1
+    
+                    # ----- 2. Kiểm tra timeout &amp; gửi lại -----
+                    now = time.monotonic()
+                    to_retry: List[int] = []
+                    failed = False
+    
+                    for seq, info in list(self.window.items()):
+                        if now - info["send_time"] &gt;= RETRY_TIMEOUT:
+                            if info["retries"] &lt; MAX_RETRIES:
+                                to_retry.append(seq)
+                            else:
+                                failed = True
+                                break
+    
+                    if failed:
+                        self._stop = True
+                        self.success = False
+                        break
+    
+                    if to_retry:
+                        self.congestion.on_loss(timeout=True)
+                    for seq in to_retry:
+                        info = self.window[seq]
+                        self._send_chunk(seq, info["data"], is_retry=True, is_eof=info["is_eof"])
+                        self.stats["timeouts"] += 1
+    
+                    # ----- 3. Kiểm tra hoàn tất toàn bộ chu trình -----
+                    # Chỉ thành công khi đã nhận đủ toàn bộ ACK, bao gồm cả gói EOF
+                    if self.base &gt;= total_seqs:
+                        self.is_finished = True
+                        self.success = True
+                        self._stop = True
+                        break
+    
+                # Nhường CPU và chờ tín hiệu ACK
+                self._ack_event.wait(timeout=0.05)
+                self._ack_event.clear()
+    
+        except OSError:
+            self.success = False
+        finally:
+            self._stop = True
+            ack_thread.join(timeout=1.0)
+&gt;           self.sock.settimeout(old_timeout)
+E           OSError: [WinError 10038] An operation was attempted on something that is not a socket
+
+udp_streamer.py:163: OSError</failure></testcase><testcase classname="tests.test_release_stream.ReleaseByteStreamTests" name="test_cancelled_reader_removes_waiter_and_does_not_consume" time="0.014" /><testcase classname="tests.test_release_stream.ReleaseByteStreamTests" name="test_capacity_failure_and_terminal_state" time="0.007" /><testcase classname="tests.test_release_stream.ReleaseByteStreamTests" name="test_logical_indices_are_not_limited_by_packet_header_wrap" time="0.318" /><testcase classname="tests.test_release_stream.ReleaseByteStreamTests" name="test_ordering_eof_and_conflicting_buffered_duplicate" time="0.009" /><testcase classname="tests.test_release_stream.ReleaseCubicTests" name="test_growth_loss_recovery_and_idle_cap" time="0.001" /><testcase classname="tests.test_release_stream.ReleaseCubicTests" name="test_invalid_measurements_are_rejected" time="0.000" /><testcase classname="tests.test_release_system.ReleaseSystemTests" name="test_async_real_file_bytes_and_another_transfer_survive_loss" time="2.943" /><testcase classname="tests.test_role4_delivery.Role4DeliveryTests" name="test_same_filename_uploads_preserve_request_content" time="1.920" /><testcase classname="tests.test_role4_integration.Role4IntegrationTests" name="test_actual_heartbeat_timeout_removes_user_and_other_client_survives" time="19.269" /><testcase classname="tests.test_role4_integration.Role4IntegrationTests" name="test_existing_client_entrypoint_serves_ui_and_routes_chat" time="3.435" /><testcase classname="tests.test_role4_integration.Role4IntegrationTests" name="test_existing_heartbeat_script" time="28.208" /><testcase classname="tests.test_role4_integration.Role4IntegrationTests" name="test_existing_team_scripts_unchanged" time="3.745" /><testcase classname="tests.test_role4_integration.Role4IntegrationTests" name="test_http_chat_files_and_sha256" time="3.106" /><testcase classname="tests.test_role4_integration.Role4IntegrationTests" name="test_server_shutdown_state_limitation_and_manual_recovery" time="1.949" /><testcase classname="tests.test_role4_integration.Role4IntegrationTests" name="test_twenty_clients_crash_isolation_and_repeated_login" time="2.169" /><testcase classname="tests.test_role4_network.Role4NetworkTests" name="test_interrupted_transfer_sender_fails_and_chat_survives" time="4.528" /><testcase classname="tests.test_role4_network.Role4NetworkTests" name="test_loss_delay_duplicate_reorder_recover" time="1.958" /><testcase classname="tests.test_role4_network.Role4NetworkTests" name="test_lost_terminal_result_recovers" time="1.421" /><testcase classname="tests.test_role4_network.Role4NetworkTests" name="test_meta_ack_allows_transfer_to_complete" time="1.663" /><testcase classname="tests.test_role4_network.Role4NetworkTests" name="test_unavailable_recipient_rejected_by_existing_client" time="1.404" /><testcase classname="tests.test_role4_network.Role4NetworkTests" name="test_upstream_final_ack_loss_should_recover" time="1.454" /><testcase classname="tests.test_role4_network.Role4NetworkTests" name="test_upstream_receiver_timeout_should_reach_state" time="4.477" /><testcase classname="tests.test_role4_ui.Role4BrowserTests" name="test_drafts_enter_shift_enter_and_honest_submission" time="1.406" /><testcase classname="tests.test_role4_ui.Role4BrowserTests" name="test_file_validation_submission_and_backend_status_transitions" time="6.793" /><testcase classname="tests.test_role4_ui.Role4BrowserTests" name="test_injection_and_bounded_history" time="2.236" /><testcase classname="tests.test_role4_ui.Role4BrowserTests" name="test_malformed_missing_collections_and_progress" time="4.791" /><testcase classname="tests.test_role4_ui.Role4BrowserTests" name="test_mobile_layout_keyboard_and_snapshot_bounds" time="0.756" /><testcase classname="tests.test_role4_ui.Role4BrowserTests" name="test_real_schema_polling_selection_and_disappearing_recipient" time="4.765" /><testcase classname="tests.test_role4_ui.Role4BrowserTests" name="test_request_timeouts_recovery_and_no_overlapping_poll" time="21.602" /><testcase classname="tests.test_role4_ui.Role4RealBrowserIntegration" name="test_two_browser_clients_chat_file_progress_hash_and_disconnect" time="40.519"><failure message="playwright._impl._errors.TimeoutError: Page.wait_for_function: Timeout 30000ms exceeded.">self = &lt;test_role4_ui.Role4RealBrowserIntegration testMethod=test_two_browser_clients_chat_file_progress_hash_and_disconnect&gt;
+
+    def test_two_browser_clients_chat_file_progress_hash_and_disconnect(self):
+        with Lab() as lab, browser() as instance:
+            alice, bob = lab.client("alice"), lab.client("bob")
+            wait_for(lambda: names(alice) == names(bob) == {"alice", "bob"})
+            a, b = lab.bridge(alice), lab.bridge(bob)
+            context = instance.new_context()
+            try:
+                page_a, page_b = context.new_page(), context.new_page()
+                page_a.goto(a.url)
+                page_b.goto(b.url)
+                expect(page_a.locator("#users")).to_contain_text("bob")
+                page_a.locator("#draft").fill("browser broadcast")
+                page_a.locator("#draft").press("Enter")
+                expect(page_b.locator("#messages")).to_contain_text("browser broadcast")
+                page_b.locator("#chat-to").select_option("alice")
+                page_b.locator("#draft").fill("browser private")
+                page_b.locator("#chat-submit").click()
+                expect(page_a.locator("#messages")).to_contain_text("browser private")
+                content = bytes(range(256)) * 4096  # 1 MiB, enough for real intermediate progress.
+                page_a.locator("#file-to").select_option("bob")
+                page_a.locator("#file-input").set_input_files({"name": "browser tiếng Việt.bin", "mimeType": "application/octet-stream", "buffer": content})
+                page_a.locator("#file-submit").click()
+&gt;               page_a.wait_for_function("Array.from(document.querySelectorAll('progress')).some(p =&gt; p.value &gt; 0 &amp;&amp; p.value &lt; 100)", timeout=30000)
+
+tests\test_role4_ui.py:268: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+..\MangMayTinh1\.venv\Lib\site-packages\playwright\sync_api\_generated.py:11559: in wait_for_function
+    self._sync(
+..\MangMayTinh1\.venv\Lib\site-packages\playwright\_impl\_page.py:1113: in wait_for_function
+    return await self._main_frame.wait_for_function(**locals_to_params(locals()))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\MangMayTinh1\.venv\Lib\site-packages\playwright\_impl\_frame.py:860: in wait_for_function
+    await self._channel.send("waitForFunction", self._timeout, params)
+..\MangMayTinh1\.venv\Lib\site-packages\playwright\_impl\_connection.py:69: in send
+    return await self._connection.wrap_api_call(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;playwright._impl._connection.Connection object at 0x000002E1907B7610&gt;
+cb = &lt;function Channel.send.&lt;locals&gt;.&lt;lambda&gt; at 0x000002E1908CF7F0&gt;
+is_internal = False, title = None
+
+    async def wrap_api_call(
+        self, cb: Callable[[], Any], is_internal: bool = False, title: str = None
+    ) -&gt; Any:
+        if self._api_zone.get():
+            return await cb()
+        task = asyncio.current_task(self._loop)
+        st: List[inspect.FrameInfo] = getattr(
+            task, "__pw_stack__", None
+        ) or inspect.stack(0)
+    
+        parsed_st = _extract_stack_trace_information_from_stack(st, is_internal, title)
+        self._api_zone.set(parsed_st)
+        try:
+            return await cb()
+        except Exception as error:
+&gt;           raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+E           playwright._impl._errors.TimeoutError: Page.wait_for_function: Timeout 30000ms exceeded.
+
+..\MangMayTinh1\.venv\Lib\site-packages\playwright\_impl\_connection.py:558: TimeoutError</failure></testcase><testcase classname="test_file_client.TestFileClientAdvanced" name="test_ack_packet_is_ignored" time="0.001" /><testcase classname="test_file_client.TestFileClientAdvanced" name="test_chunk_before_metadata_does_not_crash_handler" time="0.002" /><testcase classname="test_file_client.TestFileClientAdvanced" name="test_duplicate_metadata_does_not_add_second_record" time="0.002" /><testcase classname="test_file_client.TestFileClientAdvanced" name="test_empty_file_can_be_sent_and_received" time="0.015" /><testcase classname="test_file_client.TestFileClientAdvanced" name="test_invalid_metadata_does_not_crash_handler" time="0.001" /><testcase classname="test_file_client.TestFileClientAdvanced" name="test_packets_are_sent_in_order" time="0.016" /><testcase classname="test_file_client.TestFileClientAdvanced" name="test_send_callback_failure_updates_status" time="0.014" /><testcase classname="test_file_client.TestFileClientAdvanced" name="test_send_nonexistent_file" time="0.002" /><testcase classname="test_file_client.TestFileClientAdvanced" name="test_tampered_encrypted_payload_is_ignored" time="0.002" /><testcase classname="test_file_client.TestFileClientAdvanced" name="test_unknown_message_kind_is_not_handled_as_file" time="0.001" /><testcase classname="test_file_transfer.TestEncryption" name="test_roundtrip_simple" time="0.001" /><testcase classname="test_file_transfer.TestEncryption" name="test_roundtrip_with_unicode" time="0.001" /><testcase classname="test_file_transfer.TestEncryption" name="test_tampered_payload_raises" time="0.001" /><testcase classname="test_file_transfer.TestEncryption" name="test_empty_dict" time="0.000" /><testcase classname="test_file_transfer.TestSafeFilename" name="test_normal_name" time="0.000" /><testcase classname="test_file_transfer.TestSafeFilename" name="test_reject_path_traversal" time="0.000" /><testcase classname="test_file_transfer.TestSafeFilename" name="test_reject_dangerous_chars" time="0.000" /><testcase classname="test_file_transfer.TestSafeFilename" name="test_reject_empty_and_dots" time="0.000" /><testcase classname="test_file_transfer.TestSafeFilename" name="test_reject_control_chars" time="0.000" /><testcase classname="test_file_transfer.TestOutgoingFile" name="test_split_empty_file" time="0.000" /><testcase classname="test_file_transfer.TestOutgoingFile" name="test_split_exact_chunks" time="0.000" /><testcase classname="test_file_transfer.TestOutgoingFile" name="test_split_remainder" time="0.000" /><testcase classname="test_file_transfer.TestOutgoingFile" name="test_from_bytes_basic" time="0.000" /><testcase classname="test_file_transfer.TestOutgoingFile" name="test_from_bytes_reject_bad_name" time="0.000" /><testcase classname="test_file_transfer.TestOutgoingFile" name="test_metadata_message" time="0.000" /><testcase classname="test_file_transfer.TestOutgoingFile" name="test_chunk_message" time="0.000" /><testcase classname="test_file_transfer.TestOutgoingFile" name="test_chunk_index_out_of_range" time="0.000" /><testcase classname="test_file_transfer.TestFileReceiver" name="test_accept_metadata_ok" time="0.002" /><testcase classname="test_file_transfer.TestFileReceiver" name="test_accept_metadata_duplicate_id" time="0.001" /><testcase classname="test_file_transfer.TestFileReceiver" name="test_accept_metadata_bad_kind" time="0.001" /><testcase classname="test_file_transfer.TestFileReceiver" name="test_full_transfer_success" time="0.010" /><testcase classname="test_file_transfer.TestFileReceiver" name="test_hash_mismatch_detected" time="0.002" /><testcase classname="test_file_transfer.TestFileReceiver" name="test_no_overwrite_existing_file" time="0.006" /><testcase classname="test_file_transfer.TestFileReceiver" name="test_progress_updates" time="0.004" /><testcase classname="test_file_transfer.TestFileReceiver" name="test_cleanup_expired" time="0.001" /></testsuite></testsuites>

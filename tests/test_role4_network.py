@@ -89,9 +89,8 @@ class Role4NetworkTests(unittest.TestCase):
             self.alice.send_file("missing", self.source())
         self.assertEqual(self.alice.state()["transfers"], [])
 
-    # @unittest.expectedFailure
     def test_upstream_final_ack_loss_should_recover(self):
-        """Known Role 3 defect: completed receiver ignores retransmit without ACK."""
+        """Completion must remain successful after the sending worker terminates."""
         original = self.bob.file_handler.send_packet_fn
         dropped = []
 
@@ -105,13 +104,22 @@ class Role4NetworkTests(unittest.TestCase):
         self.bob.file_handler.send_packet_fn = lose_final_ack
         file_id = self.alice.send_file("bob", self.source("one-chunk.bin", 100))
         wait_for(lambda: self.record(self.bob, file_id)["status"] == "completed")
-        wait_for(lambda: self.record(self.alice, file_id)["status"] != "sending", timeout=15)
-        print("Known final-ACK defect:", self.record(self.alice, file_id)["status"])
+        def worker_finished():
+            return not any(
+                getattr(getattr(worker, "_target", None), "__self__", None) is self.alice.file_handler
+                and getattr(getattr(worker, "_target", None), "__name__", "") == "_send_worker"
+                and getattr(worker, "_args", ())
+                and getattr(worker._args[0], "file_id", None) == file_id
+                for worker in threading.enumerate()
+            )
+        wait_for(worker_finished, timeout=15, description="sender worker has finished all retries")
+        self.assertEqual(dropped, [True], "The final ACK fault must actually be exercised")
+        self.assertEqual((self.lab.path / "downloads_bob" / "one-chunk.bin").read_bytes(),
+                         (self.lab.path / "one-chunk.bin").read_bytes())
         self.assertEqual(self.record(self.alice, file_id)["status"], "done")
 
-    # @unittest.expectedFailure
     def test_upstream_receiver_timeout_should_reach_state(self):
-        """Known Role 3 contract gap; accelerate cleanup, not network timeout."""
+        """Receiver expiry must propagate into the public client snapshot."""
         original = self.alice.file_handler.send_packet_fn
 
         def no_chunks(packet, recipient):
@@ -127,6 +135,24 @@ class Role4NetworkTests(unittest.TestCase):
         self.assertEqual(self.bob.file_handler.receiver.get_progress(file_id)["status"], "timeout")
         print("Known timeout-state gap:", self.record(self.bob, file_id)["status"])
         self.assertEqual(self.record(self.bob, file_id)["status"], "timeout")
+
+    def test_lost_terminal_result_recovers(self):
+        """One lost FILE_RESULT must not leave a completed file sending forever."""
+        original = self.bob.file_handler.send_packet_fn
+        dropped = []
+        def lose_result(packet, recipient):
+            if decode_secure_json(packet.payload).get("kind") == "FILE_RESULT" and not dropped:
+                dropped.append(True)
+                return
+            original(packet, recipient)
+        self.bob.file_handler.send_packet_fn = lose_result
+        source = self.source("lost-result.bin", 100)
+        file_id = self.alice.send_file("bob", source)
+        wait_for(lambda: self.record(self.bob, file_id)["status"] == "completed")
+        self.assertEqual(dropped, [True])
+        self.assertEqual((self.lab.path / "downloads_bob" / source.name).read_bytes(), source.read_bytes())
+        wait_for(lambda: self.record(self.alice, file_id)["status"] == "done", timeout=10,
+                 description="sender recovers a single lost terminal result")
 
     def test_meta_ack_allows_transfer_to_complete(self):
         """Receiver must ACK FILE_META so sender can finish."""

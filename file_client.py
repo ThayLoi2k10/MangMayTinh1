@@ -1,386 +1,338 @@
+"""Reliable encrypted file protocol over a peer-routed UDP callback.
+
+Chunk ACKs mean accepted bytes; only a matching receiver FILE_RESULT means
+verified, atomically published contents. FILE_QUERY recovers lost outcomes.
+"""
 from __future__ import annotations
 
+import re
 import threading
 import time
 from pathlib import Path
-from typing import Any, Callable
+from typing import Callable
 
 from protocol import Packet, MSG_DATA, STATUS_OK
-from file_transfer import (
-    OutgoingFile,
-    FileReceiver,
-    FileTransferError,
-    encode_secure_json,
-    decode_secure_json,
-    FILE_META,
-    FILE_CHUNK,
-    FILE_COMPLETE,
-)
+from file_transfer import (OutgoingFile, FileReceiver, FileTransferError,
+                           encode_secure_json, decode_secure_json,
+                           FILE_META, FILE_CHUNK)
 from config import WINDOW_SIZE, RETRY_TIMEOUT, MAX_RETRIES
+from stream_transport import CubicWindow
 
 
 class FileTransferHandler:
-    """
-    Application-layer reliable file transfer trên UDP.
-    """
+    MAX_ACTIVE = 8
+    MAX_HISTORY = 256
+    MAX_CONGESTION_WINDOW = 64
 
-    def __init__(self, send_packet_fn: Callable[[Packet, str], None], next_seq_fn: Callable[[], int], download_dir: str = "downloads"):
-        """
-        send_packet_fn(packet, recipient_username): Gửi packet UDP tới đúng peer
-        next_seq_fn(): Sequence number application-layer.
-        """
-        self.send_packet_fn = send_packet_fn
-        self.next_seq_fn = next_seq_fn
-        self.receiver = FileReceiver(download_dir=download_dir)
-
-        """ Lịch sử gửi nhận cho UI """
-        self.transfers: list[dict[str, Any]] = []
-        self._lock = threading.Lock()
-
-        # (file_id, chunk_index) -> Event , chunk_index = -1 cho META
-        """ Khi nhận đúng ACK sẽ gọi đến event.set()"""
-        self._pending: dict[tuple[str, int], threading.Event] = {}
+    def __init__(self, send_packet_fn: Callable[[Packet, str], None],
+                 next_seq_fn: Callable[[], int], download_dir='downloads'):
+        self.send_packet_fn, self.next_seq_fn = send_packet_fn, next_seq_fn
+        self.receiver = FileReceiver(download_dir)
+        self.transfers = []
+        self._lock = threading.RLock()
         self._pending_lock = threading.Lock()
+        self._pending = {}
+        self._active = {}
+        self._workers = set()
+        self._closed = threading.Event()
 
-    def send_file(self, filepath: str | Path, recipient: str, all_recipients: list[str] | None = None) -> str:
-        if recipient == "*":
-            targets = [u for u in (all_recipients or []) if u]
-            if not targets:
-                raise FileTransferError("Không có ai online để gửi file broadcast")
-        else:
-            if not recipient:
-                raise FileTransferError("Thiếu người nhận")
-            targets = [recipient]
-        last_id = ""
+    def _trim(self):
+        # Never evict active transfers to meet a history target.
+        active_receive = set(self.receiver.incoming)
+        while len(self.transfers) > self.MAX_HISTORY:
+            index = next((i for i, r in enumerate(self.transfers)
+                          if r['file_id'] not in self._active and r['file_id'] not in active_receive), None)
+            if index is None:
+                break
+            self.transfers.pop(index)
+
+    def send_file(self, filepath: str | Path, recipient: str,
+                  all_recipients: list[str] | None = None) -> str:
+        targets = list(dict.fromkeys(all_recipients or [])) if recipient == '*' else [recipient]
+        if not targets or any(not isinstance(t, str) or not t or t == '*' for t in targets):
+            raise FileTransferError('Missing valid file recipient')
+        last_id = ''
         for target in targets:
-            outgoing = OutgoingFile.from_path(filepath) # file_id mới cho mỗi peer
-            last_id = outgoing.file_id
-
-            record = {
-                "direction": "send",
-                "file_id": outgoing.file_id,
-                "filename": outgoing.filename,
-                "peer": target,
-                "status": "sending",
-                "progress": 0,
-                "total_chunks": len(outgoing.chunks),
-            }
+            outgoing = OutgoingFile.from_path(filepath)
             with self._lock:
+                if self._closed.is_set():
+                    raise FileTransferError('Client closed')
+                if len(self._active) >= self.MAX_ACTIVE:
+                    raise FileTransferError('Too many active sending transfers')
+                record = dict(direction='send', file_id=outgoing.file_id, filename=outgoing.filename,
+                              peer=target, status='sending', progress=0, total_chunks=len(outgoing.chunks),
+                              retransmissions=0)
                 self.transfers.append(record)
-
-            threading.Thread(
-                target=self._send_worker,
-                args=(outgoing, target, record),
-                daemon=True,
-            ).start()
-
+                self._active[outgoing.file_id] = dict(peer=target, record=record, outgoing=outgoing,
+                                                     event=threading.Event(), result=None)
+                worker = threading.Thread(target=self._send_worker, args=(outgoing,target,record), daemon=True)
+                self._workers.add(worker)
+                self._trim()
+                worker.start()
+                last_id = outgoing.file_id
         return last_id
 
-    """ Đăng ký và hủy chờ cho ACK """
-    def _register_wait(self, file_id: str, index: int) -> threading.Event:
-        key = (file_id, index)
-        ev = threading.Event()
-        with self._pending_lock:
-            self._pending[key] = ev
-        return ev
+    def _packet(self, message):
+        return Packet(MSG_DATA, STATUS_OK, self.next_seq_fn(), encode_secure_json(message))
 
-    def _unregister(self, file_id: str, index: int) -> None:
+    def _register_wait(self, fid, index):
+        event = threading.Event()
         with self._pending_lock:
-            self._pending.pop((file_id, index), None)
+            self._pending[(fid,index)] = event
+        return event
 
-    def _send_reliable_one(self, message: dict, recipient: str, file_id: str, index: int) -> None:
-        """Gửi 1 gói (META hoặc 1 CHUNK), chờ ACK, retransmit nếu cần """
-        ev = self._register_wait(file_id, index)
-        payload = encode_secure_json(message)
-        packet = Packet(
-            msg_type=MSG_DATA,
-            status=STATUS_OK,
-            seq_no=self.next_seq_fn(),
-            payload=payload,
-        )
+    def _unregister(self, fid, index):
+        with self._pending_lock:
+            self._pending.pop((fid,index),None)
+
+    def _result(self, fid):
+        with self._lock:
+            active = self._active.get(fid)
+            return active['result'] if active else None
+
+    def _check_running(self):
+        if self._closed.is_set():
+            raise FileTransferError('Client closed; completion unconfirmed')
+
+    def _send_reliable_one(self, message, recipient, file_id, index):
+        event = self._register_wait(file_id,index)
+        packet = self._packet(message)
         try:
             for _ in range(MAX_RETRIES):
-                self.send_packet_fn(packet, recipient)
-                if ev.wait(RETRY_TIMEOUT):
+                self._check_running()
+                self.send_packet_fn(packet,recipient)
+                deadline = time.monotonic()+RETRY_TIMEOUT
+                while not event.is_set() and not self._result(file_id):
+                    self._check_running()
+                    remaining = deadline-time.monotonic()
+                    if remaining <= 0:
+                        break
+                    event.wait(min(remaining,.01))
+                if event.is_set() or self._result(file_id):
                     return
-            raise TimeoutError(f"Timeout ACK file_id={file_id} index={index}")
+            raise TimeoutError(f'Timeout ACK file_id={file_id} index={index}')
         finally:
-            self._unregister(file_id, index)
+            self._unregister(file_id,index)
 
-    """ Điều phối quá trình truyền file """
-    def _send_worker(self, outgoing: OutgoingFile, recipient: str, record: dict) -> None:
+    def _send_worker(self, outgoing, recipient, record):
+        fid = outgoing.file_id
+        # WINDOW_SIZE is the initial slow-start threshold, not a fixed window.
+        # A separate capacity permits CUBIC avoidance to grow after slow start.
+        controller = CubicWindow(max_window=self.MAX_CONGESTION_WINDOW,
+                                 initial_ssthresh=max(2,WINDOW_SIZE))
+        flight = {}
+        next_index = acknowledged = 0
         try:
-            """ FILE_META (index = -1) """
-            meta = outgoing.metadata_message(recipient)
-            self._send_reliable_one(meta, recipient, outgoing.file_id, -1)
-
-            """ FILE_CHUNK theo sliding window """
+            self._send_reliable_one(outgoing.metadata_message(recipient),recipient,fid,-1)
             total = len(outgoing.chunks)
-            i = 0
-            while i < total:
-                end = min(i + WINDOW_SIZE, total)
-                events: dict[int, threading.Event] = {}
-
-                for idx in range(i, end):
-                    events[idx] = self._register_wait(outgoing.file_id, idx)
-
-                """ Gửi cả cửa sổ """
-                for idx in range(i, end):
-                    msg = outgoing.chunk_message(idx, recipient)
-                    payload = encode_secure_json(msg)
-                    pkt = Packet(
-                        msg_type=MSG_DATA,
-                        status=STATUS_OK,
-                        seq_no=self.next_seq_fn(),
-                        payload=payload,
-                    )
-                    self.send_packet_fn(pkt, recipient)
-
-                """Retransmit những chunk chưa ACK"""
-                for _ in range(MAX_RETRIES):
-                    pending = [idx for idx, ev in events.items() if not ev.is_set()]
-                    if not pending:
-                        break
-                    deadline = time.time() + RETRY_TIMEOUT
-                    while time.time() < deadline and any(not ev.is_set() for ev in events.values()):
-                        time.sleep(0.01)
-                    pending = [idx for idx, ev in events.items() if not ev.is_set()]
-                    if not pending:
-                        break
-                    for idx in pending:
-                        msg = outgoing.chunk_message(idx, recipient)
-                        payload = encode_secure_json(msg)
-                        pkt = Packet(
-                            msg_type=MSG_DATA,
-                            status=STATUS_OK,
-                            seq_no=self.next_seq_fn(),
-                            payload=payload,
-                        )
-                        self.send_packet_fn(pkt, recipient)
-                else:
-                    pending = [idx for idx, ev in events.items() if not ev.is_set()]
-                    if pending:
-                        raise TimeoutError(f"Timeout chunks {pending}")
-
-                for idx in range(i, end):
-                    self._unregister(outgoing.file_id, idx)
-
-                i = end
+            while acknowledged < total and not self._result(fid):
+                self._check_running()
+                now = time.monotonic()
+                for index, entry in list(flight.items()):
+                    if entry['event'].is_set():
+                        controller.on_ack(rtt=max(.000001,now-entry['time']) if entry['retries']==0 else None)
+                        self._unregister(fid,index)
+                        del flight[index]
+                        acknowledged += 1
+                while next_index < total and len(flight) < controller.window and not self._result(fid):
+                    index = next_index
+                    entry = {'event': self._register_wait(fid,index), 'time': time.monotonic(),
+                             'retries': 0, 'packet': self._packet(outgoing.chunk_message(index,recipient))}
+                    flight[index] = entry
+                    self.send_packet_fn(entry['packet'],recipient)
+                    next_index += 1
+                timed_out = [entry for entry in flight.values()
+                             if not entry['event'].is_set() and time.monotonic()-entry['time'] >= RETRY_TIMEOUT]
+                if timed_out:
+                    controller.on_loss(timeout=True)
+                    for entry in timed_out:
+                        if entry['retries'] >= MAX_RETRIES:
+                            raise TimeoutError('Timeout chunks; completion unconfirmed')
+                        self.send_packet_fn(entry['packet'],recipient)
+                        entry['retries'] += 1
+                        entry['time'] = time.monotonic()
+                        with self._lock:
+                            record['retransmissions'] += 1
                 with self._lock:
-                    record["progress"] = int(i * 100 / total)
-
-            with self._lock:
-                if record["status"] == "sending":
-                    record["progress"] = 100
-
+                    if record['status']=='sending':
+                        record['progress'] = int(acknowledged*100/total)
+                    record['congestion'] = controller.snapshot()
+                if flight and not self._result(fid):
+                    # An ACK wakes this worker, but never blocks other transfers.
+                    with self._lock:
+                        wake = self._active[fid]['event']
+                    wake.wait(.01)
+                    wake.clear()
+            if not self._result(fid):
+                with self._lock:
+                    record['progress'] = 100
+                for _ in range(MAX_RETRIES):
+                    self._check_running()
+                    self.send_packet_fn(self._packet({'kind':'FILE_QUERY','file_id':fid,'to':recipient}),recipient)
+                    with self._lock:
+                        wake = self._active[fid]['event']
+                    if self._result(fid):
+                        break
+                    wake.wait(RETRY_TIMEOUT)
+                    wake.clear()
+                    if self._result(fid):
+                        break
+                if not self._result(fid):
+                    raise TimeoutError('Receiver completion unconfirmed after result queries')
         except Exception as exc:
             with self._lock:
-                record["status"] = f"failed: {exc}"
+                # A receiver-confirmed outcome is immutable, including when its
+                # final chunk ACK was lost while the result arrived successfully.
+                if record['status']=='sending':
+                    record['status'] = f'failed: {exc}'
+        finally:
+            with self._pending_lock:
+                for key in list(self._pending):
+                    if key[0] == fid:
+                        self._pending.pop(key)
+            with self._lock:
+                record['congestion'] = controller.snapshot()
+                self._active.pop(fid,None)
+                self._workers.discard(threading.current_thread())
+                self._trim()
 
-    # ==================================================================
-    # NHẬN (gọi từ UDP loop)
-    # ==================================================================
-    def handle_packet(self, packet: Packet, sender: str = "?") -> bool:
-        """
-        Xử lý packet UDP MSG_DATA.
-        True = đây là packet file (đã xử lý)
-        """
+    def handle_packet(self, packet, sender='?'):
         if packet.msg_type != MSG_DATA:
             return False
         try:
-            msg = decode_secure_json(packet.payload)
+            message = decode_secure_json(packet.payload)
         except FileTransferError:
             return False
-
-        kind = msg.get("kind")
-        if kind == FILE_META:
-            if self._on_meta(msg, sender):
-                self._reply_ack(msg.get("file_id"), -1, sender)
-            return True
-        if kind == FILE_CHUNK:
-            self._on_chunk(msg, sender)
-            return True
-        if kind == "ACK":
-            self._on_ack(msg)
-            return True
-        if kind == "FILE_RESULT":
-            self._on_file_result(msg)
-            return True
-        return False
-
-    def _reply_ack(self, file_id: str, chunk_index: int, to_user: str) -> None:
-        ack = {
-            "kind": "ACK",
-            "file_id": file_id,
-            "chunk_index": chunk_index,
-            "to": to_user,
-        }
-        payload = encode_secure_json(ack)
-        pkt = Packet(
-            msg_type=MSG_DATA,
-            status=STATUS_OK,
-            seq_no=self.next_seq_fn(),
-            payload=payload,
-        )
-        self.send_packet_fn(pkt, to_user)
-
-    def _on_ack(self, msg: dict) -> None:
-        fid = msg.get("file_id")
-        idx = msg.get("chunk_index", -1)
-        if not isinstance(fid, str):
-            return
-        try:
-            idx = int(idx)
-        except (TypeError, ValueError):
-            return
-        with self._pending_lock:
-            ev = self._pending.get((fid, idx))
-        if ev:
-            ev.set()
-
-    def _on_meta(self, msg: dict, sender: str) -> bool:
-        try:
-            item = self.receiver.accept_metadata(msg, sender=sender)
-            with self._lock:
-                # chỉ thêm record nếu chưa có file_id này phía receive
-                exists = any(
-                    r.get("file_id") == item.file_id and r.get("direction") == "receive"
-                    for r in self.transfers
-                )
-                if not exists:
-                    self.transfers.append({
-                        "direction": "receive",
-                        "file_id": item.file_id,
-                        "filename": item.filename,
-                        "peer": sender,
-                        "status": "receiving",
-                        "progress": 0,
-                        "total_chunks": item.total_chunks,
-                    })
-            return True
-        except FileTransferError as exc:
-            print(f"[FILE] meta error: {exc}")
+        kind = message.get('kind')
+        if kind not in (FILE_META, FILE_CHUNK, 'ACK', 'FILE_RESULT', 'FILE_QUERY'):
             return False
-        
-    def _on_chunk(self, msg: dict, sender: str) -> None:
-        fid = msg.get("file_id")
+        fid = message.get('file_id')
+        if not isinstance(fid,str) or not re.fullmatch(r'[0-9a-f]{32}',fid):
+            return True
+        if kind == 'ACK':
+            self._on_ack(message,sender)
+        elif kind == 'FILE_RESULT':
+            self._on_file_result(message,sender)
+        elif kind == 'FILE_QUERY':
+            self._reply_terminal(fid,sender)
+        elif kind == FILE_META:
+            terminal = self.receiver.terminal_result(fid,sender)
+            if terminal:
+                if self.receiver.metadata_matches(terminal,message):
+                    self._send_file_result(fid,sender,terminal['status'],terminal['error'],terminal)
+            else:
+                self._on_meta(message,sender)
+        else:
+            if not self._reply_terminal(fid,sender):
+                self._on_chunk(message,sender)
+        return True
 
+    def _send_control(self, message, peer):
+        packet = self._packet(message)
         try:
-            result = self.receiver.accept_chunk(msg)
-            idx = int(msg.get("chunk_index", -1))
+            self.send_packet_fn(packet,peer)
+        except (OSError, RuntimeError):
+            # Discovery may remove a peer between receiving its datagram and
+            # replying; the client callback then raises RuntimeError. Preserve
+            # the receive loop and terminal state, just as for a lost datagram.
+            # Valid retransmits/queries recover the reply if the peer returns.
+            pass
 
-            if result.get("ignored"):
+    def _reply_ack(self, fid, index, peer):
+        self._send_control({'kind':'ACK','file_id':fid,'chunk_index':index,'to':peer},peer)
+
+    def _on_ack(self, message, sender='?'):
+        fid, index = message.get('file_id'), message.get('chunk_index')
+        if type(index) is not int:
+            return
+        with self._lock:
+            active = self._active.get(fid)
+            if not active or active['peer'] != sender:
                 return
+            with self._pending_lock:
+                event = self._pending.get((fid,index))
+            if event:
+                event.set()
+                active['event'].set()
 
-            # ACK xác nhận chunk đã được tiếp nhận hợp lệ.
-            self._reply_ack(fid, idx, sender)
+    def _on_file_result(self, message, sender='?'):
+        fid, status = message.get('file_id'), message.get('status')
+        if status not in ('completed','failed','timeout'):
+            return
+        with self._lock:
+            active = self._active.get(fid)
+            if not active or active['peer'] != sender or active['result'] is not None:
+                return
+            if status=='completed':
+                out = active['outgoing']
+                if message.get('sha256') != out.sha256 or message.get('size') != out.size:
+                    return
+            active['result'] = dict(message)
+            rec = active['record']
+            if rec['status']=='sending':
+                if status=='completed':
+                    rec.update(status='done',progress=100)
+                else:
+                    rec['status'] = f"failed: {str(message.get('error') or status)[:500]}"
+            active['event'].set()
 
-            if result.get("kind") == FILE_COMPLETE:
-                self._send_file_result(
-                    fid, sender, "completed"
-                )
-
+    def _on_meta(self, message, sender):
+        try:
+            item = self.receiver.accept_metadata(message,sender)
             with self._lock:
-                for rec in self.transfers:
-                    if (
-                        rec.get("file_id") == fid
-                        and rec.get("direction") == "receive"
-                    ):
-                        rec["progress"] = result.get(
-                            "progress", rec.get("progress", 0)
-                        )
-
-                        if result.get("kind") == FILE_COMPLETE:
-                            rec["status"] = "completed"
-                            rec["progress"] = 100
-                        break
-
+                if not any(r['file_id']==item.file_id and r['direction']=='receive' for r in self.transfers):
+                    self.transfers.append(dict(direction='receive',file_id=item.file_id,filename=item.filename,
+                                               peer=sender,status='receiving',progress=0,total_chunks=item.total_chunks))
+                    self._trim()
+            self._reply_ack(item.file_id,-1,sender)
         except FileTransferError as exc:
-            self._send_file_result(
-                fid, sender, "failed", str(exc)
-            )
+            self._send_file_result(message['file_id'],sender,'failed',str(exc))
 
-            with self._lock:
-                for rec in self.transfers:
-                    if (
-                        rec.get("file_id") == fid
-                        and rec.get("direction") == "receive"
-                    ):
-                        rec["status"] = f"failed: {exc}"
-                        break
+    def _on_chunk(self, message, sender):
+        fid = message['file_id']
+        try:
+            result = self.receiver.accept_chunk(message,sender=sender)
+            if result.get('ignored'):
+                return
+            self._reply_ack(fid,message['chunk_index'],sender)
+            self._reply_terminal(fid,sender)
+        except FileTransferError:
+            self._reply_terminal(fid,sender)
 
-            print(f"[FILE] chunk error: {exc}")
+    def _reply_terminal(self, fid, sender):
+        terminal = self.receiver.terminal_result(fid,sender)
+        if terminal is None:
+            return False
+        self._send_file_result(fid,sender,terminal['status'],terminal['error'],terminal)
+        return True
 
-    def get_progress(self) -> list[dict]:
+    def _send_file_result(self, file_id, to_user, status, error='', result=None):
+        result = result or {}
+        self._send_control(dict(kind='FILE_RESULT',file_id=file_id,to=to_user,status=status,error=error,
+                                size=result.get('size'),sha256=result.get('sha256')),to_user)
+
+    def get_progress(self):
         with self._lock:
-            out = [dict(r) for r in self.transfers[-40:]]
+            records = [dict(r) for r in self.transfers[-40:]]
+        for record in records:
+            if record['direction']=='receive':
+                progress = self.receiver.get_progress(record['file_id'])
+                if progress:
+                    record['status'], record['progress'] = progress['status'], progress['progress']
+        return records
 
-        for rec in out:
-            if rec.get("direction") != "receive":
-                continue
-            fid = rec.get("file_id")
-            if not fid:
-                continue
-            rp = self.receiver.get_progress(str(fid))
-            if not rp:
-                continue
-            st = rp.get("status")
-            # Chỉ ghi đè khi receiver đã kết thúc hoặc lỗi
-            if st and st not in ("receiving",):
-                rec["status"] = st
-                if "progress" in rp:
-                    rec["progress"] = rp["progress"]
-        return out
-
-    def cleanup(self) -> None:
-        expired = self.receiver.cleanup_expired(max_age=120.0)
-        if not expired:
-            return
+    def cleanup(self):
+        self.receiver.cleanup_expired(max_age=120.0)
         with self._lock:
-            for rec in self.transfers:
-                if ( rec.get("direction") == "receive" and rec.get("file_id") in expired and rec.get("status") == "receiving"):
-                    rec["status"] = "timeout"
+            self._trim()
 
-    def _on_file_result(self, msg: dict) -> None:
-        file_id = msg.get("file_id")
-        status = msg.get("status")
-
-        if not isinstance(file_id, str):
-            return
-
+    def close(self):
+        self._closed.set()
         with self._lock:
-            for rec in self.transfers:
-                if (
-                    rec.get("file_id") == file_id
-                    and rec.get("direction") == "send"
-                ):
-                    if status == "completed":
-                        rec["status"] = "done"
-                        rec["progress"] = 100
-                    else:
-                        rec["status"] = f"failed: {msg.get('error', 'receiver rejected file')}"
-                        rec["progress"] = 100
-                    break
-
-    def _send_file_result(
-        self,
-        file_id: str,
-        to_user: str,
-        status: str,
-        error: str = "",
-    ) -> None:
-        msg = {
-            "kind": "FILE_RESULT",
-            "file_id": file_id,
-            "status": status,
-            "error": error,
-            "to": to_user,
-        }
-
-        packet = Packet(
-            msg_type=MSG_DATA,
-            status=STATUS_OK,
-            seq_no=self.next_seq_fn(),
-            payload=encode_secure_json(msg),
-        )
-        self.send_packet_fn(packet, to_user)
+            workers = list(self._workers)
+            for active in self._active.values():
+                active['event'].set()
+        self.receiver.close()
+        for worker in workers:
+            if worker is not threading.current_thread():
+                worker.join(RETRY_TIMEOUT+.2)

@@ -1,0 +1,42 @@
+[
+  {
+    "label": "final_1",
+    "command": [
+      "E:\\Downloads\\BTL_MMT\\MangMayTinh1\\.venv\\Scripts\\python.exe",
+      "-X",
+      "utf8",
+      "E:\\Downloads\\BTL_MMT\\finalization_2026_11_05\\audits\\finalization_2026_11_05\\run_role4.py",
+      "--label",
+      "final_1"
+    ],
+    "exit_code": 1,
+    "seconds": 156.498
+  },
+  {
+    "label": "final_2",
+    "command": [
+      "E:\\Downloads\\BTL_MMT\\MangMayTinh1\\.venv\\Scripts\\python.exe",
+      "-X",
+      "utf8",
+      "E:\\Downloads\\BTL_MMT\\finalization_2026_11_05\\audits\\finalization_2026_11_05\\run_role4.py",
+      "--label",
+      "final_2"
+    ],
+    "exit_code": 1,
+    "seconds": 158.882
+  },
+  {
+    "label": "demo_smoke",
+    "command": [
+      "E:\\Downloads\\BTL_MMT\\MangMayTinh1\\.venv\\Scripts\\python.exe",
+      "-X",
+      "utf8",
+      "E:\\Downloads\\BTL_MMT\\finalization_2026_11_05\\submission\\assignment1\\demo.py",
+      "--smoke",
+      "--output",
+      "E:\\Downloads\\BTL_MMT\\finalization_2026_11_05\\audits\\finalization_2026_11_05\\demo_smoke.json"
+    ],
+    "exit_code": 0,
+    "seconds": 2.829
+  }
+]

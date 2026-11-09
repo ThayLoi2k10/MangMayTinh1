@@ -12,11 +12,6 @@ from urllib.request import urlopen
 from role4_harness import ROOT, Lab, api, names, wait_for
 
 
-def known_windows_reset(test):
-    """The unchanged legacy heartbeat test does not handle Windows TCP reset."""
-    return unittest.expectedFailure(test) if sys.platform == "win32" else test
-
-
 class Role4IntegrationTests(unittest.TestCase):
     def setUp(self):
         self.lab = Lab().__enter__()
@@ -122,11 +117,12 @@ class Role4IntegrationTests(unittest.TestCase):
         bridge = self.lab.bridge(alice)
         self.lab.stop_server()
         wait_for(lambda: alice.stop_event.is_set() and bob.stop_event.is_set(), description="TCP disconnect detected")
-        # Characterize the missing UI contract honestly, rather than invent connectivity.
+        # The additive connection contract must report the real TCP closure.
         state = api(bridge.url)
         self.assertEqual(state["username"], "alice")
         self.assertNotIn("connected", state)
-        self.assertEqual({user["username"] for user in state["users"]}, {"alice", "bob"})
+        self.assertEqual(state["connection"]["status"], "disconnected")
+        self.assertEqual(state["users"], [])
         alice.close()
         bob.close()
         self.lab.start_server()
@@ -154,7 +150,6 @@ class Role4IntegrationTests(unittest.TestCase):
                     self.assertIn("SUCCESS", result.stdout)
                 print(f"Existing script {script}: exit 0")
 
-    @known_windows_reset
     def test_existing_heartbeat_script(self):
         result = subprocess.run(
             [sys.executable, str(ROOT / "test_heartbeat.py")],

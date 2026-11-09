@@ -1,0 +1,18 @@
+============================= test session starts =============================
+platform win32 -- Python 3.14.4, pytest-9.2.0, pluggy-1.7.0 -- E:\Downloads\BTL_MMT\MangMayTinh1\.venv\Scripts\python.exe
+rootdir: E:\Downloads\BTL_MMT\release_closure_2026_11_05
+collecting ... collected 9 items
+
+tests/test_role4_network.py::Role4NetworkTests::test_interrupted_transfer_sender_fails_and_chat_survives PASSED [ 11%]
+tests/test_role4_network.py::Role4NetworkTests::test_loss_delay_duplicate_reorder_recover PASSED [ 22%]
+tests/test_role4_network.py::Role4NetworkTests::test_lost_terminal_result_recovers PASSED [ 33%]
+tests/test_role4_network.py::Role4NetworkTests::test_meta_ack_allows_transfer_to_complete PASSED [ 44%]
+tests/test_role4_network.py::Role4NetworkTests::test_unavailable_recipient_rejected_by_existing_client PASSED [ 55%]
+tests/test_role4_network.py::Role4NetworkTests::test_upstream_final_ack_loss_should_recover PASSED [ 66%]
+tests/test_role4_network.py::Role4NetworkTests::test_upstream_receiver_timeout_should_reach_state PASSED [ 77%]
+tests/test_role4_delivery.py::Role4DeliveryTests::test_same_filename_uploads_preserve_request_content
+tests/test_role4_delivery.py::Role4DeliveryTests::test_same_filename_uploads_preserve_request_content PASSED [ 88%]
+tests/test_release_system.py::ReleaseSystemTests::test_async_real_file_bytes_and_another_transfer_survive_loss PASSED [100%]
+
+- generated xml file: E:\Downloads\BTL_MMT\release_closure_2026_11_05\audits\release_2026_11_07\targeted.xml -
+==================== 9 passed, 2 subtests passed in 23.49s ====================

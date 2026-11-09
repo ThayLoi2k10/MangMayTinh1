@@ -23,7 +23,7 @@ class TestFileClientAdvanced(unittest.TestCase):
     def make_handler(self, download_dir, send_fn=None):
         """Tạo handler với callback giả lập."""
         if send_fn is None:
-            send_fn = lambda packet: None
+            send_fn = lambda packet, recipient: None
 
         counter = itertools.count(1)
 
@@ -47,7 +47,7 @@ class TestFileClientAdvanced(unittest.TestCase):
                 ):
                     status = record.get("status", "")
 
-                    if status in ("sent", "completed") or str(status).startswith("failed"):
+                    if status in ("done", "completed") or str(status).startswith("failed"):
                         return record
 
             time.sleep(0.01)
@@ -67,7 +67,7 @@ class TestFileClientAdvanced(unittest.TestCase):
             missing_file = Path(tmp) / "missing.txt"
 
             with self.assertRaises(FileTransferError):
-                handler.send_file(missing_file)
+                handler.send_file(missing_file, "Bob")
 
     def test_send_callback_failure_updates_status(self):
         """Nếu callback gửi packet lỗi, trạng thái phải là failed."""
@@ -75,7 +75,7 @@ class TestFileClientAdvanced(unittest.TestCase):
             source = Path(tmp) / "source.txt"
             source.write_bytes(b"some content")
 
-            def fail_send(packet):
+            def fail_send(packet, recipient):
                 raise OSError("simulated send failure")
 
             handler = self.make_handler(
@@ -83,7 +83,7 @@ class TestFileClientAdvanced(unittest.TestCase):
                 send_fn=fail_send,
             )
 
-            file_id = handler.send_file(source)
+            file_id = handler.send_file(source, "Bob")
             record = self.wait_for_record(
                 handler, file_id, "send"
             )
@@ -110,12 +110,13 @@ class TestFileClientAdvanced(unittest.TestCase):
 
             sender = self.make_handler(
                 root / "sender_downloads",
-                send_fn=lambda packet: receiver.handle_packet(
+                send_fn=lambda packet, recipient: receiver.handle_packet(
                     packet, sender="Alice"
                 ),
             )
 
-            file_id = sender.send_file(source)
+            receiver.send_packet_fn = lambda packet, recipient: sender.handle_packet(packet, sender="Bob")
+            file_id = sender.send_file(source, "Bob")
 
             sent = self.wait_for_record(
                 sender, file_id, "send"
@@ -124,7 +125,7 @@ class TestFileClientAdvanced(unittest.TestCase):
                 receiver, file_id, "receive"
             )
 
-            self.assertEqual(sent["status"], "sent")
+            self.assertEqual(sent["status"], "done")
             self.assertEqual(received["status"], "completed")
             self.assertEqual(received["progress"], 100)
 
@@ -146,21 +147,24 @@ class TestFileClientAdvanced(unittest.TestCase):
             sent_packets = []
             lock = threading.Lock()
 
-            def collect(packet):
+            receiver = self.make_handler(Path(tmp) / "receiver")
+            def collect(packet, recipient):
                 with lock:
                     sent_packets.append(packet)
+                receiver.handle_packet(packet, sender="Alice")
 
             handler = self.make_handler(
                 Path(tmp) / "downloads",
                 send_fn=collect,
             )
 
-            file_id = handler.send_file(source)
+            receiver.send_packet_fn = lambda packet, recipient: handler.handle_packet(packet, sender="Bob")
+            file_id = handler.send_file(source, "Bob")
             record = self.wait_for_record(
                 handler, file_id, "send"
             )
 
-            self.assertEqual(record["status"], "sent")
+            self.assertEqual(record["status"], "done")
 
             with lock:
                 packets = list(sent_packets)

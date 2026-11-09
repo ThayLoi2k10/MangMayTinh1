@@ -1,8 +1,16 @@
-﻿import threading
+"""Standalone one-transfer UDP streams on dedicated socket endpoints.
+
+The integrated file protocol uses UUID transfer IDs and peer binding. This small
+demonstrator has a 16-bit wire sequence and no session ID: allocate fresh sockets
+for each transfer, never recycle an endpoint while old datagrams may exist.
+"""
+import threading
+import hashlib
 import socket
 import time
 from typing import Tuple, Dict, Optional, List
 from config import CHUNK_SIZE, WINDOW_SIZE, RETRY_TIMEOUT, MAX_RETRIES
+from stream_transport import CubicWindow, OrderedByteStream
 import protocol # Import để fallback các hằng số nếu cần
 from protocol import (
     Packet,
@@ -49,18 +57,29 @@ class UDPStreamSender:
         }
         self._lock = threading.Lock()
         self._ack_event = threading.Event()
+        self.congestion = CubicWindow(max_window=max(8, WINDOW_SIZE * 8))
+        self._used = False
 
     def send_data(self, data: bytes, timeout: float = 30.0) -> bool:
         """
         Gửi toàn bộ dữ liệu một cách tin cậy. 
         Luồng rỗng (b"") vẫn sẽ đi qua lifecycle đầy đủ với 0 chunk dữ liệu và 1 gói EOF.
         """
+        if not isinstance(data, bytes):
+            raise TypeError("stream data must be bytes")
+        if timeout <= 0:
+            raise ValueError("timeout must be positive")
         chunks = self._split_chunks(data)
         total_chunks = len(chunks)
         # Tổng số sequence cần truyền = số chunk dữ liệu + 1 gói thông báo EOF
         total_seqs = total_chunks + 1 
+        if total_chunks > 65535:
+            raise ValueError("Standalone stream exceeds the 16-bit sequence range; use the file protocol with logical chunk indices")
 
         with self._lock:
+            if self._used:
+                raise RuntimeError("allocate a new sender and socket endpoint for each standalone transfer")
+            self._used = True
             self.base = 0
             self.next_seq = 0
             self.window.clear()
@@ -68,16 +87,20 @@ class UDPStreamSender:
             self.success = False
             self._stop = False
             self.stats = {"sent": 0, "retransmitted": 0, "acked": 0, "timeouts": 0}
+            self.congestion = CubicWindow(max_window=max(8, WINDOW_SIZE * 8))
 
         # Thread nhận ACK chạy song song
+        # Capture before the listener changes it; original loss wrappers expose
+        # only the minimal socket API, so restoration is best-effort for wrappers.
+        old_timeout = self.sock.gettimeout() if hasattr(self.sock, "gettimeout") else None
         ack_thread = threading.Thread(target=self._ack_listener, daemon=True)
         ack_thread.start()
 
-        start_time = time.time()
+        start_time = time.monotonic()
 
         try:
             while not self._stop:
-                if time.time() - start_time > timeout:
+                if time.monotonic() - start_time > timeout:
                     self._stop = True
                     break
 
@@ -85,7 +108,7 @@ class UDPStreamSender:
                     # ----- 1. Gửi các gói mới nếu cửa sổ còn chỗ -----
                     while (
                         self.next_seq < total_seqs
-                        and self.next_seq < self.base + WINDOW_SIZE
+                        and len(self.window) < self.congestion.window
                     ):
                         if self.next_seq < total_chunks:
                             # Gửi dữ liệu thông thường
@@ -96,7 +119,7 @@ class UDPStreamSender:
                         self.next_seq += 1
 
                     # ----- 2. Kiểm tra timeout & gửi lại -----
-                    now = time.time()
+                    now = time.monotonic()
                     to_retry: List[int] = []
                     failed = False
 
@@ -113,6 +136,8 @@ class UDPStreamSender:
                         self.success = False
                         break
 
+                    if to_retry:
+                        self.congestion.on_loss(timeout=True)
                     for seq in to_retry:
                         info = self.window[seq]
                         self._send_chunk(seq, info["data"], is_retry=True, is_eof=info["is_eof"])
@@ -130,15 +155,21 @@ class UDPStreamSender:
                 self._ack_event.wait(timeout=0.05)
                 self._ack_event.clear()
 
+        except OSError:
+            self.success = False
         finally:
             self._stop = True
             ack_thread.join(timeout=1.0)
+            try:
+                self.sock.settimeout(old_timeout)
+            except OSError:
+                pass  # A closed socket cannot be restored; preserve failure.
 
         return self.success
 
     def get_stats(self) -> dict:
         with self._lock:
-            return dict(self.stats)
+            return {**self.stats, "congestion": self.congestion.snapshot()}
 
     def _split_chunks(self, data: bytes) -> List[bytes]:
         chunks = []
@@ -155,12 +186,9 @@ class UDPStreamSender:
             seq_no=seq,
             payload=chunk,
         )
-        try:
-            self.sock.sendto(encode_packet(pkt), self.receiver_addr)
-        except OSError:
-            return
+        self.sock.sendto(encode_packet(pkt), self.receiver_addr)
 
-        now = time.time()
+        now = time.monotonic()
         if seq in self.window:
             self.window[seq]["send_time"] = now
             self.window[seq]["retries"] += 1
@@ -176,12 +204,18 @@ class UDPStreamSender:
                 self.stats["sent"] += 1
 
     def _ack_listener(self):
-        self.sock.settimeout(0.2)
+        try:
+            self.sock.settimeout(0.2)
+        except OSError:
+            self._stop = True
+            return
         while not self._stop:
             try:
-                raw, _ = self.sock.recvfrom(2048)
+                raw, addr = self.sock.recvfrom(2048)
+                if addr != self.receiver_addr:
+                    continue
                 packet = decode_packet(raw)
-                if packet.msg_type == MSG_ACK:
+                if packet.msg_type == MSG_ACK and packet.status == STATUS_OK and not packet.payload:
                     self._handle_ack(packet.seq_no)
             except socket.timeout:
                 continue
@@ -193,7 +227,9 @@ class UDPStreamSender:
     def _handle_ack(self, seq: int):
         with self._lock:
             if seq in self.window:
-                del self.window[seq]
+                info = self.window.pop(seq)
+                rtt = max(1e-6, time.monotonic()-info["send_time"]) if info["retries"] == 0 else None
+                self.congestion.on_ack(rtt)
                 self.stats["acked"] += 1
 
             while self.base not in self.window and self.base < self.next_seq:
@@ -218,6 +254,8 @@ class UDPStreamReceiver:
             "acked": 0,
         }
         self._lock = threading.Lock()
+        self.stream = OrderedByteStream(max_buffer_bytes=65535*CHUNK_SIZE, max_chunks=65536)
+        self._digests: dict[int, bytes] = {}
 
     def _send_ack(self, seq_no: int, addr: Tuple[str, int]):
         ack_packet = Packet(
@@ -235,17 +273,19 @@ class UDPStreamReceiver:
         while self.expected_seq in self.buffer:
             data = self.buffer.pop(self.expected_seq)
             self.received_data.extend(data)
+            self.stream.feed(self.expected_seq, data)
             self.expected_seq += 1
 
         if self.total_chunks is not None:
             if self.expected_seq >= self.total_chunks:
                 self.is_finished = True
                 self.buffer.clear()
+                self.stream.finish(self.total_chunks)
 
     def handle_raw(self, raw_data: bytes, sender_addr: Tuple[str, int]) -> bool:
         try:
             packet = decode_packet(raw_data)
-        except (ValueError, Exception):
+        except (ValueError, TypeError):
             return False
         return self.handle_packet(packet, sender_addr)
 
@@ -255,9 +295,20 @@ class UDPStreamReceiver:
             return False
 
         with self._lock:
+            if self.sender_addr is not None and sender_addr != self.sender_addr:
+                return False
+            if not 0 <= packet.seq_no <= 65535:
+                return False
+            if (packet.msg_type == MSG_DATA and (not packet.payload or len(packet.payload) > CHUNK_SIZE or packet.seq_no == 65535)) or (packet.msg_type == MSG_EOF and packet.payload):
+                return False
             if self.is_finished:
-                self._send_ack(packet.seq_no, sender_addr)
-                return True
+                if packet.msg_type == MSG_EOF and packet.seq_no == self.total_chunks:
+                    self._send_ack(packet.seq_no, sender_addr)
+                    return True
+                if packet.msg_type == MSG_DATA and self._digests.get(packet.seq_no) == hashlib.sha256(packet.payload).digest():
+                    self._send_ack(packet.seq_no, sender_addr)
+                    return True
+                return False
 
             self.sender_addr = sender_addr
             seq = packet.seq_no
@@ -265,31 +316,43 @@ class UDPStreamReceiver:
 
             self.stats["received"] += 1
             
-            # 1. Luôn gửi ACK ngay
-            self._send_ack(seq, sender_addr)
-            self.stats["acked"] += 1
-
-            # 2. Phân loại theo cờ thay vì quét payload
+            # Validate before acknowledging: ACK promises acceptance of the
+            # exact sequence, not merely arrival of a datagram.
             if packet.msg_type == MSG_EOF:
+                if seq < self.expected_seq or any(i >= seq for i in self.buffer):
+                    return False
                 if self.total_chunks is None:
                     # seq của gói EOF chính là tổng số chunk dữ liệu
                     self.total_chunks = seq
+                elif self.total_chunks != seq:
+                    return False
+                self._send_ack(seq, sender_addr)
+                self.stats["acked"] += 1
                 self._try_assemble()
                 return self.is_finished
 
             # 3. Với MSG_DATA thông thường:
             if seq < self.expected_seq or seq in self.buffer:
+                if self._digests.get(seq) != hashlib.sha256(payload).digest():
+                    return False
                 self.stats["duplicate"] += 1
+                self._send_ack(seq, sender_addr)
+                self.stats["acked"] += 1
                 return False
 
             if seq > self.expected_seq:
                 self.stats["out_of_order"] += 1
+            if self.total_chunks is not None and seq >= self.total_chunks:
+                return False
 
             # Payload ở đây có chứa gì cũng đều hợp lệ 100% (byte-exact)
             self.buffer[seq] = payload
+            self._digests[seq] = hashlib.sha256(payload).digest()
 
             # 4. Ghép gói
             self._try_assemble()
+            self._send_ack(seq, sender_addr)
+            self.stats["acked"] += 1
 
             return self.is_finished
 
@@ -301,8 +364,15 @@ class UDPStreamReceiver:
         with self._lock:
             return self.is_finished
 
+    async def read(self) -> bytes:
+        """Receive contiguous bytes before EOF without blocking an event loop."""
+        return await self.stream.read()
+
     def reset(self):
         with self._lock:
+            self.stream.fail(OSError("stream reset"))
+            self.stream = OrderedByteStream(max_buffer_bytes=65535*CHUNK_SIZE, max_chunks=65536)
+            self._digests.clear()
             self.expected_seq = 0
             self.buffer.clear()
             self.received_data = bytearray()

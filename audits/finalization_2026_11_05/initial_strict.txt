@@ -1,0 +1,97 @@
+test_actual_heartbeat_timeout_removes_user_and_other_client_survives (test_role4_integration.Role4IntegrationTests.test_actual_heartbeat_timeout_removes_user_and_other_client_survives) ... ok
+test_existing_client_entrypoint_serves_ui_and_routes_chat (test_role4_integration.Role4IntegrationTests.test_existing_client_entrypoint_serves_ui_and_routes_chat) ... ok
+test_existing_heartbeat_script (test_role4_integration.Role4IntegrationTests.test_existing_heartbeat_script) ... ok
+test_existing_team_scripts_unchanged (test_role4_integration.Role4IntegrationTests.test_existing_team_scripts_unchanged) ... ok
+test_http_chat_files_and_sha256 (test_role4_integration.Role4IntegrationTests.test_http_chat_files_and_sha256) ... ok
+test_server_shutdown_state_limitation_and_manual_recovery (test_role4_integration.Role4IntegrationTests.test_server_shutdown_state_limitation_and_manual_recovery) ... ok
+test_twenty_clients_crash_isolation_and_repeated_login (test_role4_integration.Role4IntegrationTests.test_twenty_clients_crash_isolation_and_repeated_login) ... ok
+test_interrupted_transfer_sender_fails_and_chat_survives (test_role4_network.Role4NetworkTests.test_interrupted_transfer_sender_fails_and_chat_survives) ... ok
+test_loss_delay_duplicate_reorder_recover (test_role4_network.Role4NetworkTests.test_loss_delay_duplicate_reorder_recover) ... ok
+test_meta_ack_allows_transfer_to_complete (test_role4_network.Role4NetworkTests.test_meta_ack_allows_transfer_to_complete)
+Receiver must ACK FILE_META so sender can finish. ... ok
+test_unavailable_recipient_rejected_by_existing_client (test_role4_network.Role4NetworkTests.test_unavailable_recipient_rejected_by_existing_client) ... ok
+test_upstream_final_ack_loss_should_recover (test_role4_network.Role4NetworkTests.test_upstream_final_ack_loss_should_recover)
+Known Role 3 defect: completed receiver ignores retransmit without ACK. ... ok
+test_upstream_receiver_timeout_should_reach_state (test_role4_network.Role4NetworkTests.test_upstream_receiver_timeout_should_reach_state)
+Known Role 3 contract gap; accelerate cleanup, not network timeout. ... ok
+test_drafts_enter_shift_enter_and_honest_submission (test_role4_ui.Role4BrowserTests.test_drafts_enter_shift_enter_and_honest_submission) ... ok
+test_file_validation_submission_and_backend_status_transitions (test_role4_ui.Role4BrowserTests.test_file_validation_submission_and_backend_status_transitions) ... ERROR
+test_injection_and_bounded_history (test_role4_ui.Role4BrowserTests.test_injection_and_bounded_history) ... ok
+test_malformed_missing_collections_and_progress (test_role4_ui.Role4BrowserTests.test_malformed_missing_collections_and_progress) ... ok
+test_mobile_layout_keyboard_and_snapshot_bounds (test_role4_ui.Role4BrowserTests.test_mobile_layout_keyboard_and_snapshot_bounds) ... ok
+test_real_schema_polling_selection_and_disappearing_recipient (test_role4_ui.Role4BrowserTests.test_real_schema_polling_selection_and_disappearing_recipient) ... ok
+test_request_timeouts_recovery_and_no_overlapping_poll (test_role4_ui.Role4BrowserTests.test_request_timeouts_recovery_and_no_overlapping_poll) ... ok
+test_two_browser_clients_chat_file_progress_hash_and_disconnect (test_role4_ui.Role4RealBrowserIntegration.test_two_browser_clients_chat_file_progress_hash_and_disconnect) ... ok
+
+======================================================================
+ERROR: test_file_validation_submission_and_backend_status_transitions (test_role4_ui.Role4BrowserTests.test_file_validation_submission_and_backend_status_transitions)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "E:\Downloads\BTL_MMT\finalization_2026_11_05\tests\test_role4_ui.py", line 215, in test_file_validation_submission_and_backend_status_transitions
+    stream.truncate(83 * 1024 * 1024)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+OSError: [Errno 28] No space left on device
+
+----------------------------------------------------------------------
+Ran 21 tests in 147.750s
+
+FAILED (errors=1)
+[TCP] Kết nối đã đóng: Kết nối bị đóng giữa chừng khi đang đọc dữ liệu
+Existing heartbeat script: exit 0
+Existing script test_proto.py: exit 0
+Existing script test_handshake.py: exit 0
+Existing script test_auth.py: exit 0
+Existing script test_logout.py: exit 0
+ROLE4 evidence: 5 SHA-256 matches; large=2097152 bytes; observed intermediate progress.
+[TCP] Kết nối đã đóng: [WinError 10054] An existing connection was forcibly closed by the remote host
+[TCP] Kết nối đã đóng: [WinError 10054] An existing connection was forcibly closed by the remote host
+ROLE4 evidence: 20 simultaneous clients; crash isolated; 3 reconnect cycles.
+Known final-ACK defect: done
+Known timeout-state gap: timeout
+[TCP] Kết nối đã đóng: [WinError 10054] An existing connection was forcibly closed by the remote host
+[TCP] Kết nối đã đóng: [WinError 10054] An existing connection was forcibly closed by the remote host
+{
+  "baseline": "3c4174791a7e796a18e6d57c98c03111359cc1a5",
+  "strict": true,
+  "disabled_markers": [
+    "test_role4_integration.Role4IntegrationTests.test_existing_heartbeat_script"
+  ],
+  "tests": [
+    "test_role4_integration.Role4IntegrationTests.test_actual_heartbeat_timeout_removes_user_and_other_client_survives",
+    "test_role4_integration.Role4IntegrationTests.test_existing_client_entrypoint_serves_ui_and_routes_chat",
+    "test_role4_integration.Role4IntegrationTests.test_existing_heartbeat_script",
+    "test_role4_integration.Role4IntegrationTests.test_existing_team_scripts_unchanged",
+    "test_role4_integration.Role4IntegrationTests.test_http_chat_files_and_sha256",
+    "test_role4_integration.Role4IntegrationTests.test_server_shutdown_state_limitation_and_manual_recovery",
+    "test_role4_integration.Role4IntegrationTests.test_twenty_clients_crash_isolation_and_repeated_login",
+    "test_role4_network.Role4NetworkTests.test_interrupted_transfer_sender_fails_and_chat_survives",
+    "test_role4_network.Role4NetworkTests.test_loss_delay_duplicate_reorder_recover",
+    "test_role4_network.Role4NetworkTests.test_meta_ack_allows_transfer_to_complete",
+    "test_role4_network.Role4NetworkTests.test_unavailable_recipient_rejected_by_existing_client",
+    "test_role4_network.Role4NetworkTests.test_upstream_final_ack_loss_should_recover",
+    "test_role4_network.Role4NetworkTests.test_upstream_receiver_timeout_should_reach_state",
+    "test_role4_ui.Role4BrowserTests.test_drafts_enter_shift_enter_and_honest_submission",
+    "test_role4_ui.Role4BrowserTests.test_file_validation_submission_and_backend_status_transitions",
+    "test_role4_ui.Role4BrowserTests.test_injection_and_bounded_history",
+    "test_role4_ui.Role4BrowserTests.test_malformed_missing_collections_and_progress",
+    "test_role4_ui.Role4BrowserTests.test_mobile_layout_keyboard_and_snapshot_bounds",
+    "test_role4_ui.Role4BrowserTests.test_real_schema_polling_selection_and_disappearing_recipient",
+    "test_role4_ui.Role4BrowserTests.test_request_timeouts_recovery_and_no_overlapping_poll",
+    "test_role4_ui.Role4RealBrowserIntegration.test_two_browser_clients_chat_file_progress_hash_and_disconnect"
+  ],
+  "total": 21,
+  "pass": 20,
+  "fail": 0,
+  "error": 1,
+  "skip": 0,
+  "expected_failure": 0,
+  "unexpected_success": 0,
+  "duration_seconds": 148.105,
+  "failures": [],
+  "errors": [
+    [
+      "test_role4_ui.Role4BrowserTests.test_file_validation_submission_and_backend_status_transitions",
+      "Traceback (most recent call last):\n  File \"E:\\Downloads\\BTL_MMT\\finalization_2026_11_05\\tests\\test_role4_ui.py\", line 215, in test_file_validation_submission_and_backend_status_transitions\n    stream.truncate(83 * 1024 * 1024)\n    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^\nOSError: [Errno 28] No space left on device\n"
+    ]
+  ]
+}

@@ -1,0 +1,170 @@
+============================= test session starts =============================
+platform win32 -- Python 3.14.4, pytest-9.2.0, pluggy-1.7.0 -- E:\Downloads\BTL_MMT\MangMayTinh1\.venv\Scripts\python.exe
+rootdir: E:\Downloads\BTL_MMT\release_closure_2026_11_05
+collecting ... collected 7 items / 6 deselected / 1 selected
+
+tests/test_release_client.py::ReleaseClientTests::test_http_rejects_cross_origin_actions_and_rebinding_host
+tests/test_release_client.py::ReleaseClientTests::test_http_rejects_cross_origin_actions_and_rebinding_host FAILED [100%]
+
+================================== FAILURES ===================================
+_ ReleaseClientTests.test_http_rejects_cross_origin_actions_and_rebinding_host (headers={'Content-Type': 'text/plain', 'Origin': 'https://untrusted.example'}) _
+
+self = <test_release_client.ReleaseClientTests testMethod=test_http_rejects_cross_origin_actions_and_rebinding_host>
+
+    def test_http_rejects_cross_origin_actions_and_rebinding_host(self):
+        alice, bob = self.app('alice'), self.app('bob')
+        bridge = Bridge(alice); self.bridges.append(bridge)
+        port = bridge.server.server_port
+        def request(method, path, headers, body=None):
+            connection = http.client.HTTPConnection('127.0.0.1', port, timeout=3)
+            try:
+                connection.request(method, path, body=body, headers=headers)
+                response = connection.getresponse()
+                result = response.status, response.read()
+                return result
+            finally:
+                connection.close()
+        body = json.dumps({'to':'bob', 'text':'unauthorized webpage action'})
+        for headers in (
+            {'Content-Type':'text/plain', 'Origin':'https://untrusted.example'},
+            {'Content-Type':'application/json', 'Origin':'https://untrusted.example'},
+            {'Content-Type':'application/json', 'Origin':'null'},
+            {'Content-Type':'application/json', 'Host':f'rebinding.example:{port}'},
+        ):
+            with self.subTest(headers=headers):
+>               self.assertEqual(request('POST','/api/send',headers,body)[0],403)
+E               AssertionError: 200 != 403
+
+E:\Downloads\BTL_MMT\release_closure_2026_11_05\tests\test_release_client.py:167: AssertionError
+_ ReleaseClientTests.test_http_rejects_cross_origin_actions_and_rebinding_host (headers={'Content-Type': 'application/json', 'Origin': 'https://untrusted.example'}) _
+
+self = <test_release_client.ReleaseClientTests testMethod=test_http_rejects_cross_origin_actions_and_rebinding_host>
+
+    def test_http_rejects_cross_origin_actions_and_rebinding_host(self):
+        alice, bob = self.app('alice'), self.app('bob')
+        bridge = Bridge(alice); self.bridges.append(bridge)
+        port = bridge.server.server_port
+        def request(method, path, headers, body=None):
+            connection = http.client.HTTPConnection('127.0.0.1', port, timeout=3)
+            try:
+                connection.request(method, path, body=body, headers=headers)
+                response = connection.getresponse()
+                result = response.status, response.read()
+                return result
+            finally:
+                connection.close()
+        body = json.dumps({'to':'bob', 'text':'unauthorized webpage action'})
+        for headers in (
+            {'Content-Type':'text/plain', 'Origin':'https://untrusted.example'},
+            {'Content-Type':'application/json', 'Origin':'https://untrusted.example'},
+            {'Content-Type':'application/json', 'Origin':'null'},
+            {'Content-Type':'application/json', 'Host':f'rebinding.example:{port}'},
+        ):
+            with self.subTest(headers=headers):
+>               self.assertEqual(request('POST','/api/send',headers,body)[0],403)
+E               AssertionError: 200 != 403
+
+E:\Downloads\BTL_MMT\release_closure_2026_11_05\tests\test_release_client.py:167: AssertionError
+_ ReleaseClientTests.test_http_rejects_cross_origin_actions_and_rebinding_host (headers={'Content-Type': 'application/json', 'Origin': 'null'}) _
+
+self = <test_release_client.ReleaseClientTests testMethod=test_http_rejects_cross_origin_actions_and_rebinding_host>
+
+    def test_http_rejects_cross_origin_actions_and_rebinding_host(self):
+        alice, bob = self.app('alice'), self.app('bob')
+        bridge = Bridge(alice); self.bridges.append(bridge)
+        port = bridge.server.server_port
+        def request(method, path, headers, body=None):
+            connection = http.client.HTTPConnection('127.0.0.1', port, timeout=3)
+            try:
+                connection.request(method, path, body=body, headers=headers)
+                response = connection.getresponse()
+                result = response.status, response.read()
+                return result
+            finally:
+                connection.close()
+        body = json.dumps({'to':'bob', 'text':'unauthorized webpage action'})
+        for headers in (
+            {'Content-Type':'text/plain', 'Origin':'https://untrusted.example'},
+            {'Content-Type':'application/json', 'Origin':'https://untrusted.example'},
+            {'Content-Type':'application/json', 'Origin':'null'},
+            {'Content-Type':'application/json', 'Host':f'rebinding.example:{port}'},
+        ):
+            with self.subTest(headers=headers):
+>               self.assertEqual(request('POST','/api/send',headers,body)[0],403)
+E               AssertionError: 200 != 403
+
+E:\Downloads\BTL_MMT\release_closure_2026_11_05\tests\test_release_client.py:167: AssertionError
+_ ReleaseClientTests.test_http_rejects_cross_origin_actions_and_rebinding_host (headers={'Content-Type': 'application/json', 'Host': 'rebinding.example:56265'}) _
+
+self = <test_release_client.ReleaseClientTests testMethod=test_http_rejects_cross_origin_actions_and_rebinding_host>
+
+    def test_http_rejects_cross_origin_actions_and_rebinding_host(self):
+        alice, bob = self.app('alice'), self.app('bob')
+        bridge = Bridge(alice); self.bridges.append(bridge)
+        port = bridge.server.server_port
+        def request(method, path, headers, body=None):
+            connection = http.client.HTTPConnection('127.0.0.1', port, timeout=3)
+            try:
+                connection.request(method, path, body=body, headers=headers)
+                response = connection.getresponse()
+                result = response.status, response.read()
+                return result
+            finally:
+                connection.close()
+        body = json.dumps({'to':'bob', 'text':'unauthorized webpage action'})
+        for headers in (
+            {'Content-Type':'text/plain', 'Origin':'https://untrusted.example'},
+            {'Content-Type':'application/json', 'Origin':'https://untrusted.example'},
+            {'Content-Type':'application/json', 'Origin':'null'},
+            {'Content-Type':'application/json', 'Host':f'rebinding.example:{port}'},
+        ):
+            with self.subTest(headers=headers):
+>               self.assertEqual(request('POST','/api/send',headers,body)[0],403)
+E               AssertionError: 200 != 403
+
+E:\Downloads\BTL_MMT\release_closure_2026_11_05\tests\test_release_client.py:167: AssertionError
+_ ReleaseClientTests.test_http_rejects_cross_origin_actions_and_rebinding_host _
+
+self = <test_release_client.ReleaseClientTests testMethod=test_http_rejects_cross_origin_actions_and_rebinding_host>
+
+    def test_http_rejects_cross_origin_actions_and_rebinding_host(self):
+        alice, bob = self.app('alice'), self.app('bob')
+        bridge = Bridge(alice); self.bridges.append(bridge)
+        port = bridge.server.server_port
+        def request(method, path, headers, body=None):
+            connection = http.client.HTTPConnection('127.0.0.1', port, timeout=3)
+            try:
+                connection.request(method, path, body=body, headers=headers)
+                response = connection.getresponse()
+                result = response.status, response.read()
+                return result
+            finally:
+                connection.close()
+        body = json.dumps({'to':'bob', 'text':'unauthorized webpage action'})
+        for headers in (
+            {'Content-Type':'text/plain', 'Origin':'https://untrusted.example'},
+            {'Content-Type':'application/json', 'Origin':'https://untrusted.example'},
+            {'Content-Type':'application/json', 'Origin':'null'},
+            {'Content-Type':'application/json', 'Host':f'rebinding.example:{port}'},
+        ):
+            with self.subTest(headers=headers):
+                self.assertEqual(request('POST','/api/send',headers,body)[0],403)
+>       self.assertEqual(request('GET','/api/state',{'Host':f'rebinding.example:{port}'})[0],403)
+E       AssertionError: 200 != 403
+
+tests\test_release_client.py:168: AssertionError
+---------------------------- Captured stdout call -----------------------------
+SUBFAILED(headers={'Content-Type': 'text/plain', 'Origin': 'https://untrusted.example'}) [100%]
+
+tests/test_release_client.py::ReleaseClientTests::test_http_rejects_cross_origin_actions_and_rebinding_host SUBFAILED(headers={'Content-Type': 'application/json', 'Origin': 'https://untrusted.example'}) [100%]
+
+tests/test_release_client.py::ReleaseClientTests::test_http_rejects_cross_origin_actions_and_rebinding_host SUBFAILED(headers={'Content-Type': 'application/json', 'Origin': 'null'}) [100%]
+
+tests/test_release_client.py::ReleaseClientTests::test_http_rejects_cross_origin_actions_and_rebinding_host SUBFAILED(headers={'Content-Type': 'application/json', 'Host': 'rebinding.example:56265'}) [100%]
+=========================== short test summary info ===========================
+SUBFAILED(headers={'Content-Type': 'text/plain', 'Origin': 'https://untrusted.example'}) tests/test_release_client.py::ReleaseClientTests::test_http_rejects_cross_origin_actions_and_rebinding_host
+SUBFAILED(headers={'Content-Type': 'application/json', 'Origin': 'https://untrusted.example'}) tests/test_release_client.py::ReleaseClientTests::test_http_rejects_cross_origin_actions_and_rebinding_host
+SUBFAILED(headers={'Content-Type': 'application/json', 'Origin': 'null'}) tests/test_release_client.py::ReleaseClientTests::test_http_rejects_cross_origin_actions_and_rebinding_host
+SUBFAILED(headers={'Content-Type': 'application/json', 'Host': 'rebinding.example:56265'}) tests/test_release_client.py::ReleaseClientTests::test_http_rejects_cross_origin_actions_and_rebinding_host
+FAILED tests/test_release_client.py::ReleaseClientTests::test_http_rejects_cross_origin_actions_and_rebinding_host
+======================= 5 failed, 6 deselected in 0.89s =======================

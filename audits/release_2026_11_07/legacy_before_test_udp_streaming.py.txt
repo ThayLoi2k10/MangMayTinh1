@@ -1,0 +1,50 @@
+================================================================
+  TEST UDP RELIABLE STREAMING (Sliding Window ARQ)
+  CHUNK_SIZE=700  WINDOW_SIZE=8
+================================================================
+
+=== TEST 1: Không mất gói ===
+  [PASS] size=    100  drop=0%  time=0.22s  sent=2  retrans=0  drop_data=0  drop_ack=0
+  [PASS] size=    700  drop=0%  time=0.21s  sent=2  retrans=0  drop_data=0  drop_ack=0
+  [PASS] size=   1400  drop=0%  time=0.21s  sent=3  retrans=0  drop_data=0  drop_ack=0
+  [PASS] size=   5000  drop=0%  time=0.21s  sent=9  retrans=0  drop_data=0  drop_ack=0
+  [PASS] size=  50000  drop=0%  time=0.21s  sent=73  retrans=0  drop_data=0  drop_ack=0
+
+=== TEST 2: Mất gói DATA (10% – 30%) ===
+  [PASS] size=  30000  drop=10%  time=1.32s  sent=44  retrans=10  drop_data=10  drop_ack=0
+  [PASS] size=  30000  drop=20%  time=1.32s  sent=44  retrans=9  drop_data=9  drop_ack=0
+  [PASS] size=  30000  drop=30%  time=1.87s  sent=44  retrans=17  drop_data=17  drop_ack=0
+
+=== TEST 3: Mất gói ACK (10% – 20%) ===
+  [FAIL] size=  20000  drop=10%  time=3.46s  sent=30  retrans=15  drop_data=0  drop_ack=3
+  [FAIL] size=  20000  drop=20%  time=3.43s  sent=30  retrans=17  drop_data=0  drop_ack=11
+
+=== TEST 4: Mất cả DATA + ACK (15%) ===
+  [FAIL] size=  25000  drop=15%  time=3.95s  sent=37  retrans=17  drop_data=12  drop_ack=4
+    → MD5 gốc : 7c1919891c1dffeb8b436edce6aeaa5c
+    → MD5 nhận: 7c1919891c1dffeb8b436edce6aeaa5c
+    → Sender stats  : {'sent': 37, 'retransmitted': 17, 'acked': 36, 'timeouts': 17, 'congestion': {'algorithm': 'CUBIC', 'cwnd': 1.0, 'window': 1, 'ssthresh': 2.0, 'srtt': 0.00020025586395064346, 'loss_events': 6, 'acked_segments': 36, 'max_window': 64}}
+    → Receiver stats: {'received': 40, 'duplicate': 3, 'out_of_order': 31, 'acked': 40}
+
+=== TEST 5: File lớn (~200KB) với mất gói 10% ===
+  [FAIL] size= 200000  drop=10%  time=8.41s  sent=287  retrans=88  drop_data=37  drop_ack=39
+    → size nhận được: 200000 / 200000
+    → Sender stats: {'sent': 287, 'retransmitted': 88, 'acked': 284, 'timeouts': 88, 'congestion': {'algorithm': 'CUBIC', 'cwnd': 1.0, 'window': 1, 'ssthresh': 2.0, 'srtt': 0.0002510726221020586, 'loss_events': 14, 'acked_segments': 284, 'max_window': 64}}
+
+=== TEST 6: File rỗng + file rất nhỏ ===
+  [PASS] size=      0  drop=0%  time=0.21s  sent=1  retrans=0  drop_data=0  drop_ack=0
+  [FAIL] size=      5  drop=20%  time=3.48s  sent=2  retrans=5  drop_data=0  drop_ack=1
+  [PASS] size=      1  drop=0%  time=0.22s  sent=2  retrans=0  drop_data=0  drop_ack=0
+
+================================================================
+  TỔNG KẾT
+================================================================
+  PASS | Không mất gói
+  PASS | Mất DATA
+  FAIL | Mất ACK
+  FAIL | Mất DATA + ACK
+  FAIL | File lớn + loss
+  FAIL | File rỗng / nhỏ
+----------------------------------------------------------------
+  CÓ TEST BỊ FAIL – Kiểm tra lại logic Sender/Receiver.
+================================================================

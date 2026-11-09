@@ -1,0 +1,87 @@
+{
+  "mode": "real client.main + HTTP + TCP/UDP",
+  "status": "PASS",
+  "alice": {
+    "username": "demo-alice",
+    "users": [
+      {
+        "username": "demo-alice",
+        "ip": "127.0.0.1",
+        "udp_port": 53537
+      },
+      {
+        "username": "demo-bob",
+        "ip": "127.0.0.1",
+        "udp_port": 53538
+      }
+    ],
+    "messages": [
+      {
+        "from": "demo-alice",
+        "to": "*",
+        "text": "demo broadcast",
+        "time": "09:05:49"
+      },
+      {
+        "from": "demo-bob",
+        "to": "demo-alice",
+        "text": "demo private",
+        "time": "09:05:49"
+      }
+    ],
+    "transfers": [
+      {
+        "direction": "send",
+        "file_id": "fddc297c9b4448058afe91240f538c4d",
+        "filename": "demo.bin",
+        "peer": "demo-bob",
+        "status": "done",
+        "progress": 100,
+        "total_chunks": 12
+      }
+    ]
+  },
+  "bob": {
+    "username": "demo-bob",
+    "users": [
+      {
+        "username": "demo-alice",
+        "ip": "127.0.0.1",
+        "udp_port": 53537
+      },
+      {
+        "username": "demo-bob",
+        "ip": "127.0.0.1",
+        "udp_port": 53538
+      }
+    ],
+    "messages": [
+      {
+        "from": "demo-alice",
+        "to": "*",
+        "text": "demo broadcast",
+        "time": "09:05:49"
+      },
+      {
+        "from": "demo-bob",
+        "to": "demo-alice",
+        "text": "demo private",
+        "time": "09:05:49"
+      }
+    ],
+    "transfers": [
+      {
+        "direction": "receive",
+        "file_id": "fddc297c9b4448058afe91240f538c4d",
+        "filename": "demo.bin",
+        "peer": "demo-alice",
+        "status": "completed",
+        "progress": 100,
+        "total_chunks": 12
+      }
+    ]
+  },
+  "sha256": "dc404a613fedaeb54034514bc6505f56b933caa5250299ba7d094377a51caa46",
+  "bytes": 8192,
+  "seconds": 2.627
+}

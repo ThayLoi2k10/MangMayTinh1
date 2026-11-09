@@ -1,0 +1,9 @@
+{
+  "interpreter": "E:\\Downloads\\BTL_MMT\\release_verify_env_2026_11_07\\Scripts\\python.exe",
+  "python": "3.14.4 (tags/v3.14.4:23116f9, Apr  7 2026, 14:10:54) [MSC v.1944 64 bit (AMD64)]",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "architecture": "AMD64",
+  "created_with": "python -m venv E:/Downloads/BTL_MMT/release_verify_env_2026_11_07",
+  "installed_with": "python -m pip install -r requirements-test.txt",
+  "browser": "system Microsoft Edge (Playwright msedge channel)"
+}

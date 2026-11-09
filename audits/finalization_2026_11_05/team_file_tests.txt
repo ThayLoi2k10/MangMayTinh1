@@ -1,0 +1,92 @@
+test_ack_packet_is_ignored (test_file_client.TestFileClientAdvanced.test_ack_packet_is_ignored)
+MSG_ACK không bị nhầm thành dữ liệu file. ... ok
+test_chunk_before_metadata_does_not_crash_handler (test_file_client.TestFileClientAdvanced.test_chunk_before_metadata_does_not_crash_handler)
+Chunk đến trước metadata phải bị từ chối an toàn. ... ok
+test_duplicate_metadata_does_not_add_second_record (test_file_client.TestFileClientAdvanced.test_duplicate_metadata_does_not_add_second_record)
+Metadata trùng file_id không tạo thêm bản ghi nhận. ... ERROR
+test_empty_file_can_be_sent_and_received (test_file_client.TestFileClientAdvanced.test_empty_file_can_be_sent_and_received)
+File rỗng vẫn phải truyền và nhận thành công. ... ERROR
+test_invalid_metadata_does_not_crash_handler (test_file_client.TestFileClientAdvanced.test_invalid_metadata_does_not_crash_handler)
+Metadata sai được bắt lỗi, không tạo transfer nhận. ... ok
+test_packets_are_sent_in_order (test_file_client.TestFileClientAdvanced.test_packets_are_sent_in_order)
+Metadata phải được gửi trước các chunk. ... ERROR
+test_send_callback_failure_updates_status (test_file_client.TestFileClientAdvanced.test_send_callback_failure_updates_status)
+Nếu callback gửi packet lỗi, trạng thái phải là failed. ... ERROR
+test_send_nonexistent_file (test_file_client.TestFileClientAdvanced.test_send_nonexistent_file)
+Đường dẫn không tồn tại phải báo lỗi khi gọi send_file. ... ERROR
+test_tampered_encrypted_payload_is_ignored (test_file_client.TestFileClientAdvanced.test_tampered_encrypted_payload_is_ignored)
+Payload mã hóa giả mạo không được xử lý thành file. ... ok
+test_unknown_message_kind_is_not_handled_as_file (test_file_client.TestFileClientAdvanced.test_unknown_message_kind_is_not_handled_as_file)
+Thông điệp không thuộc loại file phải trả về False. ... ok
+test_file_transfer (unittest.loader._FailedTest.test_file_transfer) ... ERROR
+
+======================================================================
+ERROR: test_duplicate_metadata_does_not_add_second_record (test_file_client.TestFileClientAdvanced.test_duplicate_metadata_does_not_add_second_record)
+Metadata trùng file_id không tạo thêm bản ghi nhận.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "E:\Downloads\BTL_MMT\finalization_2026_11_05\test_file_client.py", line 287, in test_duplicate_metadata_does_not_add_second_record
+    self.assertTrue(handler.handle_packet(packet, sender="Alice"))
+                    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Downloads\BTL_MMT\finalization_2026_11_05\file_client.py", line 198, in handle_packet
+    self._reply_ack(msg.get("file_id"), -1, sender)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Downloads\BTL_MMT\finalization_2026_11_05\file_client.py", line 225, in _reply_ack
+    self.send_packet_fn(pkt, to_user)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+TypeError: TestFileClientAdvanced.make_handler.<locals>.<lambda>() takes 1 positional argument but 2 were given
+
+======================================================================
+ERROR: test_empty_file_can_be_sent_and_received (test_file_client.TestFileClientAdvanced.test_empty_file_can_be_sent_and_received)
+File rỗng vẫn phải truyền và nhận thành công.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "E:\Downloads\BTL_MMT\finalization_2026_11_05\test_file_client.py", line 118, in test_empty_file_can_be_sent_and_received
+    file_id = sender.send_file(source)
+TypeError: FileTransferHandler.send_file() missing 1 required positional argument: 'recipient'
+
+======================================================================
+ERROR: test_packets_are_sent_in_order (test_file_client.TestFileClientAdvanced.test_packets_are_sent_in_order)
+Metadata phải được gửi trước các chunk.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "E:\Downloads\BTL_MMT\finalization_2026_11_05\test_file_client.py", line 158, in test_packets_are_sent_in_order
+    file_id = handler.send_file(source)
+TypeError: FileTransferHandler.send_file() missing 1 required positional argument: 'recipient'
+
+======================================================================
+ERROR: test_send_callback_failure_updates_status (test_file_client.TestFileClientAdvanced.test_send_callback_failure_updates_status)
+Nếu callback gửi packet lỗi, trạng thái phải là failed.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "E:\Downloads\BTL_MMT\finalization_2026_11_05\test_file_client.py", line 86, in test_send_callback_failure_updates_status
+    file_id = handler.send_file(source)
+TypeError: FileTransferHandler.send_file() missing 1 required positional argument: 'recipient'
+
+======================================================================
+ERROR: test_send_nonexistent_file (test_file_client.TestFileClientAdvanced.test_send_nonexistent_file)
+Đường dẫn không tồn tại phải báo lỗi khi gọi send_file.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "E:\Downloads\BTL_MMT\finalization_2026_11_05\test_file_client.py", line 70, in test_send_nonexistent_file
+    handler.send_file(missing_file)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+TypeError: FileTransferHandler.send_file() missing 1 required positional argument: 'recipient'
+
+======================================================================
+ERROR: test_file_transfer (unittest.loader._FailedTest.test_file_transfer)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_file_transfer
+Traceback (most recent call last):
+  File "C:\Python314\Lib\unittest\loader.py", line 137, in loadTestsFromName
+    module = __import__(module_name)
+  File "E:\Downloads\BTL_MMT\finalization_2026_11_05\test_file_transfer.py", line 7, in <module>
+    import pytest
+ModuleNotFoundError: No module named 'pytest'
+
+
+----------------------------------------------------------------------
+Ran 11 tests in 0.024s
+
+FAILED (errors=6)
+[FILE] meta error: file_id không hợp lệ

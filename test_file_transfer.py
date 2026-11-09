@@ -183,8 +183,13 @@ class TestFileReceiver:
         meta = out.metadata_message("alice")
         self.receiver.accept_metadata(meta, sender="bob")
 
-        with pytest.raises(FileTransferError, match="đã tồn tại"):
-            self.receiver.accept_metadata(meta, sender="bob")
+        original = self.receiver.incoming[out.file_id]
+        assert self.receiver.accept_metadata(meta, sender="bob") is original
+        assert len(self.receiver.incoming) == 1
+        with pytest.raises(FileTransferError):
+            self.receiver.accept_metadata(dict(meta, filename="different.txt"), sender="bob")
+        with pytest.raises(FileTransferError):
+            self.receiver.accept_metadata(meta, sender="mallory")
 
     def test_accept_metadata_bad_kind(self):
         with pytest.raises(FileTransferError):
@@ -276,7 +281,7 @@ class TestFileReceiver:
         item = self.receiver.accept_metadata(meta, sender="bob")
 
         # giả lập đã quá hạn
-        item.last_activity = time.time() - 200
+        item.last_activity = time.monotonic() - 200
 
         expired = self.receiver.cleanup_expired(max_age=120.0)
         assert out.file_id in expired
